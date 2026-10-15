@@ -27,7 +27,8 @@ mudanças por PR/issue, não editam diretamente.
 ```
 
 Códigos: `validation_failed`, `not_authenticated`, `forbidden`, `not_found`, `conflict`,
-`facts_not_confirmed`, `organization_limit_reached`, `feature_disabled`, `external_unavailable`,
+`facts_not_confirmed`, `organization_limit_reached`, `brief_not_ready`, `quota_exceeded`,
+`feature_disabled`, `external_unavailable`,
 `internal`. Sucesso: `{ "ok": true, "data": …, "correlation_id": "…" }`.
 
 Estados de tela obrigatórios (`VIEW_STATES`): loading, empty, error, restricted,
