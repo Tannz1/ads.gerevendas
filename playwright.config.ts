@@ -25,10 +25,10 @@ export default defineConfig({
   ],
   webServer: {
     // Testes rodam sem Supabase: o app fica em modo demonstração.
-    command: `npx next start -p ${PORT}`,
+    command: "npm run start",
     url: `http://127.0.0.1:${PORT}`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
-    env: { NEXT_PUBLIC_SUPABASE_URL: "", NEXT_PUBLIC_SUPABASE_ANON_KEY: "" },
+    env: { PORT: String(PORT), HOSTNAME: "127.0.0.1" },
   },
 });

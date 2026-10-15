@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // Gera .next/standalone para a imagem Docker (ver Dockerfile).
+  output: "standalone",
   turbopack: {
     rules: {
       "*.css": {

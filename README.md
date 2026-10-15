@@ -76,6 +76,7 @@ agent_prompts/          prompts para GPT/Codex e Antigravity
 - Pacote mestre original: [`docs/00_PACOTE_MESTRE.md`](docs/00_PACOTE_MESTRE.md)
 - Contratos: [`docs/08_CONTRATOS.md`](docs/08_CONTRATOS.md)
 - Decisões: [`docs/adr/`](docs/adr)
+- Deploy na VPS (EasyPanel/Docker): [`docs/DEPLOY_EASYPANEL.md`](docs/DEPLOY_EASYPANEL.md)
 
 Documentos citados no pacote mestre que **ainda não estão no repositório**: `docs/01_PRD.md`,
 `docs/02_UX_UI.md`, `docs/03_ARQUITETURA_BACKEND.md`, `docs/04_IA_CRIATIVOS.md`,

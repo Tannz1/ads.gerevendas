@@ -1,0 +1,14 @@
+.git
+.github
+node_modules
+.next
+test-results
+playwright-report
+coverage
+supabase/.temp
+.env*
+!.env.example
+*.md
+!README.md
+Dockerfile
+.dockerignore
