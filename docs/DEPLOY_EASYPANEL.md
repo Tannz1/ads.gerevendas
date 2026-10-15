@@ -25,7 +25,7 @@ No serviço `ads`, aba **Domains → Add domain**:
 | --- | --- |
 | Host | `gerevendas.com.br` |
 | Path | `/ads` |
-| Port | `3000` |
+| Port | `80` (o EasyPanel define PORT=80 no container) |
 | HTTPS | ligado |
 
 Se aparecer uma opção para remover o prefixo do caminho (*strip path*), deixe **desligada**: o app
