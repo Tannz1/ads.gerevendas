@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+/*
+ * Tokens PROVISÓRIOS — a identidade visual oficial GereVendas ainda não foi entregue.
+ * Trocar apenas estes valores quando a marca chegar; os componentes usam os tokens.
+ */
+:root {
+  --canvas: #f6f5f1;
+  --surface: #ffffff;
+  --surface-muted: #efeee8;
+  --ink: #101828;
+  --ink-soft: #475467;
+  --ink-faint: #667085;
+  --line: #e3e1d9;
+  --line-strong: #cfccc1;
+  --brand: #2a45e8;
+  --brand-strong: #1c31b8;
+  --brand-soft: #e8ebfd;
+  --accent: #f4b740;
+  --accent-soft: #fdf3dc;
+  --success: #12795a;
+  --success-soft: #e3f4ec;
+  --warning: #9a5b00;
+  --warning-soft: #fdf0d8;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  --focus: #2a45e8;
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-faint: var(--ink-faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-soft: var(--brand-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-display);
+  --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 4px 16px -6px rgb(16 24 40 / 0.08);
+  --shadow-lift: 0 2px 4px rgb(16 24 40 / 0.04), 0 18px 40px -16px rgb(16 24 40 / 0.22);
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
