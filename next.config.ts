@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
 
+// Subcaminho de publicação, ex.: "/ads" para servir em gerevendas.com.br/ads. Vazio = raiz.
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+if (basePath && !/^\/[a-z0-9-]+(\/[a-z0-9-]+)*$/.test(basePath)) {
+  throw new Error(`NEXT_PUBLIC_BASE_PATH inválido: use algo como "/ads" (sem barra no final)`);
+}
+
 const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
@@ -12,6 +18,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  basePath: basePath || undefined,
   // Gera .next/standalone para a imagem Docker (ver Dockerfile).
   output: "standalone",
   turbopack: {

@@ -1,7 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
+import { p } from "./paths";
 
 async function startDemo(page: Page) {
-  await page.goto("/entrar");
+  await page.goto(p("/entrar"));
   await page.getByRole("link", { name: "Entrar em modo demonstração" }).click();
   await expect(page).toHaveURL(/\/app$/);
   await expect(page.getByText("Modo demonstração.")).toBeVisible();
@@ -70,7 +71,7 @@ test("fluxo completo do onboarding em modo demonstração", async ({ page }) => 
 
 test("objetivo exige o canal correspondente", async ({ page }) => {
   await startDemo(page);
-  await page.goto("/app/onboarding");
+  await page.goto(p("/app/onboarding"));
   await page.evaluate(() => {
     localStorage.setItem(
       "gv-ads:onboarding:v1",

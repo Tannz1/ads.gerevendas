@@ -38,8 +38,14 @@ jobs:
       - run: npm run test:db
 
   e2e:
-    name: E2E (modo demonstração)
+    name: E2E (modo demonstração, base "${{ matrix.base_path || '/' }}")
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        base_path: ["", "/ads"]
+    env:
+      NEXT_PUBLIC_BASE_PATH: ${{ matrix.base_path }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -53,7 +59,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: e2e-screenshots-e-relatorio
+          name: e2e-screenshots${{ matrix.base_path && '-ads' || '' }}
           path: |
             test-results/
             playwright-report/

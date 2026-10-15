@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { serverEnv } from "@/lib/env";
 import { log } from "@/lib/logger";
-import { isSupabaseConfigured } from "@/lib/public-env";
+import { isSupabaseConfigured, publicUrl } from "@/lib/public-env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getCorrelationId } from "./context";
 
@@ -20,7 +20,7 @@ export async function signInWithEmail(_prev: SignInState, formData: FormData): P
 
   const next = String(formData.get("next") ?? "/app");
   const safeNext = next.startsWith("/app") ? next : "/app";
-  const callback = new URL("/auth/callback", serverEnv().NEXT_PUBLIC_APP_URL);
+  const callback = publicUrl("/auth/callback", serverEnv().NEXT_PUBLIC_APP_URL);
   callback.searchParams.set("next", safeNext);
 
   const supabase = await createSupabaseServerClient();

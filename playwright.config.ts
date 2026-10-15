@@ -1,6 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const PORT = Number(process.env.E2E_PORT ?? 3100);
+// Mesmo valor usado no build (ex.: "/ads"). Os testes usam `p()` de tests/e2e/paths.ts.
+const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 // Em containers com Chromium pré-instalado (ex.: /opt/pw-browsers/chromium), aponte aqui.
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined;
 
@@ -26,7 +28,7 @@ export default defineConfig({
   webServer: {
     // Testes rodam sem Supabase: o app fica em modo demonstração.
     command: "npm run start",
-    url: `http://127.0.0.1:${PORT}`,
+    url: `http://127.0.0.1:${PORT}${BASE_PATH}/api/health`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
     env: { PORT: String(PORT), HOSTNAME: "127.0.0.1" },

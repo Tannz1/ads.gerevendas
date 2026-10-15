@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { CORRELATION_HEADER, ensureCorrelationId } from "@/lib/correlation";
-import { isSupabaseConfigured } from "@/lib/public-env";
+import { isSupabaseConfigured, publicUrl } from "@/lib/public-env";
 import { refreshSession } from "@/lib/supabase/proxy-session";
 
 export async function proxy(request: NextRequest) {
@@ -18,9 +18,8 @@ export async function proxy(request: NextRequest) {
   const { response, userId } = await refreshSession(request, requestHeaders);
 
   if (!userId && request.nextUrl.pathname.startsWith("/app")) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/entrar";
-    url.search = "";
+    // nextUrl.pathname vem sem o basePath; publicUrl o adiciona de volta.
+    const url = publicUrl("/entrar", request.nextUrl.origin);
     url.searchParams.set("next", request.nextUrl.pathname);
     return NextResponse.redirect(url);
   }
