@@ -1,5 +1,6 @@
 # syntax=docker/dockerfile:1
 # Imagem de produção (Next.js standalone). Usada pelo EasyPanel ou qualquer host Docker.
+# A porta vem de PORT (o EasyPanel injeta 80); o padrão local é 3000.
 
 FROM node:22-alpine AS deps
 WORKDIR /app
@@ -40,7 +41,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 USER nextjs
 # O EasyPanel injeta PORT (padrão 80); o servidor e o healthcheck seguem essa variável.
 EXPOSE 3000
-HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD wget -qO- "http://127.0.0.1:${PORT:-3000}${NEXT_PUBLIC_BASE_PATH}/api/health" >/dev/null || exit 1
+# Sem HEALTHCHECK na imagem: no Swarm (EasyPanel) uma checagem reprovada tira o container do
+# roteamento. Para monitorar, use ${NEXT_PUBLIC_BASE_PATH}/api/health no painel ou num uptime checker.
 # O Swarm (EasyPanel) pode sobrescrever HOSTNAME com o id do container; força escutar em todas as interfaces.
 CMD ["sh", "-c", "HOSTNAME=0.0.0.0 exec node server.js"]
