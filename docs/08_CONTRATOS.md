@@ -109,3 +109,25 @@ Contratos: `src/contracts/strategy.ts` e `src/contracts/creative.ts`. Migration:
 Erros de negócio (SQLSTATE `P0001`, mensagem = código): `brief_not_ready`,
 `generation_quota_exceeded`, `invalid_transition`, `invalid_output`, `price_not_confirmed`,
 `price_mismatch`, `version_conflict`. Acesso negado: `42501`.
+
+### Server actions da fase 2
+
+Todas retornam `ApiResult` (`{ ok, data, correlation_id }` ou o erro padrão). Em modo demonstração,
+apenas `generateStrategyDemo` funciona; as demais retornam `feature_disabled` e a UI usa o
+armazenamento local do navegador (sempre rotulado **Simulação**).
+
+| Action (`src/server/…`) | Entrada | `data` | Erros específicos |
+| --- | --- | --- | --- |
+| `generation.requestStrategyGeneration` | `{ idempotency_key? }` (`^[A-Za-z0-9-]{8,64}$`) | `{ job_id, status }` | `brief_not_ready`, `quota_exceeded`, `feature_disabled` (IA desligada/sem configuração/kill switch), `forbidden`, `conflict` |
+| `generation.getGenerationJob` | `jobId` (uuid) | `GenerationJob` | `not_found`; recupera job travado (`stale_timeout`) e reagenda job parado na fila |
+| `generation.getLatestStrategy` | — | `StrategyView \| null` | — |
+| `generation.generateStrategyDemo` | payload do onboarding | `{ generated, is_simulation: true, facts }` | só no modo demonstração; nada é gravado |
+| `creatives.createCreativeFromConcept` | `{ concept_id, format }` | `{ creative_id }` | `not_found`, `validation_failed` |
+| `creatives.getCreative` | `creativeId` | `{ creative, offer }` | `not_found` |
+| `creatives.listCreatives` | — | `CreativeView[]` (até 50, mais recentes primeiro) | — |
+| `creatives.saveCreative` | `{ creative_id, version, design }` | `{ version }` | `conflict` (versão mudou), `validation_failed` com `field_errors` por campo do design (sem prefixo) |
+| `creatives.approveCreative` | `{ creative_id, version }` | `{ status: "approved" }` | `conflict`, `validation_failed` (preço deixou de bater com a oferta) |
+
+Exportação PNG: `POST {basePath}/api/render` com `{ design }` → `image/png` 1080×1350 ou 1080×1920.
+Erros no formato padrão: 400 `validation_failed`, 401 `not_authenticated` (com Supabase), 413 (corpo
+acima de 16 KB), 429 `quota_exceeded` (30/min por IP). A rota não grava nada.

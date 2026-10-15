@@ -21,7 +21,10 @@
    contra os fatos do brief: preço só com preço confirmado e no valor exato; números, percentuais,
    descontos, garantias, superlativos e depoimentos que não estejam nos fatos são recusados.
    Uma nova tentativa recebe os problemas como feedback; conceitos que continuarem fora são
-   descartados (mínimo de 3).
+   descartados (mínimo de 3). Termos como "avaliação" ou "depoimento" só passam quando estão nos
+   próprios fatos (ex.: "Avaliação odontológica" como serviço); fala atribuída a clientes é sempre
+   recusada, salvo se o texto citado estiver nos fatos. Os avisos (`cautions`) não são checados,
+   porque existem justamente para alertar o dono sobre esses termos.
 6. **Peças determinísticas.** Templates em JSX compatível com Satori renderizam igual no editor
    (DOM) e na exportação PNG (`/api/render`, `next/og`). Formatos 4:5 (1080×1350) e 9:16
    (1080×1920) com áreas seguras fixas. Salvar usa concorrência otimista (`version`); editar desfaz
