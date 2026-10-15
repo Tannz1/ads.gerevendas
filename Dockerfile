@@ -41,4 +41,5 @@ USER nextjs
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD wget -qO- "http://127.0.0.1:3000${NEXT_PUBLIC_BASE_PATH}/api/health" >/dev/null || exit 1
-CMD ["node", "server.js"]
+# O Swarm (EasyPanel) pode sobrescrever HOSTNAME com o id do container; força escutar em todas as interfaces.
+CMD ["sh", "-c", "HOSTNAME=0.0.0.0 exec node server.js"]
