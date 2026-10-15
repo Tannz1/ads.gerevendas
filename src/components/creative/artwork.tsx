@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import type { CreativeDesign } from "@/contracts/creative";
+import type { BackgroundStyle, CreativeDesign } from "@/contracts/creative";
 import type { TemplateKey } from "@/contracts/strategy";
 import { renderableText } from "@/lib/creative/typography";
 import { DestaqueTemplate } from "./templates/destaque";
@@ -26,7 +26,7 @@ export const TEMPLATE_OPTIONS: ReadonlyArray<{ key: TemplateKey; label: string; 
 ];
 
 /** Rótulos para o seletor de fundo. */
-export const BACKGROUND_OPTIONS: ReadonlyArray<{ key: CreativeDesign["background"]; label: string }> = [
+export const BACKGROUND_OPTIONS: ReadonlyArray<{ key: BackgroundStyle; label: string }> = [
   { key: "gradiente", label: "Gradiente" },
   { key: "solido", label: "Sólido" },
   { key: "claro", label: "Claro" },
@@ -47,7 +47,7 @@ export function renderableDesign(design: CreativeDesign): CreativeDesign {
  * Arte da peça no tamanho nativo (FORMAT_SPECS). Componente puro — sem hooks nem APIs do
  * navegador — para que o MESMO JSX seja desenhado no editor (DOM) e na exportação PNG
  * (`next/og`/Satori). `fonts` traz as famílias: no DOM, as variáveis CSS do layout
- * (`var(--font-display)`); na rota, os nomes registrados no ImageResponse.
+ * (`var(--font-artwork-display)`); na rota, os nomes registrados no ImageResponse.
  */
 export function CreativeArtwork({ design, fonts }: { design: CreativeDesign; fonts: ArtworkFonts }) {
   const Template = TEMPLATES[design.template_key];

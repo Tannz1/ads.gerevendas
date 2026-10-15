@@ -5,10 +5,13 @@ import { FORMAT_SPECS, type CreativeDesign, type DesignIssue } from "@/contracts
 import { formatCents } from "@/lib/money";
 import { CreativeArtwork, type ArtworkFonts } from "./artwork";
 
-/** Famílias do editor: as variáveis CSS definidas pelo next/font em `src/app/layout.tsx`. */
+/**
+ * Famílias do editor: os mesmos arquivos de `public/fonts` usados no PNG, carregados por
+ * `src/lib/creative/artwork-fonts.ts` (variáveis aplicadas em `src/app/layout.tsx`).
+ */
 export const DOM_FONTS: ArtworkFonts = {
-  display: "var(--font-display), system-ui, sans-serif",
-  body: "var(--font-body), system-ui, sans-serif",
+  display: "var(--font-artwork-display), system-ui, sans-serif",
+  body: "var(--font-artwork-body), system-ui, sans-serif",
 };
 
 const FIT_MESSAGES: Record<string, DesignIssue> = {

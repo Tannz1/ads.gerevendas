@@ -58,3 +58,18 @@ describe("logger", () => {
     });
   });
 });
+
+describe("logger: contadores de uso", () => {
+  it("mantém input_tokens/output_tokens e esconde credenciais com token", () => {
+    expect(
+      redact({ input_tokens: 10, output_tokens: 5, max_tokens: 1, token: "t", refresh_token: "r", session_token: "s" }),
+    ).toEqual({
+      input_tokens: 10,
+      output_tokens: 5,
+      max_tokens: 1,
+      token: "[redacted]",
+      refresh_token: "[redacted]",
+      session_token: "[redacted]",
+    });
+  });
+});

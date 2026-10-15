@@ -220,11 +220,11 @@ export function decideJobRecovery(
   return "none";
 }
 
-/** O logger oculta chaves com "token"; por isso os contadores usam "_tok". */
+/** Campos de uso/custo para os logs estruturados. */
 function usageFields(usage: Usage) {
   return {
-    input_tok: usage.input_tokens,
-    output_tok: usage.output_tokens,
+    input_tokens: usage.input_tokens,
+    output_tokens: usage.output_tokens,
     cost_micro_usd: usage.cost_micro_usd,
   };
 }

@@ -212,8 +212,8 @@ describe("runGenerationJob", () => {
       attempt: 1,
       provider: "openai",
       model: "modelo-teste",
-      input_tok: 10,
-      output_tok: 20,
+      input_tokens: 10,
+      output_tokens: 20,
       cost_micro_usd: 3,
     });
     expect(typeof succeeded?.duration_ms).toBe("number");

@@ -4,4 +4,5 @@ package-lock.json
 test-results
 playwright-report
 supabase/.temp
+.claude
 *.md

@@ -24,6 +24,10 @@ export const FORMAT_SPECS: Record<CreativeFormat, { width: number; height: numbe
 
 export const BACKGROUND_STYLES = ["solido", "gradiente", "claro"] as const;
 export const backgroundStyleSchema = z.enum(BACKGROUND_STYLES);
+export type BackgroundStyle = z.infer<typeof backgroundStyleSchema>;
+
+/** Maior preço exibível na peça (R$ 999.999,99): cabe em todos os modelos por construção. */
+export const MAX_PRICE_CENTS = 99_999_999;
 
 const hex = z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Cor em hexadecimal, ex.: #C2410C");
 
@@ -41,7 +45,7 @@ export const creativeDesignSchema = z
     cta: z.string().trim().min(2).max(24, "Botão: máximo de 24 caracteres"),
     show_price: z.boolean(),
     /** Em centavos; obrigatório quando show_price = true e sempre igual ao preço confirmado da oferta. */
-    price_cents: z.number().int().nonnegative().nullable(),
+    price_cents: z.number().int().nonnegative().max(MAX_PRICE_CENTS, "Preço acima do limite da peça").nullable(),
     currency: z.string().regex(/^[A-Z]{3}$/),
     brand_color: hex,
     background: backgroundStyleSchema,

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { artworkBody, artworkDisplay } from "@/lib/creative/artwork-fonts";
 import "./globals.css";
 
 const body = Inter({ variable: "--font-body", subsets: ["latin"], display: "swap" });
@@ -20,7 +21,10 @@ export const viewport: Viewport = { themeColor: "#f6f5f1" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" className={`${body.variable} ${display.variable} h-full`}>
+    <html
+      lang="pt-BR"
+      className={`${body.variable} ${display.variable} ${artworkBody.variable} ${artworkDisplay.variable} h-full`}
+    >
       <body className="min-h-full">{children}</body>
     </html>
   );

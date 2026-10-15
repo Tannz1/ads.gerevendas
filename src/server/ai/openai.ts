@@ -215,8 +215,8 @@ export function createOpenAiProvider(config: OpenAiProviderConfig): AiTextProvid
         prompt_version: PROMPT_VERSION,
         status: typeof (json as ResponsesBody | null)?.status === "string" ? (json as ResponsesBody).status : null,
         duration_ms: Date.now() - started,
-        input_tok: usage.input_tokens,
-        output_tok: usage.output_tokens,
+        input_tokens: usage.input_tokens,
+        output_tokens: usage.output_tokens,
         cost_micro_usd: usage.cost_micro_usd,
       });
 

@@ -1,6 +1,8 @@
 type Level = "debug" | "info" | "warn" | "error";
 
-const SENSITIVE = /(token|secret|password|authorization|cookie|api[_-]?key|service[_-]?role)/i;
+// `token` só como credencial (access_token, refresh_token, token...), não contadores como input_tokens.
+const SENSITIVE =
+  /((^|[_-])(access|refresh|id|auth|bearer|session)?[_-]?token$|secret|password|passwd|authorization|cookie|api[_-]?key|service[_-]?role)/i;
 
 /** Remove valores de chaves sensíveis antes de logar. */
 export function redact(value: unknown, depth = 0): unknown {
