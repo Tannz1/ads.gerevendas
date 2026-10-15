@@ -82,3 +82,29 @@ Regras:
 RPCs: `create_organization(p_name, p_correlation_id)`,
 `complete_onboarding(p_org, p_payload, p_correlation_id)` (SECURITY INVOKER, transação única),
 `log_audit_event(...)` (ator sempre `auth.uid()`). `anon` não tem acesso a nenhuma tabela ou RPC.
+
+## Fase 2 — estratégia, conceitos e peças
+
+Contratos: `src/contracts/strategy.ts` e `src/contracts/creative.ts`. Migration:
+`supabase/migrations/20261016090000_estrategia_criativos.sql`. Decisões: `docs/adr/0003`.
+
+- `BriefFacts`: fatos confirmados (montados no servidor) que a IA pode usar.
+- `GeneratedStrategy` = `{ strategy: Strategy, concepts: Concept[3..5] }`.
+- `Concept.show_price` só pode ser `true` com preço confirmado (validado no fact-guard e no banco).
+- `CreativeDesign`: formato, template, textos com limites (título 40, texto 90, botão 24), preço em
+  centavos igual ao da oferta, cor e fundo. `checkDesignAgainstOffer` replica a regra do banco.
+- `FORMAT_SPECS`: 4:5 = 1080×1350 (margem 72), 9:16 = 1080×1920 (topo 250, base 340 livres).
+
+| RPC | Regra |
+| --- | --- |
+| `enqueue_generation_job(org, brief, chave, provider, model?, correlation?)` | membro; brief submetido; idempotente; reaproveita job em andamento; 20/24h |
+| `start_generation_job(job)` | `queued → running`, incrementa tentativa |
+| `complete_generation_job(job, strategy, concepts, usage)` | `running → succeeded`; cria versão nova da estratégia + conceitos |
+| `fail_generation_job(job, código, retentável, usage)` | `running → queued` (se houver tentativa) ou `failed` |
+| `create_creative(concept, design)` | membro; preço só se confirmado e igual |
+| `save_creative(creative, versão, design)` | conflito se versão mudou; volta para rascunho |
+| `approve_creative(creative, versão)` | marca aprovada (não publica nada) |
+
+Erros de negócio (SQLSTATE `P0001`, mensagem = código): `brief_not_ready`,
+`generation_quota_exceeded`, `invalid_transition`, `invalid_output`, `price_not_confirmed`,
+`price_mismatch`, `version_conflict`. Acesso negado: `42501`.

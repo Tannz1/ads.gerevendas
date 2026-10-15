@@ -22,6 +22,12 @@ export const serverEnvSchema = z.object({
   OPENAI_API_KEY: optional,
   OPENAI_TEXT_MODEL: optional,
   OPENAI_IMAGE_MODEL: optional,
+  /** Provider de texto da IA. `mock` é determinístico e rotulado Simulação; `openai` exige chave e modelo. */
+  AI_PROVIDER: z.enum(["mock", "openai"]).default("mock"),
+  OPENAI_TIMEOUT_MS: z.coerce.number().int().min(5_000).max(180_000).default(90_000),
+  /** Preço por milhão de tokens (USD) para estimar custo; sem valor, o custo fica 0 e é logado como desconhecido. */
+  OPENAI_TEXT_INPUT_USD_PER_MTOK: z.coerce.number().nonnegative().optional(),
+  OPENAI_TEXT_OUTPUT_USD_PER_MTOK: z.coerce.number().nonnegative().optional(),
   META_MODE: z.enum(["mock", "real"]).default("mock"),
   BILLING_PROVIDER: z.enum(["mock"]).default("mock"),
   FEATURE_FLAG_WHATSAPP_ADS: flag,
