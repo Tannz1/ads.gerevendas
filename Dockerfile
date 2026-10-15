@@ -39,7 +39,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 USER nextjs
-# O EasyPanel injeta PORT (padrão 80); o servidor e o healthcheck seguem essa variável.
+# O EasyPanel injeta PORT (padrão 80); o servidor segue essa variável.
 EXPOSE 3000
 # Sem HEALTHCHECK na imagem: no Swarm (EasyPanel) uma checagem reprovada tira o container do
 # roteamento. Para monitorar, use ${NEXT_PUBLIC_BASE_PATH}/api/health no painel ou num uptime checker.
