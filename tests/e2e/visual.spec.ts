@@ -7,6 +7,8 @@ const ROUTES = [
   { path: "/entrar", name: "entrar" },
   { path: "/app", name: "inicio" },
   { path: "/app/onboarding", name: "onboarding" },
+  { path: "/app/estrategia", name: "estrategia" },
+  { path: "/app/criativos", name: "criativos" },
   { path: "/app/conta", name: "conta" },
 ];
 

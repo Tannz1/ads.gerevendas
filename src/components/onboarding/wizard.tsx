@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { ONBOARDING_STEPS } from "@/contracts/onboarding";
+import { clearDemoStrategyAndCreatives } from "@/components/demo/demo-store";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -133,6 +134,8 @@ export function OnboardingWizard({ mode, initial }: WizardProps) {
     } catch {
       // armazenamento indisponível: apenas reinicia o estado em memória
     }
+    // A estratégia e as peças simuladas dependem do cadastro: recomeçar apaga tudo.
+    clearDemoStrategyAndCreatives();
     dirty.current = false;
     setForm(emptyForm());
     setStep(1);

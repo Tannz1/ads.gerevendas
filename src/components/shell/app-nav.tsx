@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/cn";
 
@@ -17,15 +17,30 @@ const items = [
     label: "Meu negócio",
     icon: <path d="M4 7h16M4 7v12a1 1 0 001 1h14a1 1 0 001-1V7M4 7l2-3h12l2 3M9 11h6" />,
   },
+  {
+    href: "/app/estrategia",
+    label: "Estratégia",
+    icon: (
+      <path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3zM19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8L19 15z" />
+    ),
+  },
+  {
+    href: "/app/criativos",
+    label: "Criativos",
+    icon: (
+      <path d="M5 5h10a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2zM7 3h12a2 2 0 012 2v12M3 16l4-4 3 3 2-2 5 5" />
+    ),
+  },
   { href: "/app/conta", label: "Conta", icon: <path d="M12 12a4 4 0 100-8 4 4 0 000 8zm-7 9a7 7 0 0114 0" /> },
 ];
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
-  const pathname = usePathname();
+/** Lista de links; `pathname` null = sem item ativo (prerender de rotas com parâmetro dinâmico). */
+function NavList({ pathname, onNavigate }: { pathname: string | null; onNavigate?: () => void }) {
   return (
     <ul className="flex flex-col gap-1">
       {items.map((item) => {
-        const active = item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href);
+        const active =
+          pathname !== null && (item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href));
         return (
           <li key={item.href}>
             <Link
@@ -58,6 +73,22 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
+function ActiveNavList({ onNavigate }: { onNavigate?: () => void }) {
+  return <NavList pathname={usePathname()} onNavigate={onNavigate} />;
+}
+
+/**
+ * Com cacheComponents, `usePathname` suspende no prerender de rotas com parâmetro dinâmico
+ * (ex.: /app/criativos/[id]); o fallback mostra os mesmos links sem destaque.
+ */
+function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+  return (
+    <Suspense fallback={<NavList pathname={null} onNavigate={onNavigate} />}>
+      <ActiveNavList onNavigate={onNavigate} />
+    </Suspense>
+  );
+}
+
 export function Sidebar({ footer }: { footer?: ReactNode }) {
   return (
     <div className="hidden border-r border-line bg-surface lg:block">
@@ -74,14 +105,24 @@ export function Sidebar({ footer }: { footer?: ReactNode }) {
   );
 }
 
+/** Fecha o menu ao trocar de rota (isolado para suspender sem esconder o botão do menu). */
+function CloseOnRouteChange({ onChange }: { onChange: () => void }) {
+  const pathname = usePathname();
+  useEffect(() => {
+    onChange();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reage só à troca de rota
+  }, [pathname]);
+  return null;
+}
+
 export function MobileNav({ footer }: { footer?: ReactNode }) {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- fecha o menu ao trocar de rota
-  useEffect(() => setOpen(false), [pathname]);
 
   return (
     <div className="lg:hidden">
+      <Suspense fallback={null}>
+        <CloseOnRouteChange onChange={() => setOpen(false)} />
+      </Suspense>
       <button
         type="button"
         onClick={() => setOpen(true)}
