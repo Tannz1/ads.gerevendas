@@ -78,8 +78,4 @@ agent_prompts/          prompts para GPT/Codex e Antigravity
 - Decisões: [`docs/adr/`](docs/adr)
 - Deploy na VPS em `gerevendas.com.br/ads` (EasyPanel/Docker): [`docs/DEPLOY_EASYPANEL.md`](docs/DEPLOY_EASYPANEL.md)
 
-Documentos citados no pacote mestre que **ainda não estão no repositório**: `docs/01_PRD.md`,
-`docs/02_UX_UI.md`, `docs/03_ARQUITETURA_BACKEND.md`, `docs/04_IA_CRIATIVOS.md`,
-`docs/05_META_PAGAMENTOS_SEGURANCA.md`, `docs/06_ROADMAP_MULTIAGENTES.md`,
-`docs/07_PILOTO_SEBRAE_QA.md` e `agent_prompts/00_ORQUESTRADOR_CLAUDE.md`. As decisões desta fase
-foram tomadas sem eles e estão registradas nos ADRs.
+- O que é real, simulado, bloqueado e próximo: [`docs/STATUS.md`](docs/STATUS.md)
