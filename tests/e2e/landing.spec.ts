@@ -15,3 +15,11 @@ test("CTA leva ao login", async ({ page }) => {
   await expect(page).toHaveURL(/\/entrar$/);
   await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible();
 });
+
+test("rota inexistente mostra 404 em português", async ({ page }) => {
+  const res = await page.goto(p("/nao-existe"));
+  expect(res?.status()).toBe(404);
+  await expect(page.getByRole("heading", { name: "Página não encontrada" })).toBeVisible();
+  await page.getByRole("link", { name: "Voltar ao início" }).click();
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Anúncios para o seu negócio");
+});

@@ -1,12 +1,18 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 
-const body = Inter({ variable: "--font-body", subsets: ["latin"], display: "swap" });
-const display = Plus_Jakarta_Sans({
+// Fontes no repositório (subset latin, OFL): o build não depende do Google Fonts estar acessível.
+const body = localFont({
+  src: "./fonts/inter-latin.woff2",
+  variable: "--font-body",
+  weight: "100 900",
+  display: "swap",
+});
+const display = localFont({
+  src: "./fonts/plus-jakarta-sans-latin.woff2",
   variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["600", "700", "800"],
+  weight: "600 800",
   display: "swap",
 });
 
