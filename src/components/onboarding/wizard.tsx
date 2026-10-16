@@ -78,6 +78,8 @@ export function OnboardingWizard({ mode, initial }: WizardProps) {
 
   function update<K extends keyof FormState>(section: K, patch: Partial<FormState[K]>) {
     dirty.current = true;
+    // Mudança pendente: não exibir "salvo" até o autosave gravar.
+    setSaveStatus("saving");
     setForm((f) => ({ ...f, [section]: { ...f[section], ...patch } }));
     setErrors((e) => {
       const next = { ...e };
@@ -89,6 +91,7 @@ export function OnboardingWizard({ mode, initial }: WizardProps) {
   function goTo(n: number) {
     dirty.current = true;
     setSubmitError(null);
+    if (n !== step) setSaveStatus("saving");
     setStep(n);
   }
 
