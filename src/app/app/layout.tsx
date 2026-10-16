@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: { default: "Início", template: "%s �
 function PilotNote() {
   return (
     <p className="rounded-xl bg-surface-muted px-3 py-2.5 text-xs leading-relaxed text-ink-soft">
-      Piloto em andamento. Integração com a Meta e geração de criativos chegam nas próximas fases.
+      Piloto em andamento. A integração com a Meta chega na próxima fase.
     </p>
   );
 }
