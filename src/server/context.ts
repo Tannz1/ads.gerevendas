@@ -1,6 +1,7 @@
 import "server-only";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { connection } from "next/server";
 import { cache } from "react";
 import { CORRELATION_HEADER, ensureCorrelationId } from "@/lib/correlation";
 import { isSupabaseConfigured } from "@/lib/public-env";
@@ -23,6 +24,8 @@ export type AppContext =
 export const getAppContext = cache(async (): Promise<AppContext> => {
   if (!isSupabaseConfigured()) return { mode: "demo" };
 
+  // A sessão do Supabase usa Date.now(); só pode rodar no momento da requisição (Cache Components).
+  await connection();
   const supabase = await createSupabaseServerClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) redirect("/entrar");

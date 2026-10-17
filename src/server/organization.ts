@@ -1,10 +1,12 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { log } from "@/lib/logger";
+import { isSupabaseConfigured } from "@/lib/public-env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { getAppContext, getCorrelationId } from "./context";
+import { getCorrelationId } from "./context";
 
 export type CreateOrganizationState = { error?: string };
 
@@ -15,9 +17,9 @@ export async function createOrganization(
   formData: FormData,
 ): Promise<CreateOrganizationState> {
   const correlationId = await getCorrelationId();
-  const ctx = await getAppContext();
-  if (ctx.mode !== "supabase") return { error: "Indisponível em modo demonstração." };
-  if (ctx.organization) redirect("/app");
+  // Sem ler o contexto aqui: o Next memoriza fetch GET por requisição e a página do redirect
+  // receberia a leitura de antes da criação ("sem empresa"). A RPC exige sessão e limita a 5.
+  if (!isSupabaseConfigured()) return { error: "Indisponível em modo demonstração." };
 
   const parsed = nameSchema.safeParse(formData.get("name"));
   if (!parsed.success) return { error: parsed.error.issues[0]?.message };
@@ -34,5 +36,8 @@ export async function createOrganization(
     }
     return { error: "Não foi possível criar agora. Tente novamente." };
   }
+  // UserMenu e OrgGate vivem no layout de /app, que o roteador preserva entre navegações:
+  // sem invalidar o layout, a tela continuaria em "Sem empresa" após o redirect.
+  revalidatePath("/app", "layout");
   redirect("/app/onboarding");
 }

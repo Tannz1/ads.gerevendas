@@ -1,6 +1,6 @@
 # Status do GereVendas Ads
 
-Atualizado em 16/10/2026. Legenda: **REAL** (funciona com persistência real), **MOCK** (simulação
+Atualizado em 17/10/2026. Legenda: **REAL** (funciona com persistência real), **MOCK** (simulação
 rotulada), **BLOQUEADO** (depende de decisão ou acesso externo), **PRÓXIMO** (ainda não existe código).
 
 Os documentos 03 e 06 citam um monorepo (`apps/web`, `packages/contracts`). O código é um app
@@ -12,7 +12,8 @@ Next.js único (ADR 0001): `apps/web` corresponde a `src/app`, `packages/contrac
 | --- | --- |
 | Produção | `https://signal-crm-staging-ads.onv9zt.easypanel.host/ads` (EasyPanel, projeto `signal-crm-staging`, serviço `ads`), em modo demonstração |
 | CI (GitHub Actions) | Lint, tipos, unitários, build, migrations + RLS em Postgres, E2E na raiz e em `/ads` |
-| Supabase do Ads | **BLOQUEADO**: projeto exclusivo ainda não criado; sem ele não há login nem dados persistidos |
+| Supabase local | **REAL**: `npx supabase start`; login, empresa, onboarding e isolamento validados por `tests/e2e/real.spec.ts`; 29 testes de RLS passam no Postgres do Supabase |
+| Supabase do Ads em nuvem | **BLOQUEADO**: projeto exclusivo ainda não criado; produção segue em modo demonstração |
 | Domínio `gerevendas.com.br/ads` | **BLOQUEADO**: o domínio está na Hostinger, não na VPS; precisa de rewrite lá ou de subdomínio apontado para a VPS |
 | Deploy automático | **BLOQUEADO**: EasyPanel sem token do GitHub (Settings → GitHub) |
 | Limite de CPU/memória do serviço | Pendente: aplicar no EasyPanel para não disputar recursos com o CRM |
@@ -23,11 +24,11 @@ Next.js único (ADR 0001): `apps/web` corresponde a `src/app`, `packages/contrac
 - Inventário read-only do CRM: **PRÓXIMO** (`CRM_INTEGRATION_PENDING`).
 - App Meta de teste, OAuth e criação PAUSED em conta autorizada: **BLOQUEADO** (precisa de app Meta e conta autorizada).
 
-### M1 — Fundação: código pronto, falta ligar ao Supabase
-- Landing, login por link mágico, shell, início, conta, 404/erro em pt-BR: **REAL no código**, só testado em modo demo.
+### M1 — Fundação: validada no Supabase local; produção aguarda Supabase em nuvem
+- Landing, login por link mágico, shell, início, conta, 404/erro em pt-BR: **REAL**, validado no Supabase local.
 - Organizações, membros (`owner`/`admin`/`member`), auditoria, RLS: **REAL** no banco, 29 testes de isolamento no CI.
 - Onboarding em 6 etapas com autosave e conclusão idempotente: **REAL** com Supabase; **MOCK** (navegador) no modo demo.
-- Gate "login, 2 orgs isoladas, onboarding persistido": **BLOQUEADO** até existir o Supabase do Ads.
+- Gate "login, 2 orgs isoladas, onboarding persistido": **REAL no Supabase local** (E2E `real.spec.ts`). Em produção, depende do Supabase em nuvem.
 - Lacunas frente ao PRD: upload de logo e fotos autorizadas (Storage privado), papel `support` auditado,
   convites (`/invite/[token]`), termos e consentimentos, exportação e exclusão de dados (LGPD): **PRÓXIMO**.
 

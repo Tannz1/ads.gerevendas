@@ -32,7 +32,9 @@ export type WizardProps = {
 
 export function OnboardingWizard({ mode, initial }: WizardProps) {
   const demo = mode === "demo";
-  const [ready, setReady] = useState(!demo);
+  // Só mostra o formulário após hidratar: antes disso, "Continuar" faria um envio nativo que
+  // recarrega a página e perde o que foi digitado.
+  const [ready, setReady] = useState(false);
   const [step, setStep] = useState(initial?.step ?? 1);
   const [form, setForm] = useState<FormState>(() => hydrateForm(initial?.data));
   const [completed, setCompleted] = useState(Boolean(initial?.completed));
@@ -43,10 +45,9 @@ export function OnboardingWizard({ mode, initial }: WizardProps) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const dirty = useRef(false);
 
-  // Modo demonstração: carrega o rascunho do navegador após montar.
+  // Após hidratar. Modo demonstração: carrega o rascunho do navegador.
   useEffect(() => {
-    if (!demo) return;
-    const saved = readDemoDraft();
+    const saved = demo ? readDemoDraft() : null;
     /* eslint-disable react-hooks/set-state-in-effect -- leitura única de localStorage após a hidratação */
     if (saved) {
       setForm(hydrateForm(saved.data));

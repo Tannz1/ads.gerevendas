@@ -30,7 +30,21 @@ npm run dev            # http://localhost:3000
 Sem variáveis de ambiente o app sobe em **modo demonstração**: não há login e os dados do onboarding
 ficam só no `localStorage` do navegador. Toda a interface mostra o rótulo **DEMO / Simulação**.
 
-### Com Supabase
+### Com Supabase local (sem conta, recomendado para validar)
+
+Requer Docker Desktop rodando.
+
+```bash
+npx supabase start     # Postgres, Auth, Studio (:54323) e Mailpit (:54324); aplica as migrations
+npx supabase status -o env   # mostra ANON_KEY
+```
+
+Crie `.env.local` com `NEXT_PUBLIC_APP_URL=http://127.0.0.1:3000`, `NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321`
+e `NEXT_PUBLIC_SUPABASE_ANON_KEY=<ANON_KEY>`, rode `npm run dev` e abra **http://127.0.0.1:3000** (use sempre
+`127.0.0.1`: os cookies de login não passam para `localhost`). O link de login chega no Mailpit
+(http://127.0.0.1:54324). E2E do modo real: `E2E_REAL=1 E2E_PORT=3000 npx playwright test real --project=desktop`.
+
+### Com Supabase em nuvem
 
 1. Crie um projeto Supabase **isolado** (não use o banco do CRM).
 2. Aplique as migrations: `npx supabase link --project-ref <ref>` e `npx supabase db push`.
