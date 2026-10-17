@@ -35,17 +35,17 @@ Next.js único (ADR 0001): `apps/web` corresponde a `src/app`, `packages/contrac
 ### M2 — Estratégia e criativos: concluído no Supabase local (spec `docs/superpowers/specs/2026-10-17-criativos-design.md`, ADR 0003)
 - Subprojeto 1, estratégia + 5 peças + editor + aprovação + PNG 1080×1350/1080×1920: **REAL** no Supabase
   local (E2E `real.spec.ts`, 23 testes de RLS). Sem chave da OpenAI roda o provedor **MOCK** rotulado Simulação.
-- Provedor de texto OpenAI (Responses API, JSON Schema estrito): implementado e testado com fixture baseada na
-  documentação; **BLOQUEADO** a validação com chamada real até existir `OPENAI_API_KEY`.
+- Provedor de texto OpenAI (Responses API, JSON Schema estrito): **REAL**, validado em 17/10/2026 com
+  `gpt-6-sol` (527 + 1.021 tokens, ~US$ 0,011 e 12 s por estratégia; passou na checagem de fatos).
 - Subprojeto 2, imagem de fundo: foto do cliente (JPG/PNG até 5 MB, conferida pelos bytes, com declaração de
   direito de uso) **REAL** no Supabase local (Storage privado com RLS por pasta, E2E). Geração com OpenAI Images
-  (`gpt-image-2.5-flare`, contrato conferido na documentação oficial): implementada e testada com fixture;
-  **BLOQUEADO** a validação com chamada real até existir `OPENAI_API_KEY` + `OPENAI_IMAGE_MODEL`.
+  (`gpt-image-2.5-flare`, qualidade `medium`): **REAL**, validada em 17/10/2026 (JPEG 1024×1536, ~200 KB, 8 s,
+  sem texto na imagem).
 - Subprojeto 3, créditos e limites: **REAL** no Supabase local. Ledger só de inserção (reserva → consumo |
   devolução, idempotente por job), 4 estratégias e 20 imagens com IA por mês (fuso de São Paulo), simulação não
   consome, teto de tokens de texto por empresa (`AI_MONTHLY_TOKEN_CAP`), medidor em Criativos. 18 testes de RLS.
 - Pendências do M2: avaliação com o conjunto fixo de briefs (docs/04) e revisão humana de 10% no piloto;
-  validar OpenAI (texto e imagem) com chamada real.
+  medir o custo por imagem na fatura da OpenAI (a página de preços só informa por token).
 
 ### M3 — Integração Meta: **PRÓXIMO** (exige nova ADR)
 `META_ENABLED_IN_THIS_BUILD = false`. OAuth, descoberta de ativos, publicação PAUSED, ativação com

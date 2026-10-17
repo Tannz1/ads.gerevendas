@@ -5,6 +5,7 @@ import { p } from "./paths";
 // dados gravados no Postgres com RLS. Não roda no CI. O app precisa estar em http://127.0.0.1:3000 com
 // NEXT_PUBLIC_APP_URL igual a essa origem (os cookies de login não passam entre hosts). Uso:
 //   E2E_REAL=1 E2E_PORT=3000 npx playwright test real --project=desktop
+// Espera o provedor SIMULADO: rode com OPENAI_API_KEY vazio (sem custo e sem depender da OpenAI).
 test.skip(!process.env.E2E_REAL, "defina E2E_REAL=1 com o Supabase local rodando");
 
 const MAILPIT = process.env.MAILPIT_URL ?? "http://127.0.0.1:54324";

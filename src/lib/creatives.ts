@@ -38,7 +38,8 @@ export function initialContents(
       headline: a.headline,
       body: a.body,
       cta: a.cta,
-      show_price: a.key === "oferta" && priceCents !== null,
+      // Selo de preço só na oferta e só se a IA não citou o valor no texto (evita preço duplicado).
+      show_price: a.key === "oferta" && priceCents !== null && !/R\$/.test(`${a.headline} ${a.body}`),
       colors: { background, accent: text, text },
     },
   }));

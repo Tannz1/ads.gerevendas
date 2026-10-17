@@ -32,6 +32,14 @@ describe("initialContents", () => {
     expect(initialContents(validPlan, "#C2410C", null).some((c) => c.content.show_price)).toBe(false);
   });
 
+  it("não repete o preço no selo quando o texto já cita o valor", () => {
+    const plan = {
+      ...validPlan,
+      angles: validPlan.angles.map((a) => (a.key === "oferta" ? { ...a, headline: "Café completo por R$ 24,90" } : a)),
+    };
+    expect(initialContents(plan, "#C2410C", 2490).some((c) => c.content.show_price)).toBe(false);
+  });
+
   it("usa cor neutra quando não há cor da marca", () => {
     expect(initialContents(validPlan, null, null)[0].content.colors.background).toMatch(/^#[0-9A-F]{6}$/i);
   });
