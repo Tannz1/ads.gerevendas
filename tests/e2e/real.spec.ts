@@ -40,6 +40,11 @@ async function createOrganization(page: Page, name: string) {
   await expect(page.getByRole("banner")).toContainText(name);
 }
 
+/** Largura e altura do cabeçalho IHDR de um PNG. */
+function pngSize(buf: Buffer) {
+  return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+}
+
 const cont = (page: Page) => page.getByRole("button", { name: "Continuar", exact: true }).click();
 
 test("login, empresa e onboarding persistidos; outra empresa não vê os dados", async ({ page, browser }) => {
@@ -84,6 +89,34 @@ test("login, empresa e onboarding persistidos; outra empresa não vê os dados",
   await page.getByRole("link", { name: "Voltar ao início" }).click();
   await expect(page.getByText("Concluído", { exact: true })).toBeVisible();
 
+  // Criativos: estratégia + 5 peças (provedor simulado sem chave de IA), editar, aprovar, baixar.
+  await page.getByRole("link", { name: "Criar meus anúncios" }).click();
+  await page.getByRole("button", { name: "Gerar estratégia e anúncios" }).click();
+  await expect(page.getByRole("heading", { name: "Sua estratégia" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByText("Simulação").first()).toBeVisible();
+  await expect(page.getByRole("link", { name: "Editar" })).toHaveCount(5);
+
+  await page.getByRole("link", { name: "Editar" }).first().click();
+  await expect(page.getByRole("heading", { name: "Oferta" })).toBeVisible();
+  const creativeUrl = page.url();
+  await page.getByLabel("Título").fill("Café da manhã no capricho");
+  await page.getByRole("button", { name: "Salvar" }).click();
+  await expect(page.getByText("Alterações salvas.")).toBeVisible();
+  await page.getByRole("button", { name: "Aprovar peça" }).click();
+  await expect(page.getByText("Peça aprovada.")).toBeVisible();
+  await expect(page.getByText("Aprovada", { exact: true })).toBeVisible();
+
+  const imageA = `${creativeUrl}/imagem`;
+  for (const [formato, w, h] of [
+    ["feed", 1080, 1350],
+    ["stories", 1080, 1920],
+  ] as const) {
+    const res = await page.request.get(`${imageA}?formato=${formato}`);
+    expect(res.status()).toBe(200);
+    expect(res.headers()["content-type"]).toBe("image/png");
+    expect(pngSize(await res.body())).toEqual({ width: w, height: h });
+  }
+
   // Outra empresa, outra sessão: começa do zero e não enxerga nada da empresa A.
   const other = await browser.newContext();
   const pageB = await other.newPage();
@@ -94,5 +127,8 @@ test("login, empresa e onboarding persistidos; outra empresa não vê os dados",
   await pageB.goto(p("/app"));
   await expect(pageB.getByText("Não iniciado")).toBeVisible();
   await expect(pageB.getByText(nameA)).toHaveCount(0);
+  await pageB.goto(p("/app/criativos"));
+  await expect(pageB.getByRole("heading", { name: "Primeiro, o cadastro do negócio" })).toBeVisible();
+  expect((await pageB.request.get(`${imageA}?formato=feed`)).status()).toBe(404);
   await other.close();
 });

@@ -46,10 +46,16 @@ export function HomeStatus({ status, demo }: { status: OnboardingStatus; demo: b
           <p className="mt-2 text-sm text-ink-faint">
             {progress} de {total} etapas
           </p>
-          {status.state !== "done" && (
+          {status.state !== "done" ? (
             <ButtonLink href="/app/onboarding" className="mt-5">
               {status.state === "in_progress" ? "Continuar cadastro" : "Começar cadastro"}
             </ButtonLink>
+          ) : (
+            !demo && (
+              <ButtonLink href="/app/criativos" className="mt-5">
+                Criar meus anúncios
+              </ButtonLink>
+            )
           )}
         </Card>
 
@@ -57,12 +63,8 @@ export function HomeStatus({ status, demo }: { status: OnboardingStatus; demo: b
           <h2 className="font-display text-lg font-bold">Próximas fases do piloto</h2>
           <ul className="mt-4 grid gap-3 text-[15px]">
             <li className="flex items-start justify-between gap-3">
-              <span>Estratégia e conceitos com IA</span>
-              <Badge>Em breve</Badge>
-            </li>
-            <li className="flex items-start justify-between gap-3">
-              <span>Editor de criativos</span>
-              <Badge>Em breve</Badge>
+              <span>Estratégia e peças editáveis</span>
+              {demo ? <Badge>Com conta</Badge> : <Badge tone="success">Disponível</Badge>}
             </li>
             <li className="flex items-start justify-between gap-3">
               <span>Conexão com a Meta</span>

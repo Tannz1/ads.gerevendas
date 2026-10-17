@@ -1,0 +1,228 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { z } from "zod";
+import { apiError, type ApiResult } from "@/contracts/api";
+import { creativeContentSchema, strategyPlanSchema, type JobStatus } from "@/contracts/creatives";
+import { fieldErrors } from "@/contracts/onboarding";
+import { initialContents } from "@/lib/creatives";
+import { serverEnv } from "@/lib/env";
+import { log } from "@/lib/logger";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { checkFacts } from "./ai/facts";
+import { ProviderError } from "./ai/openai-text";
+import { confirmedFacts, PROMPT_VERSION } from "./ai/prompt";
+import { selectTextProvider } from "./ai/provider";
+import type { StrategyInput } from "./ai/types";
+import { getAppContext, getCorrelationId } from "./context";
+import { loadCreative } from "./creatives-data";
+
+type Supabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
+
+const uuid = z.uuid();
+
+/** Fatos do brief para a IA + o que o render precisa (cor da marca). */
+async function loadBriefFacts(supabase: Supabase, briefId: string) {
+  const { data, error } = await supabase
+    .from("briefs")
+    .select(
+      "objective, audience_description, age_min, age_max, service_radius_km, " +
+        "businesses(name, segment, city, state, tone_of_voice, brand_primary_color), " +
+        "offers(name, description, price_cents, differentiators)",
+    )
+    .eq("id", briefId)
+    .single();
+  if (error || !data) throw new Error(`brief_not_found:${error?.code ?? ""}`);
+
+  // Sem tipos gerados do banco: o formato vem do select acima.
+  const row = data as unknown as {
+    objective: StrategyInput["objective"];
+    audience_description: string;
+    age_min: number;
+    age_max: number;
+    service_radius_km: number | null;
+    businesses: StrategyInput["business"] & { brand_primary_color: string | null };
+    offers: StrategyInput["offer"];
+  };
+  const { brand_primary_color, ...business } = row.businesses;
+  const input: StrategyInput = {
+    business,
+    offer: row.offers,
+    audience: {
+      description: row.audience_description,
+      age_min: row.age_min,
+      age_max: row.age_max,
+      service_radius_km: row.service_radius_km,
+    },
+    objective: row.objective,
+  };
+  return { input, brandColor: brand_primary_color };
+}
+
+/** Executa o job de estratégia (dentro de `after()`): provedor → validação → checagem de fatos → RPC. */
+async function runStrategyJob(jobId: string, briefId: string, correlationId: string) {
+  const supabase = await createSupabaseServerClient();
+  const provider = selectTextProvider(serverEnv());
+  const meta = { correlation_id: correlationId, job_id: jobId, provider: provider.name, model: provider.model };
+  const fail = async (code: string) => {
+    log("warn", "creatives.strategy_failed", { ...meta, error_code: code });
+    await supabase.rpc("fail_generation_job", {
+      p_job: jobId,
+      p_code: code,
+      p_provider: provider.name,
+      p_model: provider.model,
+      p_prompt_version: PROMPT_VERSION,
+    });
+  };
+
+  try {
+    const { input, brandColor } = await loadBriefFacts(supabase, briefId);
+    const started = Date.now();
+    const result = await provider.generateStrategy(input);
+
+    const parsed = strategyPlanSchema.safeParse(result.data);
+    if (!parsed.success) return await fail("invalid_output");
+    const violations = checkFacts(parsed.data, confirmedFacts(input));
+    if (violations.length > 0) {
+      log("warn", "creatives.facts_violation", { ...meta, violations });
+      return await fail("facts_violation");
+    }
+
+    const { error } = await supabase.rpc("finish_strategy_job", {
+      p_job: jobId,
+      p_plan: parsed.data,
+      p_contents: initialContents(parsed.data, brandColor, input.offer.price_cents),
+      p_simulated: provider.name === "mock",
+      p_provider: provider.name,
+      p_model: provider.model,
+      p_prompt_version: PROMPT_VERSION,
+      p_input_tokens: result.usage.input_tokens,
+      p_output_tokens: result.usage.output_tokens,
+    });
+    if (error) {
+      log("error", "creatives.strategy_save_failed", { ...meta, code: error.code });
+      return await fail("internal");
+    }
+    log("info", "creatives.strategy_generated", {
+      ...meta,
+      request_id: result.request_id,
+      ms: Date.now() - started,
+      input_tokens: result.usage.input_tokens,
+      output_tokens: result.usage.output_tokens,
+    });
+  } catch (e) {
+    await fail(e instanceof ProviderError ? e.code : "internal");
+  }
+}
+
+/** Pede a estratégia do brief. Responde na hora; o trabalho continua em segundo plano. */
+export async function generateStrategy(briefId: unknown): Promise<ApiResult<{ job_id: string }>> {
+  const correlationId = await getCorrelationId();
+  const ctx = await getAppContext();
+  if (ctx.mode !== "supabase") {
+    return apiError("feature_disabled", "Disponível no piloto com conta.", correlationId);
+  }
+  const id = uuid.safeParse(briefId);
+  if (!id.success) return apiError("validation_failed", "Cadastro inválido.", correlationId);
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("start_strategy_job", {
+    p_brief: id.data,
+    p_correlation_id: correlationId,
+  });
+  if (error) {
+    log("error", "creatives.strategy_start_failed", { correlation_id: correlationId, code: error.code });
+    if (error.code === "42501") return apiError("forbidden", "Sem permissão para esta empresa.", correlationId);
+    if (error.message.includes("brief_not_ready")) {
+      return apiError("conflict", "Conclua o cadastro do negócio antes de gerar.", correlationId);
+    }
+    return apiError("internal", "Não foi possível começar agora. Tente novamente.", correlationId);
+  }
+
+  const { job_id, reused } = data as { job_id: string; reused: boolean };
+  if (!reused) after(() => runStrategyJob(job_id, id.data, correlationId));
+  return { ok: true, data: { job_id }, correlation_id: correlationId };
+}
+
+export type JobView = { status: JobStatus; error_code: string | null };
+
+/** Estado do job para o polling da tela. */
+export async function getJobStatus(jobId: unknown): Promise<ApiResult<JobView>> {
+  const correlationId = await getCorrelationId();
+  const id = uuid.safeParse(jobId);
+  if (!id.success) return apiError("validation_failed", "Job inválido.", correlationId);
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase
+    .from("generation_jobs")
+    .select("status, error_code, started_at")
+    .eq("id", id.data)
+    .maybeSingle();
+  if (error) return apiError("internal", "Não foi possível consultar agora.", correlationId);
+  if (!data) return apiError("not_found", "Job não encontrado.", correlationId);
+
+  const stale = data.status === "running" && Date.now() - new Date(data.started_at).getTime() > 5 * 60_000;
+  return {
+    ok: true,
+    data: stale ? { status: "failed", error_code: "timeout" } : { status: data.status, error_code: data.error_code },
+    correlation_id: correlationId,
+  };
+}
+
+/** Salva o que o editor mudou. Preço só aparece se a oferta tem preço confirmado. */
+export async function updateCreative(creativeId: unknown, content: unknown): Promise<ApiResult<{ saved: true }>> {
+  const correlationId = await getCorrelationId();
+  const id = uuid.safeParse(creativeId);
+  const parsed = creativeContentSchema.safeParse(content);
+  if (!id.success || !parsed.success) {
+    return apiError(
+      "validation_failed",
+      "Revise os campos destacados.",
+      correlationId,
+      parsed.success ? undefined : fieldErrors(parsed.error),
+    );
+  }
+  const ctx = await getAppContext();
+  if (ctx.mode !== "supabase") return apiError("feature_disabled", "Disponível no piloto com conta.", correlationId);
+
+  const supabase = await createSupabaseServerClient();
+  if (parsed.data.show_price) {
+    const view = await loadCreative(id.data);
+    if (!view) return apiError("not_found", "Peça não encontrada.", correlationId);
+    if (view.price_cents === null) {
+      return apiError("validation_failed", "Esta oferta não tem preço confirmado.", correlationId, {
+        show_price: ["Informe e confirme o preço no cadastro do negócio para mostrá-lo."],
+      });
+    }
+  }
+
+  const { data, error } = await supabase
+    .from("creatives")
+    .update({ content: parsed.data })
+    .eq("id", id.data)
+    .select("id");
+  if (error) {
+    log("error", "creatives.update_failed", { correlation_id: correlationId, code: error.code });
+    return apiError("internal", "Não foi possível salvar agora.", correlationId);
+  }
+  if (!data?.length) return apiError("not_found", "Peça não encontrada.", correlationId);
+  revalidatePath("/app/criativos", "layout");
+  return { ok: true, data: { saved: true }, correlation_id: correlationId };
+}
+
+export async function approveCreative(creativeId: unknown): Promise<ApiResult<{ approved: true }>> {
+  const correlationId = await getCorrelationId();
+  const id = uuid.safeParse(creativeId);
+  if (!id.success) return apiError("validation_failed", "Peça inválida.", correlationId);
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("approve_creative", { p_creative: id.data, p_correlation_id: correlationId });
+  if (error) {
+    if (error.code === "42501") {
+      return apiError("forbidden", "Só o dono ou um administrador da empresa pode aprovar.", correlationId);
+    }
+    log("error", "creatives.approve_failed", { correlation_id: correlationId, code: error.code });
+    return apiError("internal", "Não foi possível aprovar agora.", correlationId);
+  }
+  revalidatePath("/app/criativos", "layout");
+  return { ok: true, data: { approved: true }, correlation_id: correlationId };
+}

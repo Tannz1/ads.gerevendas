@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { Suspense, useState, type ReactNode } from "react";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/cn";
 
@@ -17,15 +17,36 @@ const items = [
     label: "Meu negócio",
     icon: <path d="M4 7h16M4 7v12a1 1 0 001 1h14a1 1 0 001-1V7M4 7l2-3h12l2 3M9 11h6" />,
   },
+  {
+    href: "/app/criativos",
+    label: "Criativos",
+    icon: (
+      <path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 11l4.5-4.5 3.5 3.5 2.5-2.5L20 16M15 9h.01" />
+    ),
+  },
   { href: "/app/conta", label: "Conta", icon: <path d="M12 12a4 4 0 100-8 4 4 0 000 8zm-7 9a7 7 0 0114 0" /> },
 ];
 
+// O item ativo depende da URL, que em rotas dinâmicas só existe na requisição (Cache Components):
+// fica em <Suspense>, com a lista sem destaque como fallback.
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
-  const pathname = usePathname();
+  return (
+    <Suspense fallback={<NavList pathname={null} onNavigate={onNavigate} />}>
+      <ActiveNavLinks onNavigate={onNavigate} />
+    </Suspense>
+  );
+}
+
+function ActiveNavLinks({ onNavigate }: { onNavigate?: () => void }) {
+  return <NavList pathname={usePathname()} onNavigate={onNavigate} />;
+}
+
+function NavList({ pathname, onNavigate }: { pathname: string | null; onNavigate?: () => void }) {
   return (
     <ul className="flex flex-col gap-1">
       {items.map((item) => {
-        const active = item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href);
+        const active =
+          pathname !== null && (item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href));
         return (
           <li key={item.href}>
             <Link
@@ -75,10 +96,8 @@ export function Sidebar({ footer }: { footer?: ReactNode }) {
 }
 
 export function MobileNav({ footer }: { footer?: ReactNode }) {
+  // Fecha ao navegar pelos links (onNavigate); sem ler a URL aqui, fora de <Suspense>.
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- fecha o menu ao trocar de rota
-  useEffect(() => setOpen(false), [pathname]);
 
   return (
     <div className="lg:hidden">

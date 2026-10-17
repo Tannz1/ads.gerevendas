@@ -32,10 +32,12 @@ Next.js único (ADR 0001): `apps/web` corresponde a `src/app`, `packages/contrac
 - Lacunas frente ao PRD: upload de logo e fotos autorizadas (Storage privado), papel `support` auditado,
   convites (`/invite/[token]`), termos e consentimentos, exportação e exclusão de dados (LGPD): **PRÓXIMO**.
 
-### M2 — Estratégia e geração: **PRÓXIMO**
-Schema `StrategyPlan`, adapters OpenAI (texto e imagem), jobs com retry, ledger de créditos
-(reserva/consumo/reversão), render 1080×1350 e 1080×1920, galeria e editor. Depende de M1 real e de
-chave OpenAI no gerenciador de segredos.
+### M2 — Estratégia e criativos (spec `docs/superpowers/specs/2026-10-17-criativos-design.md`, ADR 0003)
+- Subprojeto 1, estratégia + 5 peças + editor + aprovação + PNG 1080×1350/1080×1920: **REAL** no Supabase
+  local (E2E `real.spec.ts`, 23 testes de RLS). Sem chave da OpenAI roda o provedor **MOCK** rotulado Simulação.
+- Provedor de texto OpenAI (Responses API, JSON Schema estrito): implementado e testado com fixture baseada na
+  documentação; **BLOQUEADO** a validação com chamada real até existir `OPENAI_API_KEY`.
+- Subprojeto 2 (imagem-base, OpenAI Images e fotos do cliente) e 3 (créditos e limites): **PRÓXIMO**.
 
 ### M3 — Integração Meta: **PRÓXIMO** (exige nova ADR)
 `META_ENABLED_IN_THIS_BUILD = false`. OAuth, descoberta de ativos, publicação PAUSED, ativação com

@@ -39,7 +39,8 @@ export function mockStrategy(input: StrategyInput): StrategyPlan {
         label: "Oferta",
         rationale: "Mostra direto o que você vende, para quem já está procurando.",
         headline: h(o.name),
-        body: body(price ? `${o.description} Por ${price}.` : o.description),
+        // Preço confirmado aparece no selo da peça de oferta, não repetido no texto.
+        body: body(o.description),
         cta,
       },
       {

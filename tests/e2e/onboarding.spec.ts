@@ -109,3 +109,9 @@ test("objetivo exige o canal correspondente", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "Seu negócio" })).toBeVisible();
   await expect(page.getByText("Para esse objetivo, informe o Instagram na etapa 1")).toBeVisible();
 });
+
+test("criativos no modo demonstração avisam que exigem conta", async ({ page }) => {
+  await startDemo(page);
+  await page.goto(p("/app/criativos"));
+  await expect(page.getByRole("heading", { name: "Disponível no piloto com conta" })).toBeVisible();
+});
