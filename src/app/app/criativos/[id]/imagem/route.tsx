@@ -6,7 +6,7 @@ import { FORMATS, type Format } from "@/contracts/creatives";
 import { AdTemplate } from "@/components/creatives/ad-template";
 import { formatCents } from "@/lib/money";
 import { isSupabaseConfigured } from "@/lib/public-env";
-import { loadCreative } from "@/server/creatives-data";
+import { loadCreative, loadImageDataUri } from "@/server/creatives-data";
 
 // Fontes em public/fonts (copiado para a imagem standalone). Lidas uma vez por processo.
 let fonts: Promise<Array<{ name: string; data: Buffer; weight: 500 | 700 | 800; style: "normal" }>> | undefined;
@@ -48,6 +48,7 @@ export async function GET(request: Request, ctx: RouteContext<"/app/criativos/[i
   const format = formatSchema.parse(new URL(request.url).searchParams.get("formato"));
   const { width, height } = FORMATS[format];
   const priceLabel = view.price_cents === null ? null : formatCents(view.price_cents, view.currency);
+  const imageSrc = view.image ? await loadImageDataUri(view.image) : null;
 
   return new ImageResponse(
     <AdTemplate
@@ -56,6 +57,7 @@ export async function GET(request: Request, ctx: RouteContext<"/app/criativos/[i
       businessName={view.business_name}
       priceLabel={priceLabel}
       fonts={{ display: "Display", body: "Body" }}
+      imageSrc={imageSrc}
     />,
     {
       width,

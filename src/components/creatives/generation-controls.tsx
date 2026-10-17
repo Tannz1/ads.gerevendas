@@ -13,6 +13,8 @@ export const JOB_ERRORS: Record<string, string> = {
   external_unavailable: "O serviço de IA não respondeu.",
   timeout: "A geração demorou demais e foi interrompida.",
   internal: "Não conseguimos salvar o resultado.",
+  storage_failed: "Não conseguimos guardar a imagem.",
+  feature_disabled: "A geração com IA não está ativada.",
 };
 
 /** Pede a geração e atualiza a página (que passa a mostrar o progresso). */
@@ -46,7 +48,13 @@ export function GenerateButton({ briefId, label }: { briefId: string; label: str
 }
 
 /** Acompanha o job a cada 2 s e atualiza a página quando termina. */
-export function JobProgress({ jobId }: { jobId: string }) {
+export function JobProgress({
+  jobId,
+  label = "Criando a estratégia e as 5 peças. Leva menos de um minuto.",
+}: {
+  jobId: string;
+  label?: string;
+}) {
   const router = useRouter();
   useEffect(() => {
     let stop = false;
@@ -66,7 +74,7 @@ export function JobProgress({ jobId }: { jobId: string }) {
   return (
     <div role="status" aria-live="polite" className="flex items-center gap-3 text-[15px] text-ink-soft">
       <span aria-hidden className="size-5 animate-spin rounded-full border-2 border-brand border-t-transparent" />
-      Criando a estratégia e as 5 peças. Leva menos de um minuto.
+      {label}
     </div>
   );
 }

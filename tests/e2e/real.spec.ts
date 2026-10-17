@@ -107,6 +107,29 @@ test("login, empresa e onboarding persistidos; outra empresa não vê os dados",
   await expect(page.getByText("Aprovada", { exact: true })).toBeVisible();
 
   const imageA = `${creativeUrl}/imagem`;
+  const plainBytes = (await (await page.request.get(`${imageA}?formato=feed`)).body()).length;
+
+  // Foto do cliente: arquivo falso é recusado pelos bytes; foto real vira fundo e a peça volta a rascunho.
+  const photoInput = page.getByLabel(/Foto do seu negócio/);
+  await photoInput.setInputFiles({ name: "falsa.png", mimeType: "image/png", buffer: Buffer.from("<html>x</html>") });
+  await page.getByLabel(/Tenho direito de usar esta imagem/).check();
+  await page.getByRole("button", { name: "Enviar foto" }).click();
+  await expect(page.getByText("Use uma foto JPG ou PNG.")).toBeVisible();
+
+  const photo = await page.screenshot({ clip: { x: 0, y: 0, width: 600, height: 800 } });
+  await photoInput.setInputFiles({ name: "loja.png", mimeType: "image/png", buffer: photo });
+  await page.getByLabel(/Tenho direito de usar esta imagem/).check();
+  await page.getByRole("button", { name: "Enviar foto" }).click();
+  await expect(page.getByRole("button", { name: "Remover imagem" })).toBeVisible();
+  await expect(page.getByText("Rascunho", { exact: true }).filter({ visible: true })).toBeVisible();
+  // Sem chave da OpenAI, gerar imagem com IA fica desabilitado e explicado.
+  await expect(page.getByRole("button", { name: /Gerar outra imagem com IA/ })).toBeDisabled();
+  await expect(page.getByText("A geração de imagens com IA ainda não está ativada nesta conta.")).toBeVisible();
+
+  const withPhoto = await page.request.get(`${imageA}?formato=feed`);
+  expect(withPhoto.status()).toBe(200);
+  expect((await withPhoto.body()).length).toBeGreaterThan(plainBytes);
+
   for (const [formato, w, h] of [
     ["feed", 1080, 1350],
     ["stories", 1080, 1920],

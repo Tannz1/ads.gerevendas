@@ -21,6 +21,8 @@ const nextConfig: NextConfig = {
   basePath: basePath || undefined,
   // Só em `next dev`: o Supabase local e os E2E usam 127.0.0.1, que o dev server bloqueia por padrão.
   allowedDevOrigins: ["127.0.0.1"],
+  // Foto do cliente até 5 MB (checado na action) + folga do multipart. Padrão do Next: 1 MB.
+  experimental: { serverActions: { bodySizeLimit: "6mb" } },
   // Gera .next/standalone para a imagem Docker (ver Dockerfile).
   output: "standalone",
   turbopack: {

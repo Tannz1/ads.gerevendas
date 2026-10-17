@@ -155,6 +155,7 @@ export default async function CreativesPage() {
                   format="feed"
                   businessName={c.business_name}
                   priceLabel={c.price_cents === null ? null : formatCents(c.price_cents, c.currency)}
+                  imageSrc={c.image_url}
                 />
                 {angle && <p className="text-sm text-ink-soft">{angle.rationale}</p>}
                 <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium">

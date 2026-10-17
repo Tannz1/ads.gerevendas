@@ -1,5 +1,6 @@
 import type { ServerEnv } from "@/lib/env";
 import { mockText } from "./mock-text";
+import { openaiImage, type ImageProvider } from "./openai-image";
 import { openaiText } from "./openai-text";
 import type { TextProvider } from "./types";
 
@@ -7,4 +8,10 @@ import type { TextProvider } from "./types";
 export function selectTextProvider(env: ServerEnv): TextProvider {
   if (env.FEATURE_FLAG_KILL_SWITCH || !env.OPENAI_API_KEY || !env.OPENAI_TEXT_MODEL) return mockText;
   return openaiText({ apiKey: env.OPENAI_API_KEY, model: env.OPENAI_TEXT_MODEL });
+}
+
+/** Imagem só com chave + modelo de imagem e kill switch desligado. Sem provedor não há imagem simulada. */
+export function selectImageProvider(env: ServerEnv): ImageProvider | null {
+  if (env.FEATURE_FLAG_KILL_SWITCH || !env.OPENAI_API_KEY || !env.OPENAI_IMAGE_MODEL) return null;
+  return openaiImage({ apiKey: env.OPENAI_API_KEY, model: env.OPENAI_IMAGE_MODEL, quality: env.OPENAI_IMAGE_QUALITY });
 }

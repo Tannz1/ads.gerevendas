@@ -7,7 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { TEMPLATE_LABELS, type AngleKey } from "@/contracts/creatives";
 import { formatCents } from "@/lib/money";
 import { getAppContext } from "@/server/context";
-import { loadCreative } from "@/server/creatives-data";
+import { serverEnv } from "@/lib/env";
+import { selectImageProvider } from "@/server/ai/provider";
+import { loadCreative, loadImageJob } from "@/server/creatives-data";
 
 export const metadata: Metadata = { title: "Editar peça" };
 
@@ -15,7 +17,7 @@ export default async function CreativeEditorPage({ params }: PageProps<"/app/cri
   const { id } = await params;
   const ctx = await getAppContext();
   if (ctx.mode !== "supabase" || !z.uuid().safeParse(id).success) notFound();
-  const view = await loadCreative(id);
+  const [view, imageJob] = await Promise.all([loadCreative(id), loadImageJob(id)]);
   if (!view) notFound();
 
   return (
@@ -35,6 +37,9 @@ export default async function CreativeEditorPage({ params }: PageProps<"/app/cri
         status={view.status}
         businessName={view.business_name}
         priceLabel={view.price_cents === null ? null : formatCents(view.price_cents, view.currency)}
+        imageSrc={view.image_url}
+        aiImagesEnabled={selectImageProvider(serverEnv()) !== null}
+        imageJob={imageJob}
       />
     </div>
   );

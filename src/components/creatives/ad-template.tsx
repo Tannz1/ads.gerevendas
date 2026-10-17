@@ -16,6 +16,8 @@ export type AdTemplateProps = {
   /** Preço já formatado (ex.: "R$ 24,90"); só aparece com `content.show_price`. */
   priceLabel: string | null;
   fonts: AdFonts;
+  /** Imagem de fundo: URL assinada (prévia) ou data URI (PNG). */
+  imageSrc?: string | null;
 };
 
 /** Margens de segurança: no Stories a interface do Instagram cobre topo e rodapé. */
@@ -24,12 +26,17 @@ export const SAFE_AREA: Record<Format, { x: number; top: number; bottom: number 
   stories: { x: 88, top: 260, bottom: 300 },
 };
 
+function rgba(hex: string, alpha: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
 export function headlineSize(headline: string): number {
   const n = headline.length;
   return n <= 22 ? 104 : n <= 36 ? 88 : 72;
 }
 
-export function AdTemplate({ content, format, businessName, priceLabel, fonts }: AdTemplateProps) {
+export function AdTemplate({ content, format, businessName, priceLabel, fonts, imageSrc }: AdTemplateProps) {
   const { width, height } = FORMATS[format];
   const safe = SAFE_AREA[format];
   const { background, accent, text } = content.colors;
@@ -62,7 +69,32 @@ export function AdTemplate({ content, format, businessName, priceLabel, fonts }:
 
   return (
     <div style={root}>
-      <Decoration template={t} accent={accent} width={width} height={height} />
+      {imageSrc ? (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element -- o mesmo JSX vira PNG no Satori, que só aceita <img> */}
+          <img
+            src={imageSrc}
+            alt=""
+            width={width}
+            height={height}
+            style={{ position: "absolute", left: 0, top: 0, width, height, objectFit: "cover" }}
+          />
+          {/* Véu da cor de fundo: mantém o texto legível sobre qualquer foto. */}
+          <div
+            style={{
+              display: "flex",
+              position: "absolute",
+              left: 0,
+              top: 0,
+              width,
+              height,
+              backgroundImage: `linear-gradient(180deg, ${rgba(background, 0.35)} 0%, ${rgba(background, 0.6)} 40%, ${rgba(background, 0.94)} 100%)`,
+            }}
+          />
+        </>
+      ) : (
+        <Decoration template={t} accent={accent} width={width} height={height} />
+      )}
 
       <div style={column}>
         <div

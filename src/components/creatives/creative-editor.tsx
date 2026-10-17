@@ -10,6 +10,7 @@ import { describedBy, Field, Input, Select, Textarea } from "@/components/ui/fie
 import { ANGLE_KEYS, LIMITS, TEMPLATE_LABELS, type CreativeContent } from "@/contracts/creatives";
 import { approveCreative, updateCreative } from "@/server/creatives";
 import { AdPreview, imageUrl } from "./ad-preview";
+import { ImageSection } from "./image-section";
 
 type Props = {
   id: string;
@@ -17,11 +18,23 @@ type Props = {
   status: "draft" | "approved";
   businessName: string;
   priceLabel: string | null;
+  imageSrc: string | null;
+  aiImagesEnabled: boolean;
+  imageJob: { id: string; status: string; error_code: string | null } | null;
 };
 
 type Errors = Record<string, string[] | undefined>;
 
-export function CreativeEditor({ id, initial, status, businessName, priceLabel }: Props) {
+export function CreativeEditor({
+  id,
+  initial,
+  status,
+  businessName,
+  priceLabel,
+  imageSrc,
+  aiImagesEnabled,
+  imageJob,
+}: Props) {
   const router = useRouter();
   const [content, setContent] = useState(initial);
   const [saved, setSaved] = useState(initial);
@@ -66,7 +79,7 @@ export function CreativeEditor({ id, initial, status, businessName, priceLabel }
     });
 
   const err = (k: string) => errors[k]?.[0];
-  const preview = { content, businessName, priceLabel };
+  const preview = { content, businessName, priceLabel, imageSrc };
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,380px)_1fr]">
@@ -169,6 +182,8 @@ export function CreativeEditor({ id, initial, status, businessName, priceLabel }
             </label>
           ))}
         </fieldset>
+
+        <ImageSection creativeId={id} hasImage={Boolean(imageSrc)} aiEnabled={aiImagesEnabled} job={imageJob} />
 
         {message && <Alert tone={message.tone}>{message.text}</Alert>}
 
