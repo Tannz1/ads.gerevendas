@@ -9,16 +9,35 @@ import { Card } from "@/components/ui/card";
 import { TEMPLATE_LABELS, type AngleKey } from "@/contracts/creatives";
 import { formatCents } from "@/lib/money";
 import { getAppContext } from "@/server/context";
-import { loadCreativesOverview } from "@/server/creatives-data";
+import { loadCreativesOverview, loadCreditSummary, type CreditSummary } from "@/server/creatives-data";
 
 export const metadata: Metadata = { title: "Criativos" };
 
-function Header({ simulated }: { simulated?: boolean }) {
+function Header({ simulated, credits }: { simulated?: boolean; credits?: CreditSummary | null }) {
   return (
-    <div className="flex flex-wrap items-center gap-3">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
       <h1 className="font-display text-3xl font-bold tracking-tight">Criativos</h1>
       {simulated && <Badge tone="demo">Simulação</Badge>}
+      {credits && <CreditMeter credits={credits} />}
     </div>
+  );
+}
+
+/** Gerações do mês. Simulações não contam. */
+function CreditMeter({ credits }: { credits: CreditSummary }) {
+  const item = (label: string, c: { used: number; limit: number }) => (
+    <li className="flex items-center gap-1.5">
+      <span className={c.used >= c.limit ? "font-semibold text-danger" : "font-semibold text-ink"}>
+        {c.used} de {c.limit}
+      </span>
+      {label}
+    </li>
+  );
+  return (
+    <ul aria-label="Gerações com IA este mês" className="flex flex-wrap gap-x-4 text-sm text-ink-soft sm:ml-auto">
+      {item("estratégias", credits.strategy)}
+      {item("imagens com IA", credits.image)}
+    </ul>
   );
 }
 
@@ -40,7 +59,10 @@ export default async function CreativesPage() {
   }
   if (!ctx.organization) return null;
 
-  const data = await loadCreativesOverview(ctx.organization.id);
+  const [data, credits] = await Promise.all([
+    loadCreativesOverview(ctx.organization.id),
+    loadCreditSummary(ctx.organization.id),
+  ]);
   if (data.state === "no_brief") {
     return (
       <div className="mx-auto max-w-3xl">
@@ -69,7 +91,7 @@ export default async function CreativesPage() {
   if (!data.strategy) {
     return (
       <div className="mx-auto max-w-3xl">
-        <Header />
+        <Header credits={credits} />
         <Card className="mt-8 flex flex-col gap-5 p-6 sm:p-8">
           <div>
             <h2 className="font-display text-xl font-bold">Sua estratégia e 5 anúncios</h2>
@@ -92,7 +114,7 @@ export default async function CreativesPage() {
   const { plan, simulated } = data.strategy;
   return (
     <div className="mx-auto max-w-6xl">
-      <Header simulated={simulated} />
+      <Header simulated={simulated} credits={credits} />
       {simulated && (
         <p className="mt-2 text-sm text-ink-faint">
           Textos montados a partir do seu cadastro, sem IA. Com a IA ativada, as sugestões ficam mais variadas.

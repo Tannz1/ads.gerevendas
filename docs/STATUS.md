@@ -32,7 +32,7 @@ Next.js único (ADR 0001): `apps/web` corresponde a `src/app`, `packages/contrac
 - Lacunas frente ao PRD: upload de logo e fotos autorizadas (Storage privado), papel `support` auditado,
   convites (`/invite/[token]`), termos e consentimentos, exportação e exclusão de dados (LGPD): **PRÓXIMO**.
 
-### M2 — Estratégia e criativos (spec `docs/superpowers/specs/2026-10-17-criativos-design.md`, ADR 0003)
+### M2 — Estratégia e criativos: concluído no Supabase local (spec `docs/superpowers/specs/2026-10-17-criativos-design.md`, ADR 0003)
 - Subprojeto 1, estratégia + 5 peças + editor + aprovação + PNG 1080×1350/1080×1920: **REAL** no Supabase
   local (E2E `real.spec.ts`, 23 testes de RLS). Sem chave da OpenAI roda o provedor **MOCK** rotulado Simulação.
 - Provedor de texto OpenAI (Responses API, JSON Schema estrito): implementado e testado com fixture baseada na
@@ -41,7 +41,11 @@ Next.js único (ADR 0001): `apps/web` corresponde a `src/app`, `packages/contrac
   direito de uso) **REAL** no Supabase local (Storage privado com RLS por pasta, E2E). Geração com OpenAI Images
   (`gpt-image-2.5-flare`, contrato conferido na documentação oficial): implementada e testada com fixture;
   **BLOQUEADO** a validação com chamada real até existir `OPENAI_API_KEY` + `OPENAI_IMAGE_MODEL`.
-- Subprojeto 3 (créditos e limites): **PRÓXIMO**.
+- Subprojeto 3, créditos e limites: **REAL** no Supabase local. Ledger só de inserção (reserva → consumo |
+  devolução, idempotente por job), 4 estratégias e 20 imagens com IA por mês (fuso de São Paulo), simulação não
+  consome, teto de tokens de texto por empresa (`AI_MONTHLY_TOKEN_CAP`), medidor em Criativos. 18 testes de RLS.
+- Pendências do M2: avaliação com o conjunto fixo de briefs (docs/04) e revisão humana de 10% no piloto;
+  validar OpenAI (texto e imagem) com chamada real.
 
 ### M3 — Integração Meta: **PRÓXIMO** (exige nova ADR)
 `META_ENABLED_IN_THIS_BUILD = false`. OAuth, descoberta de ativos, publicação PAUSED, ativação com

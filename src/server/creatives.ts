@@ -19,7 +19,7 @@ import { buildImagePrompt, IMAGE_PROMPT_VERSION } from "./ai/image-prompt";
 import { selectImageProvider, selectTextProvider } from "./ai/provider";
 import type { StrategyInput } from "./ai/types";
 import { getAppContext, getCorrelationId } from "./context";
-import { ASSETS_BUCKET, loadCreative } from "./creatives-data";
+import { ASSETS_BUCKET, loadCreative, loadCreditSummary } from "./creatives-data";
 
 type Supabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
@@ -130,13 +130,30 @@ export async function generateStrategy(briefId: unknown): Promise<ApiResult<{ jo
   if (!id.success) return apiError("validation_failed", "Cadastro inválido.", correlationId);
 
   const supabase = await createSupabaseServerClient();
+  // Simulação não consome crédito nem conta no teto de tokens.
+  const env = serverEnv();
+  const billable = selectTextProvider(env).name === "openai";
+  if (billable && ctx.organization) {
+    const summary = await loadCreditSummary(ctx.organization.id);
+    if (summary && summary.tokens >= env.AI_MONTHLY_TOKEN_CAP) {
+      return apiError("credit_limit_reached", "O uso de IA deste mês chegou ao limite da conta.", correlationId);
+    }
+  }
   const { data, error } = await supabase.rpc("start_strategy_job", {
     p_brief: id.data,
     p_correlation_id: correlationId,
+    p_billable: billable,
   });
   if (error) {
     log("error", "creatives.strategy_start_failed", { correlation_id: correlationId, code: error.code });
     if (error.code === "42501") return apiError("forbidden", "Sem permissão para esta empresa.", correlationId);
+    if (error.message.includes("credit_limit_reached")) {
+      return apiError(
+        "credit_limit_reached",
+        "Você já gerou as 4 estratégias deste mês. O limite renova no dia 1º.",
+        correlationId,
+      );
+    }
     if (error.message.includes("brief_not_ready")) {
       return apiError("conflict", "Conclua o cadastro do negócio antes de gerar.", correlationId);
     }
@@ -316,6 +333,13 @@ export async function generateImage(creativeId: unknown): Promise<ApiResult<{ jo
   });
   if (error) {
     if (error.code === "42501") return apiError("forbidden", "Sem permissão para esta peça.", correlationId);
+    if (error.message.includes("credit_limit_reached")) {
+      return apiError(
+        "credit_limit_reached",
+        "Você já gerou as 20 imagens com IA deste mês. Envie uma foto ou aguarde o dia 1º.",
+        correlationId,
+      );
+    }
     log("error", "creatives.image_start_failed", { correlation_id: correlationId, code: error.code });
     return apiError("internal", "Não foi possível começar agora.", correlationId);
   }

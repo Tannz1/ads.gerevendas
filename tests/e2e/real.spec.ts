@@ -95,6 +95,8 @@ test("login, empresa e onboarding persistidos; outra empresa não vê os dados",
   await expect(page.getByRole("heading", { name: "Sua estratégia" })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("Simulação").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Editar" })).toHaveCount(5);
+  // Simulação não consome crédito.
+  await expect(page.getByRole("list", { name: "Gerações com IA este mês" })).toContainText("0 de 4");
 
   await page.getByRole("link", { name: "Editar" }).first().click();
   await expect(page.getByRole("heading", { name: "Oferta" })).toBeVisible();

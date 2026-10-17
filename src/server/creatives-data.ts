@@ -198,3 +198,18 @@ export async function loadImageJob(creativeId: string) {
     error_code: stale ? "timeout" : data.error_code,
   };
 }
+
+export type CreditSummary = {
+  period: string;
+  strategy: { used: number; limit: number };
+  image: { used: number; limit: number };
+  tokens: number;
+};
+
+/** Créditos do mês da empresa (ledger) e tokens de IA usados. */
+export async function loadCreditSummary(organizationId: string): Promise<CreditSummary | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("credit_summary", { p_org: organizationId });
+  if (error || !data) return null;
+  return data as CreditSummary;
+}

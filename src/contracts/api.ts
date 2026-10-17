@@ -8,6 +8,7 @@ export const API_ERROR_CODES = [
   "conflict",
   "facts_not_confirmed",
   "organization_limit_reached",
+  "credit_limit_reached",
   "feature_disabled",
   "external_unavailable",
   "internal",
