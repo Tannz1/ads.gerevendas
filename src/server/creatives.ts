@@ -247,6 +247,71 @@ export async function approveCreative(creativeId: unknown): Promise<ApiResult<{ 
   return { ok: true, data: { approved: true }, correlation_id: correlationId };
 }
 
+/**
+ * Regenera apenas o texto (headline, body, cta) da peça mantendo a imagem de fundo e as cores atuais (docs/04).
+ */
+export async function regenerateCreativeCopy(
+  creativeId: unknown,
+): Promise<ApiResult<{ headline: string; body: string; cta: string }>> {
+  const correlationId = await getCorrelationId();
+  const id = uuid.safeParse(creativeId);
+  if (!id.success) return apiError("validation_failed", "Peça inválida.", correlationId);
+  const ctx = await getAppContext();
+  if (ctx.mode !== "supabase" || !ctx.organization) {
+    return apiError("feature_disabled", "Disponível no piloto com conta.", correlationId);
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data: row, error: fetchErr } = await supabase
+    .from("creatives")
+    .select("id, angle_key, content, strategies(brief_id)")
+    .eq("id", id.data)
+    .maybeSingle();
+  if (fetchErr || !row) return apiError("not_found", "Peça não encontrada.", correlationId);
+
+  const r = row as unknown as {
+    id: string;
+    angle_key: AngleKey;
+    content: unknown;
+    strategies: { brief_id: string };
+  };
+  const currentContent = creativeContentSchema.safeParse(r.content);
+  if (!currentContent.success) return apiError("internal", "Conteúdo atual inválido.", correlationId);
+
+  try {
+    const { input } = await loadBriefFacts(supabase, r.strategies.brief_id);
+    const provider = selectTextProvider(serverEnv());
+    const result = await provider.generateStrategy(input);
+    const parsedPlan = strategyPlanSchema.safeParse(result.data);
+    if (!parsedPlan.success) return apiError("external_unavailable", "Falha ao gerar novo texto.", correlationId);
+
+    const violations = checkFacts(parsedPlan.data, confirmedFacts(input));
+    if (violations.length > 0) {
+      return apiError("facts_not_confirmed", "O texto gerado continha informações não confirmadas.", correlationId);
+    }
+
+    const angle = parsedPlan.data.angles.find((a) => a.key === r.angle_key) ?? parsedPlan.data.angles[0];
+    const updatedContent = {
+      ...currentContent.data,
+      headline: angle.headline,
+      body: angle.body,
+      cta: angle.cta,
+    };
+
+    const { error: upErr } = await supabase.from("creatives").update({ content: updatedContent }).eq("id", id.data);
+    if (upErr) return apiError("internal", "Não foi possível atualizar o texto da peça.", correlationId);
+
+    revalidatePath("/app/criativos", "layout");
+    return {
+      ok: true,
+      data: { headline: angle.headline, body: angle.body, cta: angle.cta },
+      correlation_id: correlationId,
+    };
+  } catch {
+    return apiError("external_unavailable", "Não foi possível gerar novo texto agora.", correlationId);
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Imagem de fundo (subprojeto 2)
 // ---------------------------------------------------------------------------

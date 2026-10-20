@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { describedBy, Field, Input, Select, Textarea } from "@/components/ui/field";
 import { ANGLE_KEYS, LIMITS, TEMPLATE_LABELS, type CreativeContent } from "@/contracts/creatives";
-import { approveCreative, updateCreative } from "@/server/creatives";
+import { approveCreative, regenerateCreativeCopy, updateCreative } from "@/server/creatives";
 import { AdPreview, imageUrl } from "./ad-preview";
 import { ImageSection } from "./image-section";
 
@@ -75,6 +75,26 @@ export function CreativeEditor({
       if (dirty && !(await save())) return;
       const res = await approveCreative(id);
       setMessage(res.ok ? { tone: "success", text: "Peça aprovada." } : { tone: "danger", text: res.error.message });
+      router.refresh();
+    });
+
+  const onRegenerateCopy = () =>
+    start(async () => {
+      setMessage(null);
+      const res = await regenerateCreativeCopy(id);
+      if (!res.ok) {
+        setMessage({ tone: "danger", text: res.error.message });
+        return;
+      }
+      const next = {
+        ...content,
+        headline: res.data.headline,
+        body: res.data.body,
+        cta: res.data.cta,
+      };
+      setContent(next);
+      setSaved(next);
+      setMessage({ tone: "success", text: "Texto regenerado sem alterar a imagem nem as cores." });
       router.refresh();
     });
 
@@ -193,6 +213,9 @@ export function CreativeEditor({
           </Button>
           <Button variant="secondary" onClick={onApprove} disabled={pending || (status === "approved" && !dirty)}>
             Aprovar peça
+          </Button>
+          <Button variant="secondary" onClick={onRegenerateCopy} disabled={pending}>
+            Regenerar só o texto
           </Button>
         </div>
         <p className="text-sm text-ink-faint">Aprovar é decisão do dono ou de um administrador da empresa.</p>
