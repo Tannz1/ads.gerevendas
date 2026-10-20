@@ -7,7 +7,7 @@ import { CORRELATION_HEADER, ensureCorrelationId } from "@/lib/correlation";
 import { isSupabaseConfigured } from "@/lib/public-env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export type MemberRole = "owner" | "admin" | "member";
+export type MemberRole = "owner" | "admin" | "member" | "support";
 
 export type AppContext =
   | { mode: "demo" }

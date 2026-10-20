@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
+import { AccountManagement } from "@/components/account/account-management";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { serverEnv } from "@/lib/env";
 import { resolveFlags } from "@/lib/flags";
+import { loadAccountManagementData } from "@/server/account-data";
 import { getAppContext } from "@/server/context";
 
 export const metadata: Metadata = { title: "Conta" };
 
-const ROLE_LABEL = { owner: "Proprietário", admin: "Administrador", member: "Membro" } as const;
+const ROLE_LABEL = {
+  owner: "Proprietário",
+  admin: "Administrador",
+  member: "Membro",
+  support: "Suporte (auditado)",
+} as const;
 
 export default async function AccountPage() {
   const ctx = await getAppContext();
@@ -36,6 +43,15 @@ export default async function AccountPage() {
     },
   ];
 
+  const management =
+    ctx.mode === "supabase" && ctx.organization
+      ? await loadAccountManagementData(
+          ctx.organization.id,
+          ctx.user.id,
+          ctx.organization.role === "owner" || ctx.organization.role === "admin",
+        )
+      : null;
+
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="font-display text-3xl font-bold tracking-tight">Conta</h1>
@@ -54,6 +70,18 @@ export default async function AccountPage() {
         >
           Kill switch global ativo: todas as integrações externas estão bloqueadas.
         </p>
+      )}
+
+      {ctx.mode === "supabase" && ctx.organization && management && (
+        <AccountManagement
+          organizationId={ctx.organization.id}
+          organizationName={ctx.organization.name}
+          currentRole={ctx.organization.role}
+          members={management.members}
+          invites={management.invites}
+          consents={management.consents}
+          business={management.business}
+        />
       )}
     </div>
   );

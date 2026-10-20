@@ -17,6 +17,8 @@ export type AdTemplateProps = {
   fonts: AdFonts;
   /** Imagem de fundo: URL assinada (prévia) ou data URI (PNG). */
   imageSrc?: string | null;
+  /** Logotipo da marca (opcional): URL assinada ou data URI. */
+  logoSrc?: string | null;
 };
 
 /** Margens de segurança: no Stories a interface do Instagram cobre topo e rodapé. */
@@ -35,7 +37,7 @@ function rgba(hex: string, alpha: number): string {
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
 }
 
-export function AdTemplate({ content, format, businessName, priceLabel, fonts, imageSrc }: AdTemplateProps) {
+export function AdTemplate({ content, format, businessName, priceLabel, fonts, imageSrc, logoSrc }: AdTemplateProps) {
   const { width, height } = FORMATS[format];
   const safe = SAFE_AREA[format];
   const { background, accent, text } = content.colors;
@@ -116,6 +118,8 @@ export function AdTemplate({ content, format, businessName, priceLabel, fonts, i
     <div
       style={{
         display: "flex",
+        alignItems: "center",
+        gap: 20,
         fontSize: 30,
         fontWeight: 700,
         letterSpacing: 4,
@@ -123,7 +127,17 @@ export function AdTemplate({ content, format, businessName, priceLabel, fonts, i
         opacity: 0.9,
       }}
     >
-      {businessName}
+      {logoSrc && (
+        // eslint-disable-next-line @next/next/no-img-element -- compatível com Satori
+        <img
+          src={logoSrc}
+          alt=""
+          width={64}
+          height={64}
+          style={{ width: 64, height: 64, borderRadius: 16, objectFit: "cover" }}
+        />
+      )}
+      <span>{businessName}</span>
     </div>
   );
 
