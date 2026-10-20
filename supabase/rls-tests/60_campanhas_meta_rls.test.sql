@@ -11,8 +11,7 @@ select tests.throws(
 
 -- 2. Tentativa de publicar campanha sem conexão Meta conectada falha
 select tests.login(tests.id('user_a'));
-insert into tests.ctx select 'strategy_a', id from public.strategies where organization_id = tests.id('org_a') limit 1;
-insert into tests.ctx select 'creative_a', id from public.creatives where organization_id = tests.id('org_a') and status = 'approved' limit 1;
+select public.approve_creative(tests.id('creative_a'), 'corr-approve-camp');
 
 select tests.throws(
   format($$select public.publish_campaign_paused(
