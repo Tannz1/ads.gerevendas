@@ -26,6 +26,8 @@ export const serverEnvSchema = z.object({
   AI_MONTHLY_TOKEN_CAP: z.coerce.number().int().positive().default(2_000_000),
   OPENAI_IMAGE_QUALITY: z.enum(["low", "medium", "high", "xhigh", "max", "auto"]).default("medium"),
   META_MODE: z.enum(["mock", "real"]).default("mock"),
+  META_APP_ID: optional,
+  META_APP_SECRET: optional,
   BILLING_PROVIDER: z.enum(["mock"]).default("mock"),
   BILLING_WEBHOOK_SECRET: optional,
   FEATURE_FLAG_WHATSAPP_ADS: flag,

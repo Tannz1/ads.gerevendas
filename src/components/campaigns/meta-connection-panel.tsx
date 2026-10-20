@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { connectMetaAssets, disconnectMetaAssets } from "@/server/campaigns";
 import type { MetaConnectionView } from "@/server/campaigns-data";
+import type { DiscoveredMetaAssets } from "@/lib/meta-oauth";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,26 +15,69 @@ type Props = {
   connection: MetaConnectionView | null;
   canManage: boolean;
   metaMode: "mock" | "real";
+  hasRealMetaOAuthApp: boolean;
+  oauthStatus: string | null;
+  discoveredAssets: DiscoveredMetaAssets | null;
   defaultBusinessName: string;
   defaultWhatsapp: string | null;
 };
 
-export function MetaConnectionPanel({ connection, canManage, metaMode, defaultBusinessName, defaultWhatsapp }: Props) {
+export function MetaConnectionPanel({
+  connection,
+  canManage,
+  metaMode,
+  hasRealMetaOAuthApp,
+  oauthStatus,
+  discoveredAssets,
+  defaultBusinessName,
+  defaultWhatsapp,
+}: Props) {
   const router = useRouter();
   const isConnected = connection?.status === "connected";
 
-  const [adAccountId, setAdAccountId] = useState(connection?.ad_account_id ?? "act_1020304050");
-  const [adAccountName, setAdAccountName] = useState(connection?.ad_account_name ?? `${defaultBusinessName} Ads`);
-  const [pageId, setPageId] = useState(connection?.page_id ?? "page_99887766");
-  const [pageName, setPageName] = useState(connection?.page_name ?? defaultBusinessName);
-  const [instagramId, setInstagramId] = useState(connection?.instagram_actor_id ?? "");
-  const [whatsappPhone, setWhatsappPhone] = useState(connection?.whatsapp_phone_e164 ?? defaultWhatsapp ?? "");
-  const [billingVerified, setBillingVerified] = useState(connection?.billing_verified_on_meta ?? false);
-  const [message, setMessage] = useState<{ tone: "info" | "success" | "danger"; text: string } | null>(null);
+  const firstDiscoveredAccount = discoveredAssets?.ad_accounts[0];
+  const firstDiscoveredPage = discoveredAssets?.pages[0];
+
+  const [adAccountId, setAdAccountId] = useState(
+    firstDiscoveredAccount?.id ?? connection?.ad_account_id ?? "act_1020304050",
+  );
+  const [adAccountName, setAdAccountName] = useState(
+    firstDiscoveredAccount?.name ?? connection?.ad_account_name ?? `${defaultBusinessName} Ads`,
+  );
+  const [pageId, setPageId] = useState(firstDiscoveredPage?.id ?? connection?.page_id ?? "page_99887766");
+  const [pageName, setPageName] = useState(firstDiscoveredPage?.name ?? connection?.page_name ?? defaultBusinessName);
+  const [instagramId, setInstagramId] = useState(
+    firstDiscoveredPage?.instagram_actor_id ?? connection?.instagram_actor_id ?? "",
+  );
+  const [whatsappPhone, setWhatsappPhone] = useState(
+    firstDiscoveredPage?.whatsapp_phone_e164 ?? connection?.whatsapp_phone_e164 ?? defaultWhatsapp ?? "",
+  );
+  const [billingVerified, setBillingVerified] = useState(
+    firstDiscoveredAccount?.has_funding_source ?? connection?.billing_verified_on_meta ?? false,
+  );
+  const [showManualFields, setShowManualFields] = useState(false);
+  const [message, setMessage] = useState<{ tone: "info" | "success" | "danger"; text: string } | null>(() => {
+    if (oauthStatus === "error") {
+      return { tone: "danger", text: "Erro ao comunicar com a Meta. Tente novamente." };
+    }
+    if (oauthStatus === "cancelled") {
+      return { tone: "info", text: "Conexão cancelada na janela da Meta." };
+    }
+    if (oauthStatus === "forbidden") {
+      return { tone: "danger", text: "Apenas proprietários podem conectar ativos da Meta." };
+    }
+    if (oauthStatus === "ready") {
+      return { tone: "success", text: "Ativos descobertos via Meta! Selecione as contas abaixo e confirme." };
+    }
+    if (oauthStatus === "simulated") {
+      return { tone: "info", text: "Ativos simulados carregados com 1 clique. Você já pode vincular." };
+    }
+    return null;
+  });
   const [pending, start] = useTransition();
 
-  function handleConnect(e: React.FormEvent) {
-    e.preventDefault();
+  function handleConnect(e?: React.FormEvent) {
+    if (e) e.preventDefault();
     setMessage(null);
     start(async () => {
       const res = await connectMetaAssets({
@@ -51,7 +95,9 @@ export function MetaConnectionPanel({ connection, canManage, metaMode, defaultBu
       }
       setMessage({
         tone: "success",
-        text: res.data.simulated ? "Ativos vinculados em modo Simulação." : "Ativos Meta conectados com sucesso.",
+        text: res.data.simulated
+          ? "Ativos vinculados com sucesso em modo Simulação."
+          : "Ativos Meta conectados com sucesso.",
       });
       router.refresh();
     });
@@ -68,6 +114,27 @@ export function MetaConnectionPanel({ connection, canManage, metaMode, defaultBu
       setMessage({ tone: "info", text: "Conexão Meta removida." });
       router.refresh();
     });
+  }
+
+  function handleSelectAdAccount(id: string) {
+    const acc = discoveredAssets?.ad_accounts.find((a) => a.id === id);
+    if (acc) {
+      setAdAccountId(acc.id);
+      setAdAccountName(acc.name);
+      if (acc.has_funding_source) {
+        setBillingVerified(true);
+      }
+    }
+  }
+
+  function handleSelectPage(id: string) {
+    const pg = discoveredAssets?.pages.find((p) => p.id === id);
+    if (pg) {
+      setPageId(pg.id);
+      setPageName(pg.name);
+      if (pg.instagram_actor_id) setInstagramId(pg.instagram_actor_id);
+      if (pg.whatsapp_phone_e164) setWhatsappPhone(pg.whatsapp_phone_e164);
+    }
   }
 
   return (
@@ -91,65 +158,154 @@ export function MetaConnectionPanel({ connection, canManage, metaMode, defaultBu
           oficial da Meta. O GereVendas Ads nunca coleta saldo de mídia nem armazena cartão Meta.
         </Alert>
 
-        <form onSubmit={handleConnect} className="mt-6 space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field id="ad_account_id" label="ID da Conta de Anúncios" hint="Ex.: act_1020304050">
-              <Input
-                id="ad_account_id"
-                value={adAccountId}
-                disabled={!canManage || pending}
-                onChange={(e) => setAdAccountId(e.target.value)}
-              />
-            </Field>
-            <Field id="ad_account_name" label="Nome da Conta de Anúncios">
-              <Input
-                id="ad_account_name"
-                value={adAccountName}
-                disabled={!canManage || pending}
-                onChange={(e) => setAdAccountName(e.target.value)}
-              />
-            </Field>
+        {/* Bloco 1-Clique Principal */}
+        <div className="mt-6 rounded-xl border border-line bg-surface-muted/50 p-4 sm:p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="font-semibold text-ink">
+                {hasRealMetaOAuthApp ? "Conectar com Facebook (Meta)" : "Conectar com 1 Clique (Simulação)"}
+              </h3>
+              <p className="mt-1 text-xs text-ink-soft">
+                {hasRealMetaOAuthApp
+                  ? "Abre a janela de autorização da Meta para descobrir suas contas de anúncios e páginas automaticamente."
+                  : "Não precisa digitar IDs: clique para preencher automaticamente os ativos e testar a vinculação imediata."}
+              </p>
+            </div>
+            {canManage && (
+              <a
+                href="/api/meta/oauth/start"
+                className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1877F2] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#166fe5] focus-visible:ring-2 focus-visible:ring-[#1877F2]/50 focus-visible:outline-none"
+              >
+                <svg className="size-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                </svg>
+                <span>{hasRealMetaOAuthApp ? "Conectar com Facebook" : "Descobrir Ativos (1 Clique)"}</span>
+              </a>
+            )}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field id="page_id" label="ID da Página do Facebook">
-              <Input
-                id="page_id"
-                value={pageId}
-                disabled={!canManage || pending}
-                onChange={(e) => setPageId(e.target.value)}
-              />
-            </Field>
-            <Field id="page_name" label="Nome da Página do Facebook">
-              <Input
-                id="page_name"
-                value={pageName}
-                disabled={!canManage || pending}
-                onChange={(e) => setPageName(e.target.value)}
-              />
-            </Field>
-          </div>
+          {/* Seletores Automáticos de Ativos Descobertos */}
+          {discoveredAssets && (
+            <div className="mt-5 space-y-4 border-t border-line pt-4">
+              <div className="text-xs font-semibold tracking-wider text-ink-soft uppercase">
+                Ativos Encontrados {discoveredAssets.simulated ? "(Simulação)" : "(Meta)"}
+              </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field id="instagram_id" label="ID da Conta Instagram (opcional)">
-              <Input
-                id="instagram_id"
-                placeholder="ig_123456"
-                value={instagramId}
-                disabled={!canManage || pending}
-                onChange={(e) => setInstagramId(e.target.value)}
-              />
-            </Field>
-            <Field id="whatsapp_phone" label="WhatsApp vinculado na Página (opcional)" hint="Ex.: +5519999990000">
-              <Input
-                id="whatsapp_phone"
-                placeholder="+5519999990000"
-                value={whatsappPhone}
-                disabled={!canManage || pending}
-                onChange={(e) => setWhatsappPhone(e.target.value)}
-              />
-            </Field>
-          </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label htmlFor="discovered_account" className="block text-xs font-medium text-ink-soft">
+                    Conta de Anúncios Descoberta
+                  </label>
+                  <select
+                    id="discovered_account"
+                    value={adAccountId}
+                    onChange={(e) => handleSelectAdAccount(e.target.value)}
+                    className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:ring-2 focus:ring-[var(--color-brand)] focus:outline-none"
+                  >
+                    {discoveredAssets.ad_accounts.map((acc) => (
+                      <option key={acc.id} value={acc.id}>
+                        {acc.name} ({acc.id}) {acc.has_funding_source ? "✓ Pagamento OK" : "⚠ Sem cartão"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="discovered_page" className="block text-xs font-medium text-ink-soft">
+                    Página do Facebook Descoberta
+                  </label>
+                  <select
+                    id="discovered_page"
+                    value={pageId}
+                    onChange={(e) => handleSelectPage(e.target.value)}
+                    className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:ring-2 focus:ring-[var(--color-brand)] focus:outline-none"
+                  >
+                    {discoveredAssets.pages.map((pg) => (
+                      <option key={pg.id} value={pg.id}>
+                        {pg.name} ({pg.id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Alternância para edição manual avançada */}
+        <div className="mt-6 flex items-center justify-between">
+          <button
+            type="button"
+            onClick={() => setShowManualFields(!showManualFields)}
+            className="text-xs font-medium text-ink-soft underline decoration-dotted hover:text-ink"
+          >
+            {showManualFields ? "Ocultar campos manuais avançados" : "Mostrar / Editar campos manuais avançados"}
+          </button>
+        </div>
+
+        <form onSubmit={handleConnect} className="mt-4 space-y-4">
+          {showManualFields && (
+            <div className="space-y-4 rounded-xl border border-line/60 bg-surface/50 p-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field id="ad_account_id" label="ID da Conta de Anúncios" hint="Ex.: act_1020304050">
+                  <Input
+                    id="ad_account_id"
+                    value={adAccountId}
+                    disabled={!canManage || pending}
+                    onChange={(e) => setAdAccountId(e.target.value)}
+                  />
+                </Field>
+                <Field id="ad_account_name" label="Nome da Conta de Anúncios">
+                  <Input
+                    id="ad_account_name"
+                    value={adAccountName}
+                    disabled={!canManage || pending}
+                    onChange={(e) => setAdAccountName(e.target.value)}
+                  />
+                </Field>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field id="page_id" label="ID da Página do Facebook">
+                  <Input
+                    id="page_id"
+                    value={pageId}
+                    disabled={!canManage || pending}
+                    onChange={(e) => setPageId(e.target.value)}
+                  />
+                </Field>
+                <Field id="page_name" label="Nome da Página do Facebook">
+                  <Input
+                    id="page_name"
+                    value={pageName}
+                    disabled={!canManage || pending}
+                    onChange={(e) => setPageName(e.target.value)}
+                  />
+                </Field>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field id="instagram_id" label="ID da Conta Instagram (opcional)">
+                  <Input
+                    id="instagram_id"
+                    placeholder="ig_123456"
+                    value={instagramId}
+                    disabled={!canManage || pending}
+                    onChange={(e) => setInstagramId(e.target.value)}
+                  />
+                </Field>
+                <Field id="whatsapp_phone" label="WhatsApp vinculado na Página (opcional)" hint="Ex.: +5519999990000">
+                  <Input
+                    id="whatsapp_phone"
+                    placeholder="+5519999990000"
+                    value={whatsappPhone}
+                    disabled={!canManage || pending}
+                    onChange={(e) => setWhatsappPhone(e.target.value)}
+                  />
+                </Field>
+              </div>
+            </div>
+          )}
 
           <label className="flex items-start gap-2.5 pt-2 text-sm">
             <input
@@ -172,7 +328,7 @@ export function MetaConnectionPanel({ connection, canManage, metaMode, defaultBu
                 {pending
                   ? "Salvando…"
                   : metaMode === "mock"
-                    ? "Conectar ativos (Simulação)"
+                    ? "Vincular ativos selecionados (Simulação)"
                     : "Salvar ativos conectados"}
               </Button>
               {isConnected && (

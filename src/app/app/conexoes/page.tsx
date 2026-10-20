@@ -1,18 +1,27 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import { META_DISCOVERED_COOKIE } from "@/app/api/meta/oauth/callback/route";
 import { MetaConnectionPanel } from "@/components/campaigns/meta-connection-panel";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { serverEnv } from "@/lib/env";
 import { resolveFlags } from "@/lib/flags";
+import { buildSimulatedDiscoveredAssets, type DiscoveredMetaAssets } from "@/lib/meta-oauth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadMetaConnection } from "@/server/campaigns-data";
 import { getAppContext } from "@/server/context";
 
 export const metadata: Metadata = { title: "Conexões Meta" };
 
-export default async function ConnectionsPage() {
+type PageProps = {
+  searchParams: Promise<{ oauth?: string }>;
+};
+
+export default async function ConnectionsPage({ searchParams }: PageProps) {
   const ctx = await getAppContext();
-  const flags = resolveFlags(serverEnv());
+  const env = serverEnv();
+  const flags = resolveFlags(env);
+  const { oauth } = await searchParams;
 
   if (ctx.mode === "demo" || !ctx.organization) {
     return (
@@ -32,7 +41,7 @@ export default async function ConnectionsPage() {
   }
 
   const supabase = await createSupabaseServerClient();
-  const [connection, bizRes] = await Promise.all([
+  const [connection, bizRes, jar] = await Promise.all([
     loadMetaConnection(ctx.organization.id),
     supabase
       .from("businesses")
@@ -41,10 +50,28 @@ export default async function ConnectionsPage() {
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    cookies(),
   ]);
 
   const biz = bizRes.data as { name: string; whatsapp_e164: string | null } | null;
+  const businessName = biz?.name ?? ctx.organization.name;
+  const defaultWhatsapp = biz?.whatsapp_e164 ?? null;
   const canManage = ctx.organization.role === "owner" || ctx.organization.role === "admin";
+  const hasRealMetaOAuthApp = Boolean(env.META_APP_ID && env.META_APP_SECRET);
+
+  let discoveredAssets: DiscoveredMetaAssets | null = null;
+  if (oauth === "simulated") {
+    discoveredAssets = buildSimulatedDiscoveredAssets(businessName, defaultWhatsapp);
+  } else {
+    const rawCookie = jar.get(META_DISCOVERED_COOKIE)?.value;
+    if (rawCookie) {
+      try {
+        discoveredAssets = JSON.parse(rawCookie) as DiscoveredMetaAssets;
+      } catch {
+        discoveredAssets = null;
+      }
+    }
+  }
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -62,8 +89,11 @@ export default async function ConnectionsPage() {
         connection={connection}
         canManage={canManage}
         metaMode={flags.metaMode}
-        defaultBusinessName={biz?.name ?? ctx.organization.name}
-        defaultWhatsapp={biz?.whatsapp_e164 ?? null}
+        hasRealMetaOAuthApp={hasRealMetaOAuthApp}
+        oauthStatus={oauth ?? null}
+        discoveredAssets={discoveredAssets}
+        defaultBusinessName={businessName}
+        defaultWhatsapp={defaultWhatsapp}
       />
     </div>
   );

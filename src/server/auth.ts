@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { serverEnv } from "@/lib/env";
@@ -20,7 +21,11 @@ export async function signInWithEmail(_prev: SignInState, formData: FormData): P
 
   const next = String(formData.get("next") ?? "/app");
   const safeNext = next.startsWith("/app") ? next : "/app";
-  const callback = publicUrl("/auth/callback", serverEnv().NEXT_PUBLIC_APP_URL);
+  const hdrs = await headers();
+  const host = hdrs.get("x-forwarded-host") ?? hdrs.get("host");
+  const proto = hdrs.get("x-forwarded-proto") ?? "http";
+  const base = host ? `${proto}://${host}` : serverEnv().NEXT_PUBLIC_APP_URL;
+  const callback = publicUrl("/auth/callback", base);
   callback.searchParams.set("next", safeNext);
 
   const supabase = await createSupabaseServerClient();
