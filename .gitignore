@@ -47,3 +47,6 @@ next-env.d.ts
 
 # supabase
 /supabase/.temp
+
+# Capturas de anúncios de terceiros (só referência local, nunca no git)
+.referencias/
