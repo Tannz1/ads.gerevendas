@@ -27,6 +27,7 @@ export const serverEnvSchema = z.object({
   OPENAI_IMAGE_QUALITY: z.enum(["low", "medium", "high", "xhigh", "max", "auto"]).default("medium"),
   META_MODE: z.enum(["mock", "real"]).default("mock"),
   BILLING_PROVIDER: z.enum(["mock"]).default("mock"),
+  BILLING_WEBHOOK_SECRET: optional,
   FEATURE_FLAG_WHATSAPP_ADS: flag,
   FEATURE_FLAG_REAL_PUBLISHING: flag,
   FEATURE_FLAG_ACCOUNT_CREATION: flag,

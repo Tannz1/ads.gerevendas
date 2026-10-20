@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { AdPreview, imageUrl } from "@/components/creatives/ad-preview";
 import { GenerateButton, JOB_ERRORS, JobProgress } from "@/components/creatives/generation-controls";
+import { PilotFeedbackBox } from "@/components/creatives/pilot-feedback-box";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -196,11 +197,19 @@ export default async function CreativesPage() {
           );
         })}
       </ul>
-      <p className="mt-8 text-sm text-ink-faint">
-        Nenhuma peça é publicada daqui. A conexão com a Meta chega na próxima fase.{" "}
+      <div className="mt-8">
+        <PilotFeedbackBox stage="strategy" />
+      </div>
+      <p className="mt-6 text-sm text-ink-faint">
+        Nenhuma peça é publicada automaticamente. Depois de aprovar as peças, você pode preparar a campanha em{" "}
+        <Link href="/app/campanhas" className="font-medium text-brand hover:underline">
+          Campanhas
+        </Link>{" "}
+        ou{" "}
         <Link href="/app/conta" className="font-medium text-brand hover:underline">
-          Ver status da conta
+          ver status da conta
         </Link>
+        .
       </p>
     </div>
   );

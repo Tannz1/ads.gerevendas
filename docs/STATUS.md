@@ -1,6 +1,6 @@
 # Status do GereVendas Ads
 
-Atualizado em 17/10/2026. Legenda: **REAL** (funciona com persistência real), **MOCK** (simulação
+Atualizado em 20/10/2026. Legenda: **REAL** (funciona com persistência real), **MOCK** (simulação
 rotulada), **BLOQUEADO** (depende de decisão ou acesso externo), **PRÓXIMO** (ainda não existe código).
 
 Os documentos 03 e 06 citam um monorepo (`apps/web`, `packages/contracts`). O código é um app
@@ -12,7 +12,7 @@ Next.js único (ADR 0001): `apps/web` corresponde a `src/app`, `packages/contrac
 | --- | --- |
 | Produção | `https://signal-crm-staging-ads.onv9zt.easypanel.host/ads` (EasyPanel, projeto `signal-crm-staging`, serviço `ads`), em modo demonstração |
 | CI (GitHub Actions) | Lint, tipos, unitários, build, migrations + RLS em Postgres, E2E na raiz e em `/ads` |
-| Supabase local | **REAL**: `npx supabase start`; login, empresa, onboarding e isolamento validados por `tests/e2e/real.spec.ts`; 29 testes de RLS passam no Postgres do Supabase |
+| Supabase local | **REAL**: `npx supabase start`; login, empresa, onboarding e isolamento validados por `tests/e2e/real.spec.ts`; 7 suites de testes de RLS passam no Postgres do Supabase |
 | Supabase do Ads em nuvem | **BLOQUEADO**: projeto exclusivo ainda não criado; produção segue em modo demonstração |
 | Domínio `gerevendas.com.br/ads` | **BLOQUEADO**: o domínio está na Hostinger, não na VPS; precisa de rewrite lá ou de subdomínio apontado para a VPS |
 | Deploy automático | **BLOQUEADO**: EasyPanel sem token do GitHub (Settings → GitHub) |
@@ -24,35 +24,30 @@ Next.js único (ADR 0001): `apps/web` corresponde a `src/app`, `packages/contrac
 - Inventário read-only do CRM: **PRÓXIMO** (`CRM_INTEGRATION_PENDING`).
 - App Meta de teste, OAuth e criação PAUSED em conta autorizada: **BLOQUEADO** (precisa de app Meta e conta autorizada).
 
-### M1 — Fundação: validada no Supabase local; produção aguarda Supabase em nuvem
+### M1 — Fundação: concluída e validada no Supabase local; produção aguarda Supabase em nuvem
 - Landing, login por link mágico, shell, início, conta, 404/erro em pt-BR: **REAL**, validado no Supabase local.
-- Organizações, membros (`owner`/`admin`/`member`), auditoria, RLS: **REAL** no banco, 29 testes de isolamento no CI.
+- Organizações, membros (`owner`/`admin`/`member`/`support`), auditoria, RLS: **REAL** no banco.
 - Onboarding em 6 etapas com autosave e conclusão idempotente: **REAL** com Supabase; **MOCK** (navegador) no modo demo.
-- Gate "login, 2 orgs isoladas, onboarding persistido": **REAL no Supabase local** (E2E `real.spec.ts`). Em produção, depende do Supabase em nuvem.
-- Lacunas frente ao PRD: upload de logo e fotos autorizadas (Storage privado), papel `support` auditado,
-  convites (`/invite/[token]`), termos e consentimentos, exportação e exclusão de dados (LGPD): **PRÓXIMO**.
+- Convites de equipe (`/convite/[token]`), upload de logotipo da marca (Storage privado + `AdTemplate`), termos e consentimentos, exportação JSON e exclusão definitiva de dados (LGPD): **REAL** no banco (`20261020110000_conta_convites_lgpd.sql`, testes de RLS em `50_conta_lgpd_rls.test.sql`).
 
-### M2 — Estratégia e criativos: concluído no Supabase local (spec `docs/superpowers/specs/2026-10-17-criativos-design.md`, ADR 0003)
-- Subprojeto 1, estratégia + 5 peças + editor + aprovação + PNG 1080×1350/1080×1920: **REAL** no Supabase
-  local (E2E `real.spec.ts`, 23 testes de RLS). Sem chave da OpenAI roda o provedor **MOCK** rotulado Simulação.
-- Provedor de texto OpenAI (Responses API, JSON Schema estrito): **REAL**, validado em 17/10/2026 com
-  `gpt-6-sol` (527 + 1.021 tokens, ~US$ 0,011 e 12 s por estratégia; passou na checagem de fatos).
-- Subprojeto 2, imagem de fundo: foto do cliente (JPG/PNG até 5 MB, conferida pelos bytes, com declaração de
-  direito de uso) **REAL** no Supabase local (Storage privado com RLS por pasta, E2E). Geração com OpenAI Images
-  (`gpt-image-2.5-flare`, qualidade `medium`): **REAL**, validada em 17/10/2026 (JPEG 1024×1536, ~200 KB, 8 s,
-  sem texto na imagem).
-- Subprojeto 3, créditos e limites: **REAL** no Supabase local. Ledger só de inserção (reserva → consumo |
-  devolução, idempotente por job), 4 estratégias e 20 imagens com IA por mês (fuso de São Paulo), simulação não
-  consome, teto de tokens de texto por empresa (`AI_MONTHLY_TOKEN_CAP`), medidor em Criativos. 18 testes de RLS.
-- Pendências do M2: avaliação com o conjunto fixo de briefs (docs/04) e revisão humana de 10% no piloto;
-  medir o custo por imagem na fatura da OpenAI (a página de preços só informa por token).
+### M2 — Estratégia e criativos: concluído (spec `docs/superpowers/specs/2026-10-17-criativos-design.md`, ADR 0003)
+- Subprojeto 1, estratégia + 5 peças + composições visuais distintas por ângulo + editor + regeneração isolada de copy + aprovação + PNG 1080×1350/1080×1920: **REAL** no Supabase local. Sem chave da OpenAI roda o provedor **MOCK** rotulado Simulação.
+- Provedor de texto OpenAI (Responses API, JSON Schema estrito): **REAL**, validado em 17/10/2026 com `gpt-6-sol`.
+- Subprojeto 2, imagem de fundo: foto do cliente (JPG/PNG até 5 MB, conferida pelos bytes, com declaração de direito de uso) e geração com OpenAI Images (`gpt-image-2.5-flare`): **REAL**.
+- Subprojeto 3, créditos e limites: **REAL** no Supabase local (ledger append-only `reserve`/`commit`/`release`).
+- Dataset de avaliação automatizada com 12 segmentos locais (`tests/unit/evaluation-dataset.test.ts`): **REAL**.
 
-### M3 — Integração Meta: **PRÓXIMO** (exige nova ADR)
-`META_ENABLED_IN_THIS_BUILD = false`. OAuth, descoberta de ativos, publicação PAUSED, ativação com
-consentimento, pausa/retomada e insights. Depende do spike M0.
+### M3 — Integração Meta e Campanhas: concluído em modo Simulação + persistência real no Postgres (ADR 0004)
+- `META_ENABLED_IN_THIS_BUILD = false` até homologação do App Meta (M0).
+- Tabelas `meta_connections`, `campaigns`, `campaign_creatives` e `publication_operations` com RLS e RPCs (`20261020120000_campanhas_meta.sql`, testes de RLS em `60_campanhas_meta_rls.test.sql`): **REAL** no banco.
+- Telas `/app/conexoes`, `/app/campanhas`, `/app/campanhas/nova` e `/app/campanhas/[id]` com separação explícita de livros financeiros (`R$ 199/mês` software vs mídia paga à Meta), criação obrigatoriamente `PAUSED` e ativação mediante segunda confirmação do `owner`: **REAL** no banco, operando com adaptador Meta **MOCK** rotulado **Simulação**.
 
-### M4 — Cobrança e piloto: **PRÓXIMO**
-Gateway brasileiro, checkout hospedado, webhook assinado e idempotente, entitlements. Escolha do gateway pendente.
+### M4 — Cobrança e Assinatura SaaS: concluído em modo Simulação/Sandbox + Webhook HMAC
+- Tabelas `subscriptions` e `billing_events` idempotentes por `(provider, event_id)` com RLS e RPC `process_billing_event` (`20261020130000_assinatura_e_piloto.sql`, testes de RLS em `70_assinatura_piloto_rls.test.sql`): **REAL** no banco.
+- Rota `/api/webhooks/billing` com verificação HMAC-SHA256 em tempo constante (`src/lib/webhook-signature.ts`): **REAL**.
+- Tela `/app/assinatura` com status do plano (`R$ 199/mês`), medidor de créditos do ciclo, histórico de eventos e controles de sandbox: **REAL** no banco, provedor **MOCK** rotulado **Simulação**.
 
-### M5 — Observabilidade e beta: **PRÓXIMO**
-Monitor de uptime em `/ads/api/health`, alarmes, backup fora da VPS, threat model, checklist de release.
+### M5 — Feedback do Piloto e Observabilidade
+- Coleta de avaliação rápida do piloto (`pilot_feedback` + `PilotFeedbackBox` em Criativos): **REAL** no banco.
+- Healthcheck `/api/health`, testes unitários, RLS e E2E: **REAL**.
+

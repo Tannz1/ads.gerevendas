@@ -82,3 +82,28 @@ Regras:
 RPCs: `create_organization(p_name, p_correlation_id)`,
 `complete_onboarding(p_org, p_payload, p_correlation_id)` (SECURITY INVOKER, transação única),
 `log_audit_event(...)` (ator sempre `auth.uid()`). `anon` não tem acesso a nenhuma tabela ou RPC.
+
+## Criativos, Imagens e Créditos (`src/contracts/creatives.ts`)
+- Tabelas: `generation_jobs`, `strategies`, `creatives`, `assets`, `usage_ledger`.
+- RPCs: `start_strategy_job`, `finish_strategy_job`, `fail_generation_job`, `approve_creative`,
+  `start_image_job`, `finish_image_job`, `register_photo`, `credit_summary`.
+
+## Conta, Convites e LGPD (`src/contracts/account.ts`)
+- Tabelas: `organization_invites`, `user_consents` e coluna `businesses.logo_asset_id`.
+- RPCs: `create_organization_invite`, `revoke_organization_invite`, `inspect_organization_invite`,
+  `accept_organization_invite`, `register_business_logo`, `record_user_consents`,
+  `export_organization_data`, `delete_organization`.
+
+## Campanhas e Conexão Meta (`src/contracts/campaigns.ts`, ADR 0004)
+- Tabelas: `meta_connections`, `campaigns`, `campaign_creatives`, `publication_operations`.
+- Guardrail no banco: trigger `campaigns_enforce_paused_on_insert` impede qualquer INSERT em `campaigns`
+  com `status = 'active'`.
+- RPCs: `upsert_meta_connection`, `disconnect_meta_connection`, `publish_campaign_paused` (exige `owner`
+  e todas as peças `approved`), `activate_campaign` (exige segunda confirmação do `owner` com o mesmo
+  snapshot de orçamento e duração), `pause_campaign`.
+
+## Assinatura SaaS e Feedback do Piloto (`src/contracts/billing.ts`)
+- Tabelas: `subscriptions`, `billing_events` (único por `(provider, event_id)`), `pilot_feedback`.
+- RPCs: `process_billing_event`, `submit_pilot_feedback`.
+- Rota de webhook: `POST /api/webhooks/billing` validada com HMAC-SHA256 (`x-webhook-signature`).
+
