@@ -21,7 +21,7 @@ import { ASSETS_BUCKET } from "./creatives-data";
 
 const uuid = z.uuid();
 
-export function generateInviteToken(): string {
+function generateInviteToken(): string {
   return randomBytes(24).toString("base64url");
 }
 

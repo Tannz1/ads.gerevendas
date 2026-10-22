@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
+import { Suspense } from "react";
 import { inviteTokenSchema } from "@/contracts/account";
 import { AcceptInviteButton } from "@/components/account/accept-invite-button";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Logo } from "@/components/ui/logo";
+import { Skeleton } from "@/components/ui/skeleton";
 import { isSupabaseConfigured } from "@/lib/public-env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { inspectInviteByToken } from "@/server/account-data";
@@ -15,7 +17,24 @@ export const metadata: Metadata = { title: "Convite para empresa" };
 
 const ROLE_LABEL = { admin: "Administrador", member: "Membro" } as const;
 
-export default async function InvitePage({ params }: { params: Promise<{ token: string }> }) {
+type InvitePageProps = { params: Promise<{ token: string }> };
+
+export default function InvitePage(props: InvitePageProps) {
+  return (
+    <Suspense
+      fallback={
+        <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-5 py-12">
+          <Logo />
+          <Skeleton className="mt-8 h-40 w-full" />
+        </main>
+      }
+    >
+      <InviteContent {...props} />
+    </Suspense>
+  );
+}
+
+async function InviteContent({ params }: InvitePageProps) {
   const { token } = await params;
   const parsedToken = inviteTokenSchema.safeParse(token);
 
