@@ -21,6 +21,19 @@ export async function signInWithEmail(_prev: SignInState, formData: FormData): P
 
   const next = String(formData.get("next") ?? "/app");
   const safeNext = next.startsWith("/app") ? next : "/app";
+
+  // Senha é opcional: contas com senha definida entram direto; sem senha, segue o link mágico.
+  const password = String(formData.get("password") ?? "");
+  if (password) {
+    const supabase = await createSupabaseServerClient();
+    const { error } = await supabase.auth.signInWithPassword({ email: parsed.data, password });
+    if (error) {
+      log("warn", "auth.password_failed", { correlation_id: await getCorrelationId(), status: error.status });
+      return { status: "error", message: "E-mail ou senha incorretos.", email: parsed.data };
+    }
+    redirect(safeNext);
+  }
+
   const hdrs = await headers();
   const host = hdrs.get("x-forwarded-host") ?? hdrs.get("host");
   const proto = hdrs.get("x-forwarded-proto") ?? "http";

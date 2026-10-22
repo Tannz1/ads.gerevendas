@@ -21,7 +21,7 @@ export default function SignInPage() {
           <p className="mt-1.5 text-[15px] text-ink-soft">
             {demo
               ? "Este ambiente ainda não tem login configurado."
-              : "Enviamos um link de acesso para o seu e-mail. Sem senha para lembrar."}
+              : "Entre com sua senha ou receba um link de acesso no seu e-mail."}
           </p>
           <div className="mt-6">
             <Suspense fallback={<Skeleton className="h-28" />}>

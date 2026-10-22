@@ -27,7 +27,7 @@ async function magicLink(email: string): Promise<string> {
 async function login(page: Page, email: string) {
   await page.goto(p("/entrar"));
   await page.getByLabel("E-mail").fill(email);
-  await page.getByRole("button", { name: "Receber link de acesso" }).click();
+  await page.getByRole("button", { name: "Entrar", exact: true }).click();
   await expect(page.getByText("Link enviado")).toBeVisible();
   await page.goto(await magicLink(email));
   await expect(page).toHaveURL(/\/app$/);

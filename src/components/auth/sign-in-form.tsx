@@ -63,8 +63,11 @@ export function SignInForm({ demo }: { demo: boolean }) {
           placeholder="voce@empresa.com.br"
         />
       </Field>
+      <Field id="password" label="Senha" optional hint="Deixe em branco para receber um link de acesso por e-mail.">
+        <Input id="password" name="password" type="password" autoComplete="current-password" />
+      </Field>
       <Button type="submit" size="lg" disabled={pending}>
-        {pending ? "Enviando…" : "Receber link de acesso"}
+        {pending ? "Entrando…" : "Entrar"}
       </Button>
     </form>
   );
