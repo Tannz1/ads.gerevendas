@@ -1,6 +1,6 @@
 # Status do GereVendas Ads
 
-Atualizado em 20/10/2026. Legenda: **REAL** (funciona com persistência real), **MOCK** (simulação
+Atualizado em 22/10/2026. Legenda: **REAL** (funciona com persistência real), **MOCK** (simulação
 rotulada), **BLOQUEADO** (depende de decisão ou acesso externo), **PRÓXIMO** (ainda não existe código).
 
 Os documentos 03 e 06 citam um monorepo (`apps/web`, `packages/contracts`). O código é um app
@@ -10,10 +10,10 @@ Next.js único (ADR 0001): `apps/web` corresponde a `src/app`, `packages/contrac
 
 | Item | Situação |
 | --- | --- |
-| Produção | `https://signal-crm-staging-ads.onv9zt.easypanel.host/ads` (EasyPanel, projeto `signal-crm-staging`, serviço `ads`), em modo demonstração |
+| Produção | `https://signal-crm-staging-ads.onv9zt.easypanel.host/ads` (EasyPanel, projeto `signal-crm-staging`, serviço `ads`), **REAL** com Supabase próprio (commit `73aff92`) |
 | CI (GitHub Actions) | Lint, tipos, unitários, build, migrations + RLS em Postgres, E2E na raiz e em `/ads` |
 | Supabase local | **REAL**: `npx supabase start`; login, empresa, onboarding e isolamento validados por `tests/e2e/real.spec.ts`; 7 suites de testes de RLS passam no Postgres do Supabase |
-| Supabase do Ads em nuvem | **BLOQUEADO**: projeto exclusivo ainda não criado; produção segue em modo demonstração |
+| Supabase do Ads | **REAL**: self-hosted no EasyPanel (serviço Compose `ads-supabase`, `infra/supabase/`), API em `https://signal-crm-staging-ads-api.onv9zt.easypanel.host`; migrations aplicadas no deploy. **BLOQUEADO**: SMTP não configurado, então o link mágico não é enviado |
 | Domínio `gerevendas.com.br/ads` | **BLOQUEADO**: o domínio está na Hostinger, não na VPS; precisa de rewrite lá ou de subdomínio apontado para a VPS |
 | Deploy automático | **BLOQUEADO**: EasyPanel sem token do GitHub (Settings → GitHub) |
 | Limite de CPU/memória do serviço | Pendente: aplicar no EasyPanel para não disputar recursos com o CRM |
