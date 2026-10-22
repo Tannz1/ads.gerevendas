@@ -55,6 +55,16 @@ outro projeto. Não coloque service role key nem chaves da Meta/OpenAI nesta fas
 Para servir em outro lugar (ex.: subdomínio próprio na raiz), defina `NEXT_PUBLIC_BASE_PATH=` vazio e
 `NEXT_PUBLIC_APP_URL` com a nova origem.
 
+### Supabase self-hosted do Ads
+
+`infra/supabase/` tem um Supabase enxuto (Postgres, Auth, PostgREST, Storage, gateway Caddy) que
+aplica `supabase/migrations` a cada deploy. No EasyPanel: serviço **Compose** `ads-supabase`, source
+Git deste repo, branch `main`, compose file `infra/supabase/docker-compose.yml`. Domínio apontando
+para o compose service `ads-gateway`, porta `8000`. Variáveis (aba Environment): `POSTGRES_PASSWORD`,
+`JWT_SECRET`, `JWT_EXPIRY`, `ANON_KEY`, `SERVICE_ROLE_KEY` (JWTs HS256 assinados com `JWT_SECRET`),
+`SUPABASE_PUBLIC_URL`, `API_EXTERNAL_URL` (`<SUPABASE_PUBLIC_URL>/auth/v1`), `SITE_URL`,
+`ADDITIONAL_REDIRECT_URLS` e `SMTP_*` (sem SMTP o link mágico não é enviado).
+
 ## 4. Deploy automático
 
 Aba **Deployments → Auto Deploy** para publicar a cada push no `main`.
