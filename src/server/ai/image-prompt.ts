@@ -14,15 +14,15 @@ export type ImageFacts = {
 
 const SCENE: Record<AngleKey, string> = {
   oferta:
-    "composição comercial de alto impacto visual com o produto ou serviço centralizado, iluminação de estúdio publicitário e acabamento profissional premium",
+    "composição de estúdio publicitário com o produto ou serviço em foco absoluto, iluminação dramática limpa e atmosfera comercial premium",
   problema:
-    "cena realista do cotidiano com foco na dor ou necessidade do cliente, transmitindo urgência e identificação imediata",
+    "cena autêntica do cotidiano ilustrando a necessidade ou dor do cliente de forma expressiva, humana e com apelo emocional",
   beneficio:
-    "resultado impecável do serviço, destacando sensação de alívio, bem-estar, beleza e satisfação total do cliente",
+    "destaque visual do resultado transformador do serviço, transmitindo sensação de alívio, bem-estar, beleza, confiança e satisfação",
   demonstracao:
-    "o profissional em ação trabalhando no ambiente comercial impecável, transmitindo confiança, credibilidade e autoridade",
+    "o especialista em ação em seu espaço de trabalho impecável, com instrumentos e ferramentas em foco, transmitindo extrema competência e cuidado",
   conveniencia:
-    "destaque visual de atendimento rápido, agilidade, facilidade de contato via WhatsApp ou entrega/serviço no local",
+    "cena ágil e dinâmica retratando facilidade, conveniência, atendimento rápido ou entrega próxima com sensação de proximidade e confiança",
 };
 
 const clip = (s: string, max: number) => s.replace(/\s+/g, " ").trim().slice(0, max);

@@ -68,15 +68,27 @@ export function AdTemplate({ content, format, businessName, priceLabel, fonts, i
         fontFamily: fonts.display,
         fontWeight: 800,
         fontSize: headlineSize(content.headline),
-        lineHeight: 1.02,
+        lineHeight: 1.05,
         letterSpacing: -2,
+        textShadow: "0 4px 20px rgba(0,0,0,0.6)",
       }}
     >
       {content.headline}
     </div>
   );
   const body = (
-    <div style={{ display: "flex", fontSize: 42, lineHeight: 1.3, fontWeight: 500, opacity: 0.94 }}>{content.body}</div>
+    <div
+      style={{
+        display: "flex",
+        fontSize: 42,
+        lineHeight: 1.35,
+        fontWeight: 500,
+        opacity: 0.98,
+        textShadow: "0 2px 12px rgba(0,0,0,0.7)",
+      }}
+    >
+      {content.body}
+    </div>
   );
   const cta = (
     <div
