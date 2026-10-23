@@ -68,11 +68,11 @@ export function HomeStatus({ status, demo }: { status: OnboardingStatus; demo: b
             </li>
             <li className="flex items-start justify-between gap-3">
               <span>Conexão com a Meta</span>
-              <Badge>Em breve</Badge>
+              <Badge tone="demo">Simulação</Badge>
             </li>
           </ul>
           <p className="mt-5 text-sm text-ink-faint">
-            Nenhum anúncio é criado ou publicado nesta fase.{" "}
+            Nenhum anúncio real é publicado nesta fase.{" "}
             <Link href="/app/conta" className="font-medium text-brand underline-offset-2 hover:underline">
               Ver status da conta
             </Link>

@@ -124,6 +124,10 @@ export async function publishPausedCampaign(
     );
   }
   const simulated = !flags.realPublishing || flags.metaMode === "mock";
+  // Sem adaptador real da Meta ainda: nunca gravar IDs simulados como campanha real.
+  if (!simulated) {
+    return apiError("feature_disabled", "Publicação real na Meta ainda não está disponível.", correlationId);
+  }
   const { externalCampaignId, externalAdsetId } = simulatedExternalIds(
     ctx.organization.id,
     parsed.data.idempotency_key,
