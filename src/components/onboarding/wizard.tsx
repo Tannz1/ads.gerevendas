@@ -175,11 +175,16 @@ export function OnboardingWizard({ mode, initial }: WizardProps) {
           </>
         ) : (
           <p className="mt-3 text-ink-soft">
-            Recebemos as informações do seu negócio. A geração de estratégia e peças chega na próxima etapa do piloto.
+            Recebemos as informações do seu negócio. Agora a IA pesquisa sua região e seus concorrentes e cria a
+            estratégia e os anúncios.
           </p>
         )}
         <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
-          <ButtonLink href="/app">Voltar ao início</ButtonLink>
+          {demo ? (
+            <ButtonLink href="/app">Voltar ao início</ButtonLink>
+          ) : (
+            <ButtonLink href="/app/criativos">Criar meus anúncios</ButtonLink>
+          )}
           {demo && (
             <Button variant="secondary" onClick={restartDemo}>
               Recomeçar demonstração

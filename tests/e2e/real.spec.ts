@@ -87,7 +87,8 @@ test("login, empresa e onboarding persistidos; outra empresa não vê os dados",
   await expect(page.getByRole("heading", { name: "Cadastro concluído" })).toBeVisible();
   await expect(page.getByText("Simulação")).toHaveCount(0);
 
-  await page.getByRole("link", { name: "Voltar ao início" }).click();
+  await expect(page.getByRole("link", { name: "Criar meus anúncios" })).toBeVisible();
+  await page.goto(p("/app"));
   await expect(page.getByText("Concluído", { exact: true })).toBeVisible();
 
   // Criativos: estratégia + 5 peças (provedor simulado sem chave de IA), editar, aprovar, baixar.
