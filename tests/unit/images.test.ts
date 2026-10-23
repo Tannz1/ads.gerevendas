@@ -40,6 +40,36 @@ describe("buildImagePrompt", () => {
     const p = buildImagePrompt({ ...facts, offer_name: "x".repeat(500) }, "oferta");
     expect(p).not.toContain("x".repeat(121));
   });
+
+  it("usa a oferta e o texto da peça como contexto da cena", () => {
+    const p = buildImagePrompt(
+      {
+        segment: "Pet shop",
+        offer_name: "Vacinas para pets",
+        offer_description: "Vacinação de cães e gatos",
+        city: "Itajaí",
+        headline: "Vacinas de prevenção para pets",
+        body: "Fale com a gente para saber mais.",
+      },
+      "oferta",
+    );
+    expect(p).toContain("Vacinação de cães e gatos");
+    expect(p).toContain("Vacinas de prevenção para pets");
+    expect(p).toMatch(/sem escrever nenhuma palavra/i);
+  });
+
+  it("tira preço e números do texto antes de mandar para a imagem", () => {
+    const p = buildImagePrompt(
+      { ...facts, offer_description: "Combo por R$ 24,90", headline: "Café por R$ 24,90", body: "Até 10h, 20% off" },
+      "oferta",
+    );
+    expect(p).not.toMatch(/R\$|24,90|10h|20%/);
+  });
+
+  it("limita o tamanho do texto da peça no prompt", () => {
+    const p = buildImagePrompt({ ...facts, headline: "y".repeat(500) }, "oferta");
+    expect(p).not.toContain("y".repeat(221));
+  });
 });
 
 // Contrato conferido na documentação oficial da OpenAI (Image API) em 17/10/2026.

@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { generateStrategy, getJobStatus } from "@/server/creatives";
+import { generateMissingImages, generateStrategy, getJobStatus } from "@/server/creatives";
 
 export const JOB_ERRORS: Record<string, string> = {
   facts_violation:
@@ -37,6 +37,36 @@ export function GenerateButton({ briefId, label }: { briefId: string; label: str
         }
       >
         {pending ? "Começando…" : label}
+      </Button>
+      {error && (
+        <Alert tone="danger" className="max-w-xl">
+          {error}
+        </Alert>
+      )}
+    </div>
+  );
+}
+
+/** Gera com IA a imagem das peças que ainda estão sem imagem. */
+export function GenerateImagesButton({ strategyId, missing }: { strategyId: string; missing: number }) {
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <div className="flex flex-col items-start gap-3">
+      <Button
+        variant="secondary"
+        disabled={pending}
+        onClick={() =>
+          start(async () => {
+            setError(null);
+            const res = await generateMissingImages(strategyId);
+            if (!res.ok) setError(`${res.error.message} (código ${res.error.correlation_id.slice(0, 8)})`);
+            else router.refresh();
+          })
+        }
+      >
+        {pending ? "Começando…" : `Gerar imagem com IA para ${missing === 1 ? "1 peça" : `${missing} peças`}`}
       </Button>
       {error && (
         <Alert tone="danger" className="max-w-xl">

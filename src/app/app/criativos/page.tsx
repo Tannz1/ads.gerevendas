@@ -1,14 +1,21 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdPreview, imageUrl } from "@/components/creatives/ad-preview";
-import { GenerateButton, JOB_ERRORS, JobProgress } from "@/components/creatives/generation-controls";
+import {
+  GenerateButton,
+  GenerateImagesButton,
+  JOB_ERRORS,
+  JobProgress,
+} from "@/components/creatives/generation-controls";
 import { PilotFeedbackBox } from "@/components/creatives/pilot-feedback-box";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TEMPLATE_LABELS, type AngleKey } from "@/contracts/creatives";
+import { serverEnv } from "@/lib/env";
 import { formatCents } from "@/lib/money";
+import { selectImageProvider } from "@/server/ai/provider";
 import { getAppContext } from "@/server/context";
 import { loadCreativesOverview, loadCreditSummary, type CreditSummary } from "@/server/creatives-data";
 
@@ -113,6 +120,9 @@ export default async function CreativesPage() {
   }
 
   const { plan, simulated } = data.strategy;
+  const generatingImage = new Set(data.image_jobs.map((j) => j.creative_id));
+  const missingImages = data.creatives.filter((c) => !c.image_url && !generatingImage.has(c.id)).length;
+  const aiImages = Boolean(selectImageProvider(serverEnv()));
   return (
     <div className="mx-auto max-w-6xl">
       <Header simulated={simulated} credits={credits} />
@@ -161,6 +171,22 @@ export default async function CreativesPage() {
       </Card>
 
       <h2 className="mt-10 font-display text-xl font-bold">Peças</h2>
+      {data.image_jobs.length > 0 ? (
+        <div className="mt-3">
+          <JobProgress
+            jobId={data.image_jobs[0].id}
+            label={`Gerando a imagem de ${data.image_jobs.length === 1 ? "1 peça" : `${data.image_jobs.length} peças`}. Leva cerca de um minuto.`}
+          />
+        </div>
+      ) : (
+        aiImages &&
+        missingImages > 0 &&
+        !running && (
+          <div className="mt-3">
+            <GenerateImagesButton strategyId={data.strategy.id} missing={missingImages} />
+          </div>
+        )
+      )}
       <ul className="mt-4 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
         {data.creatives.map((c) => {
           const angle = plan.angles.find((a) => a.key === c.angle_key);
@@ -169,7 +195,10 @@ export default async function CreativesPage() {
               <Card className="flex h-full flex-col gap-4 p-4">
                 <div className="flex items-center justify-between gap-2">
                   <p className="font-semibold">{TEMPLATE_LABELS[c.angle_key as AngleKey]}</p>
-                  {c.status === "approved" ? <Badge tone="success">Aprovada</Badge> : <Badge>Rascunho</Badge>}
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    {generatingImage.has(c.id) && <Badge tone="brand">Gerando imagem</Badge>}
+                    {c.status === "approved" ? <Badge tone="success">Aprovada</Badge> : <Badge>Rascunho</Badge>}
+                  </div>
                 </div>
                 <AdPreview
                   width={300}

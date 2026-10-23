@@ -33,7 +33,7 @@ Next.js único (ADR 0001): `apps/web` corresponde a `src/app`, `packages/contrac
 ### M2 — Estratégia e criativos: concluído (spec `docs/superpowers/specs/2026-10-17-criativos-design.md`, ADR 0003)
 - Subprojeto 1, estratégia + 5 peças + composições visuais distintas por ângulo + editor + regeneração isolada de copy + aprovação + PNG 1080×1350/1080×1920: **REAL** no Supabase local. Sem chave da OpenAI roda o provedor **MOCK** rotulado Simulação.
 - Provedor de texto OpenAI (Responses API, JSON Schema estrito): **REAL**, validado em 17/10/2026 com `gpt-6-sol`.
-- Subprojeto 2, imagem de fundo: foto do cliente (JPG/PNG até 5 MB, conferida pelos bytes, com declaração de direito de uso) e geração com OpenAI Images (`gpt-image-2.5-flare`): **REAL**.
+- Subprojeto 2, imagem de fundo: foto do cliente (JPG/PNG até 5 MB, conferida pelos bytes, com declaração de direito de uso) e geração com OpenAI Images (`gpt-image-2.5-flare`): **REAL**. Desde 23/10/2026 as 5 imagens saem junto com a estratégia, com o texto de cada peça como contexto (prompt `image.v2`, sem preços nem números); a lista oferece gerar as que faltarem.
 - Subprojeto 3, créditos e limites: **REAL** no Supabase local (ledger append-only `reserve`/`commit`/`release`).
 - Dataset de avaliação automatizada com 12 segmentos locais (`tests/unit/evaluation-dataset.test.ts`): **REAL**.
 

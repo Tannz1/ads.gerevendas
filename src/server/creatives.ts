@@ -79,6 +79,7 @@ async function runStrategyJob(jobId: string, briefId: string, correlationId: str
     });
   };
 
+  let strategyId: string | null = null;
   try {
     const { input, brandColor } = await loadBriefFacts(supabase, briefId);
     const started = Date.now();
@@ -92,7 +93,7 @@ async function runStrategyJob(jobId: string, briefId: string, correlationId: str
       return await fail("facts_violation");
     }
 
-    const { error } = await supabase.rpc("finish_strategy_job", {
+    const { data: savedId, error } = await supabase.rpc("finish_strategy_job", {
       p_job: jobId,
       p_plan: parsed.data,
       p_contents: initialContents(parsed.data, brandColor, input.offer.price_cents),
@@ -114,8 +115,20 @@ async function runStrategyJob(jobId: string, briefId: string, correlationId: str
       input_tokens: result.usage.input_tokens,
       output_tokens: result.usage.output_tokens,
     });
+    strategyId = savedId as string;
   } catch (e) {
     await fail(e instanceof ProviderError ? e.code : "internal");
+  }
+
+  // Imagem de cada peça logo em seguida, com o texto dela como contexto. Fora do try acima: uma
+  // falha aqui não pode marcar como falha a estratégia, que já foi salva.
+  if (strategyId && provider.name !== "mock" && selectImageProvider(serverEnv())) {
+    try {
+      const { jobs } = await startMissingImageJobs(strategyId, correlationId);
+      await runImageJobs(jobs, correlationId);
+    } catch (e) {
+      log("error", "creatives.image_auto_failed", { ...meta, reason: e instanceof Error ? e.message : "unknown" });
+    }
   }
 }
 
@@ -338,16 +351,29 @@ async function runImageJob(jobId: string, creativeId: string, orgId: string, cor
   try {
     const { data } = await supabase
       .from("creatives")
-      .select("angle_key, strategies(briefs(businesses(segment, city), offers(name)))")
+      .select("angle_key, content, strategies(briefs(businesses(segment, city), offers(name, description)))")
       .eq("id", creativeId)
       .single();
     const row = data as unknown as {
       angle_key: AngleKey;
-      strategies: { briefs: { businesses: { segment: string; city: string }; offers: { name: string } } };
+      content: { headline?: string; body?: string } | null;
+      strategies: {
+        briefs: { businesses: { segment: string; city: string }; offers: { name: string; description: string | null } };
+      };
     } | null;
     if (!row) return await fail("internal");
     const { businesses: b, offers: o } = row.strategies.briefs;
-    const prompt = buildImagePrompt({ segment: b.segment, offer_name: o.name, city: b.city }, row.angle_key);
+    const prompt = buildImagePrompt(
+      {
+        segment: b.segment,
+        offer_name: o.name,
+        offer_description: o.description,
+        city: b.city,
+        headline: row.content?.headline,
+        body: row.content?.body,
+      },
+      row.angle_key,
+    );
 
     const started = Date.now();
     const image = await provider.generate(prompt, safetyId(orgId));
@@ -376,6 +402,72 @@ async function runImageJob(jobId: string, creativeId: string, orgId: string, cor
   } catch (e) {
     await fail(e instanceof ProviderError ? e.code : "internal");
   }
+}
+
+type ImageJobRef = { jobId: string; creativeId: string; orgId: string };
+
+/**
+ * Abre um job de imagem para cada peça da estratégia ainda sem imagem, um de cada vez para o
+ * limite mensal de créditos valer. Peça com job já em andamento fica de fora (outra chamada roda).
+ */
+async function startMissingImageJobs(
+  strategyId: string,
+  correlationId: string,
+): Promise<{ jobs: ImageJobRef[]; limitReached: boolean }> {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("creatives")
+    .select("id, organization_id")
+    .eq("strategy_id", strategyId)
+    .is("image_asset_id", null)
+    .order("created_at");
+  const jobs: ImageJobRef[] = [];
+  for (const c of (data ?? []) as Array<{ id: string; organization_id: string }>) {
+    const { data: job, error } = await supabase.rpc("start_image_job", {
+      p_creative: c.id,
+      p_correlation_id: correlationId,
+    });
+    if (error) {
+      const limitReached = error.message.includes("credit_limit_reached");
+      log("warn", "creatives.image_auto_skipped", { correlation_id: correlationId, code: error.code, limitReached });
+      if (limitReached) return { jobs, limitReached };
+      continue;
+    }
+    const started = job as { job_id: string; reused: boolean };
+    if (!started.reused) jobs.push({ jobId: started.job_id, creativeId: c.id, orgId: c.organization_id });
+  }
+  return { jobs, limitReached: false };
+}
+
+// ponytail: as imagens rodam em paralelo; se a conta OpenAI tiver limite baixo de imagens por minuto,
+// algumas falham e o botão "Gerar imagem com IA" da lista refaz só as que faltaram.
+function runImageJobs(jobs: ImageJobRef[], correlationId: string) {
+  return Promise.all(jobs.map((j) => runImageJob(j.jobId, j.creativeId, j.orgId, correlationId)));
+}
+
+/** Gera com IA a imagem das peças da estratégia que ainda não têm imagem (em segundo plano). */
+export async function generateMissingImages(strategyId: unknown): Promise<ApiResult<{ started: number }>> {
+  const correlationId = await getCorrelationId();
+  const id = uuid.safeParse(strategyId);
+  if (!id.success) return apiError("validation_failed", "Estratégia inválida.", correlationId);
+  const ctx = await getAppContext();
+  if (ctx.mode !== "supabase" || !ctx.organization) {
+    return apiError("feature_disabled", "Disponível no piloto com conta.", correlationId);
+  }
+  if (!selectImageProvider(serverEnv())) {
+    return apiError("feature_disabled", "A geração de imagens ainda não está ativada.", correlationId);
+  }
+
+  const { jobs, limitReached } = await startMissingImageJobs(id.data, correlationId);
+  if (jobs.length === 0 && limitReached) {
+    return apiError(
+      "credit_limit_reached",
+      "Você já gerou as 20 imagens com IA deste mês. Envie uma foto ou aguarde o dia 1º.",
+      correlationId,
+    );
+  }
+  after(() => runImageJobs(jobs, correlationId));
+  return { ok: true, data: { started: jobs.length }, correlation_id: correlationId };
 }
 
 /** Gera a imagem de fundo da peça com IA (em segundo plano). Só existe com a OpenAI configurada. */

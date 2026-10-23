@@ -92,6 +92,8 @@ export type CreativesOverview =
       job: { id: string; status: string; error_code: string | null } | null;
       strategy: { id: string; version: number; simulated: boolean; plan: StrategyPlan } | null;
       creatives: CreativeView[];
+      /** Jobs de imagem em andamento das peças desta estratégia (para a lista acompanhar). */
+      image_jobs: Array<{ id: string; creative_id: string }>;
     };
 
 /** Brief mais recente da empresa, último job de estratégia e a estratégia mais nova com as peças. */
@@ -135,7 +137,7 @@ export async function loadCreativesOverview(organizationId: string): Promise<Cre
     ? { id: job.id, status: stale ? "failed" : job.status, error_code: stale ? "timeout" : job.error_code }
     : null;
 
-  if (!strategy) return { state: "empty", brief_id: b.id, job: jobView, strategy: null, creatives: [] };
+  if (!strategy) return { state: "empty", brief_id: b.id, job: jobView, strategy: null, creatives: [], image_jobs: [] };
   const s = strategy as unknown as {
     id: string;
     version: number;
@@ -170,12 +172,26 @@ export async function loadCreativesOverview(organizationId: string): Promise<Cre
     .filter((c): c is CreativeView => c !== null)
     .sort((x, y) => order.indexOf(x.angle_key) - order.indexOf(y.angle_key));
 
+  const { data: imageJobs } = await supabase
+    .from("generation_jobs")
+    .select("id, creative_id, started_at")
+    .eq("kind", "image")
+    .in("status", ["queued", "running"])
+    .in(
+      "creative_id",
+      creatives.map((c) => c.id),
+    );
+  const fresh = ((imageJobs ?? []) as Array<{ id: string; creative_id: string; started_at: string }>).filter(
+    (j) => Date.now() - new Date(j.started_at).getTime() <= 5 * 60_000,
+  );
+
   return {
     state: "ready",
     brief_id: b.id,
     job: jobView,
     strategy: { id: s.id, version: s.version, simulated: s.simulated, plan },
     creatives,
+    image_jobs: fresh.map((j) => ({ id: j.id, creative_id: j.creative_id })),
   };
 }
 
