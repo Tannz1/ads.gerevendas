@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { connectMetaAssets, disconnectMetaAssets } from "@/server/campaigns";
 import type { MetaConnectionView } from "@/server/campaigns-data";
 import type { DiscoveredMetaAssets } from "@/lib/meta-oauth";
+import { publicEnv } from "@/lib/public-env";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,23 +38,29 @@ export function MetaConnectionPanel({
 
   const firstDiscoveredAccount = discoveredAssets?.ad_accounts[0];
   const firstDiscoveredPage = discoveredAssets?.pages[0];
+  // Com o app Meta configurado, nada de IDs de exemplo: só ativos descobertos ou uma conexão real já salva.
+  const savedSimulation = hasRealMetaOAuthApp && connection?.simulated === true;
+  const saved = savedSimulation ? null : connection;
+  const sample = !hasRealMetaOAuthApp;
 
   const [adAccountId, setAdAccountId] = useState(
-    firstDiscoveredAccount?.id ?? connection?.ad_account_id ?? "act_1020304050",
+    firstDiscoveredAccount?.id ?? saved?.ad_account_id ?? (sample ? "act_1020304050" : ""),
   );
   const [adAccountName, setAdAccountName] = useState(
-    firstDiscoveredAccount?.name ?? connection?.ad_account_name ?? `${defaultBusinessName} Ads`,
+    firstDiscoveredAccount?.name ?? saved?.ad_account_name ?? (sample ? `${defaultBusinessName} Ads` : ""),
   );
-  const [pageId, setPageId] = useState(firstDiscoveredPage?.id ?? connection?.page_id ?? "page_99887766");
-  const [pageName, setPageName] = useState(firstDiscoveredPage?.name ?? connection?.page_name ?? defaultBusinessName);
+  const [pageId, setPageId] = useState(firstDiscoveredPage?.id ?? saved?.page_id ?? (sample ? "page_99887766" : ""));
+  const [pageName, setPageName] = useState(
+    firstDiscoveredPage?.name ?? saved?.page_name ?? (sample ? defaultBusinessName : ""),
+  );
   const [instagramId, setInstagramId] = useState(
-    firstDiscoveredPage?.instagram_actor_id ?? connection?.instagram_actor_id ?? "",
+    firstDiscoveredPage?.instagram_actor_id ?? saved?.instagram_actor_id ?? "",
   );
   const [whatsappPhone, setWhatsappPhone] = useState(
-    firstDiscoveredPage?.whatsapp_phone_e164 ?? connection?.whatsapp_phone_e164 ?? defaultWhatsapp ?? "",
+    firstDiscoveredPage?.whatsapp_phone_e164 ?? saved?.whatsapp_phone_e164 ?? defaultWhatsapp ?? "",
   );
   const [billingVerified, setBillingVerified] = useState(
-    firstDiscoveredAccount?.has_funding_source ?? connection?.billing_verified_on_meta ?? false,
+    firstDiscoveredAccount?.has_funding_source ?? saved?.billing_verified_on_meta ?? false,
   );
   const [showManualFields, setShowManualFields] = useState(false);
   const [message, setMessage] = useState<{ tone: "info" | "success" | "danger"; text: string } | null>(() => {
@@ -153,6 +160,13 @@ export function MetaConnectionPanel({
           </div>
         </div>
 
+        {savedSimulation && (
+          <Alert tone="warning" className="mt-4" title="A conexão salva é de simulação">
+            Os IDs atuais são de exemplo, não das suas contas. Clique em Conectar com Facebook para escolher sua conta
+            de anúncios e sua página reais.
+          </Alert>
+        )}
+
         <Alert tone="info" className="mt-4" title="Cobrança de mídia separada">
           O pagamento pelos anúncios veiculados (Pix ou cartão da mídia) é feito diretamente no Gerenciador de Anúncios
           oficial da Meta. O GereVendas Ads nunca coleta saldo de mídia nem armazena cartão Meta.
@@ -173,7 +187,7 @@ export function MetaConnectionPanel({
             </div>
             {canManage && (
               <a
-                href="/api/meta/oauth/start"
+                href={`${publicEnv.basePath}/api/meta/oauth/start`}
                 className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1877F2] px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#166fe5] focus-visible:ring-2 focus-visible:ring-[#1877F2]/50 focus-visible:outline-none"
               >
                 <svg className="size-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
@@ -324,7 +338,7 @@ export function MetaConnectionPanel({
 
           {canManage ? (
             <div className="flex flex-wrap gap-3 pt-2">
-              <Button type="submit" disabled={pending}>
+              <Button type="submit" disabled={pending || !adAccountId.trim() || !pageId.trim()}>
                 {pending
                   ? "Salvando…"
                   : metaMode === "mock"

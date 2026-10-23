@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { cache } from "react";
 import { CORRELATION_HEADER, ensureCorrelationId } from "@/lib/correlation";
-import { isSupabaseConfigured } from "@/lib/public-env";
+import { serverEnv } from "@/lib/env";
+import { isSupabaseConfigured, publicUrl } from "@/lib/public-env";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type MemberRole = "owner" | "admin" | "member" | "support";
@@ -28,7 +29,8 @@ export const getAppContext = cache(async (): Promise<AppContext> => {
   await connection();
   const supabase = await createSupabaseServerClient();
   const { data: auth } = await supabase.auth.getUser();
-  if (!auth.user) redirect("/entrar");
+  // URL completa: em Route Handlers o redirect() relativo sai sem o basePath (/ads) e cai em 404.
+  if (!auth.user) redirect(publicUrl("/entrar", serverEnv().NEXT_PUBLIC_APP_URL).toString());
 
   const { data: membership, error } = await supabase
     .from("organization_members")
