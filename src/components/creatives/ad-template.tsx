@@ -32,11 +32,6 @@ export function headlineSize(headline: string): number {
   return n <= 22 ? 112 : n <= 36 ? 92 : 76;
 }
 
-function rgba(hex: string, alpha: number): string {
-  const n = parseInt(hex.slice(1), 16);
-  return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
-}
-
 export function AdTemplate({ content, format, businessName, priceLabel, fonts, imageSrc, logoSrc }: AdTemplateProps) {
   const { width, height } = FORMATS[format];
   const safe = SAFE_AREA[format];
@@ -145,7 +140,7 @@ export function AdTemplate({ content, format, businessName, priceLabel, fonts, i
     </div>
   );
 
-  // Foto de fundo com véu da cor da marca, sempre por baixo do texto.
+  // Foto de fundo limpa com gradiente neutro escuro suave na base apenas para legibilidade do texto.
   const photo = imageSrc ? (
     <>
       {/* eslint-disable-next-line @next/next/no-img-element -- o mesmo JSX vira PNG no Satori, que só aceita <img> */}
@@ -153,7 +148,7 @@ export function AdTemplate({ content, format, businessName, priceLabel, fonts, i
       <div
         style={{
           ...layer,
-          backgroundImage: `linear-gradient(180deg, ${rgba(background, 0.25)} 0%, ${rgba(background, 0.55)} 45%, ${rgba(background, 0.96)} 100%)`,
+          backgroundImage: `linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.3) 45%, rgba(0, 0, 0, 0.85) 100%)`,
         }}
       />
     </>

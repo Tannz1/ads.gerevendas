@@ -1,6 +1,5 @@
 import type { AngleKey, CreativeContent, StrategyPlan } from "@/contracts/creatives";
 
-const NEUTRAL_BG = "#1F2937";
 const LIGHT = "#FFFFFF";
 const DARK = "#111827";
 
@@ -23,14 +22,15 @@ export function readableOn(bg: string): string {
   return contrastRatio(bg, LIGHT) >= contrastRatio(bg, DARK) ? LIGHT : DARK;
 }
 
-/** Conteúdo inicial das 5 peças a partir do plano: cor da marca no fundo, preço só na oferta. */
+/** Conteúdo inicial das 5 peças a partir do plano: cor da marca como destaque (accent/botões), fundo neutro escuro ou limpo para a foto. */
 export function initialContents(
   plan: StrategyPlan,
   brandColor: string | null,
   priceCents: number | null,
 ): Array<{ angle_key: AngleKey; content: CreativeContent }> {
-  const background = brandColor ?? NEUTRAL_BG;
-  const text = readableOn(background);
+  const accent = brandColor ?? "#2A45E8";
+  const background = "#0F172A";
+  const text = "#FFFFFF";
   return plan.angles.map((a) => ({
     angle_key: a.key,
     content: {
@@ -40,7 +40,7 @@ export function initialContents(
       cta: a.cta,
       // Selo de preço só na oferta e só se a IA não citou o valor no texto (evita preço duplicado).
       show_price: a.key === "oferta" && priceCents !== null && !/R\$/.test(`${a.headline} ${a.body}`),
-      colors: { background, accent: text, text },
+      colors: { background, accent, text },
     },
   }));
 }
