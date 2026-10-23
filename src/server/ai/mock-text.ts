@@ -1,6 +1,6 @@
-import { LIMITS, type StrategyPlan } from "@/contracts/creatives";
+import { LIMITS, type MarketResearch, type StrategyPlan } from "@/contracts/creatives";
 import { formatCents } from "@/lib/money";
-import type { StrategyInput, TextProvider } from "./types";
+import type { ResearchInput, StrategyInput, TextProvider } from "./types";
 
 /** Corta em limite de palavra, sem reticências. */
 function clip(s: string, max: number): string {
@@ -87,9 +87,29 @@ export function mockStrategy(input: StrategyInput): StrategyPlan {
   };
 }
 
+/** Pesquisa simulada: sem web. Só organiza os concorrentes que o próprio cliente informou. */
+export function mockResearch(input: ResearchInput): MarketResearch {
+  const { business: b } = input;
+  return {
+    business_context: "Pesquisa na web indisponível no modo Simulação.",
+    local_market: clip(`${b.segment} em ${b.city}/${b.state}.`, 600),
+    competitors: input.competitors_listed.slice(0, 6).map((name) => ({
+      name: clip(name, 120),
+      source_url: null,
+      positioning: "Informado por você. Sem pesquisa na web no modo Simulação.",
+      client_listed: true,
+    })),
+    opportunities: [],
+    audience_insights: [],
+  };
+}
+
 export const mockText: TextProvider = {
   name: "mock",
   model: "simulacao",
+  async research(input) {
+    return { data: mockResearch(input), sources: [], usage: { input_tokens: 0, output_tokens: 0 } };
+  },
   async generateStrategy(input) {
     return { data: mockStrategy(input), usage: { input_tokens: 0, output_tokens: 0 } };
   },

@@ -80,7 +80,7 @@ export function GenerateImagesButton({ strategyId, missing }: { strategyId: stri
 /** Acompanha o job a cada 2 s e atualiza a página quando termina. */
 export function JobProgress({
   jobId,
-  label = "Criando a estratégia e as 5 peças. Leva menos de um minuto.",
+  label = "Pesquisando sua região e seus concorrentes e criando a estratégia e as 5 peças. Leva cerca de um minuto.",
 }: {
   jobId: string;
   label?: string;

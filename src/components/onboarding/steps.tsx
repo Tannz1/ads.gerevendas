@@ -152,6 +152,34 @@ export function BusinessStep({ form, errors, update }: StepProps) {
             />
           </Field>
         </div>
+        <fieldset>
+          <legend className="text-sm font-semibold">
+            Concorrentes <span className="font-normal text-ink-faint">(opcional, até 3)</span>
+          </legend>
+          <p className="mt-1 mb-3 text-sm text-ink-faint">
+            Quem disputa clientes com você. Nome e, se souber, o @ do Instagram ou o site. A IA também procura outros na
+            sua região.
+          </p>
+          <div className="grid gap-2.5">
+            {b.competitors.slice(0, 3).map((c, i) => (
+              <Input
+                key={i}
+                aria-label={`Concorrente ${i + 1}`}
+                value={c}
+                maxLength={120}
+                onChange={(e) => {
+                  const list = [...b.competitors];
+                  list[i] = e.target.value;
+                  update("business", { competitors: list });
+                }}
+                placeholder={
+                  ["Ex.: Pet Shop Amigo (@petshopamigo)", "Ex.: Clínica Bicho Feliz", "Ex.: petcenter.com.br"][i]
+                }
+                aria-invalid={Boolean(errors[`business.competitors.${i}`])}
+              />
+            ))}
+          </div>
+        </fieldset>
       </div>
     </>
   );
@@ -544,6 +572,12 @@ export function ReviewStep({
           ]
             .filter(Boolean)
             .join(" · ") || "Sem canais informados"}
+          {b.competitors.some((c) => c.trim()) && (
+            <>
+              <br />
+              Concorrentes: {b.competitors.filter((c) => c.trim()).join("; ")}
+            </>
+          )}
         </Summary>
         <Summary title="Oferta" onEdit={() => onEdit(2)}>
           <span className="font-medium text-ink">{o.name || "—"}</span>

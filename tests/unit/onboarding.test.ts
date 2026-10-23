@@ -20,6 +20,7 @@ function filled(): FormState {
     instagram_handle: "@padaria.exemplo",
     whatsapp: "(19) 99999-0000",
     website_url: "",
+    competitors: ["Padaria Central (@padariacentral)", "", ""],
   };
   f.offer = {
     name: "Café da manhã completo",
@@ -50,6 +51,7 @@ describe("onboarding: conversão para o contrato", () => {
     expect(parsed.offer.price_cents).toBe(2490);
     expect(parsed.offer.differentiators).toEqual(["Pão às 6h"]);
     expect(parsed.audience.service_radius_km).toBe(3);
+    expect(parsed.business.competitors).toEqual(["Padaria Central (@padariacentral)"]);
   });
 
   it("formulário completo não tem erros", () => {

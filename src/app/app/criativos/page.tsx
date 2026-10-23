@@ -8,6 +8,7 @@ import {
   JobProgress,
 } from "@/components/creatives/generation-controls";
 import { PilotFeedbackBox } from "@/components/creatives/pilot-feedback-box";
+import { ResearchSection } from "@/components/creatives/research-section";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
@@ -104,8 +105,9 @@ export default async function CreativesPage() {
           <div>
             <h2 className="font-display text-xl font-bold">Sua estratégia e 5 anúncios</h2>
             <p className="mt-2 text-ink-soft">
-              Criamos cinco abordagens de venda, cada uma com uma peça pronta para editar. Usamos apenas o que você
-              confirmou no cadastro; você revisa e aprova antes de qualquer uso.
+              Pesquisamos sua região e seus concorrentes na web e criamos cinco abordagens de venda, cada uma com uma
+              peça pronta. As peças usam só o que você confirmou no cadastro; você revisa e aprova antes de qualquer
+              uso.
             </p>
           </div>
           {jobError}
@@ -145,6 +147,7 @@ export default async function CreativesPage() {
             <dd className="text-ink-soft">{plan.targeting_proposal.age_range}</dd>
           </div>
         </dl>
+        {plan.research && <ResearchSection research={plan.research} />}
         {plan.fields_requiring_confirmation.length > 0 && (
           <div className="mt-5">
             <p className="text-sm font-semibold">Precisa confirmar</p>

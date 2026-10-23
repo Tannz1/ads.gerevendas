@@ -43,6 +43,37 @@ export const strategyPlanSchema = z.object({
 });
 export type StrategyPlan = z.infer<typeof strategyPlanSchema>;
 
+/**
+ * Pesquisa de mercado feita pela IA na web antes da estratégia. É contexto, não fato do cliente:
+ * nada daqui entra nas peças sem passar pela checagem de fatos.
+ */
+export const marketResearchSchema = z.object({
+  business_context: text(600),
+  local_market: text(600),
+  competitors: z
+    .array(
+      z.object({
+        name: text(120),
+        source_url: z.string().trim().max(400).nullable(),
+        positioning: text(300),
+        client_listed: z.boolean(),
+      }),
+    )
+    .max(8),
+  opportunities: z.array(text(240)).max(5),
+  audience_insights: z.array(text(240)).max(5),
+});
+export type MarketResearch = z.infer<typeof marketResearchSchema>;
+
+export const researchSourceSchema = z.object({ url: z.string().max(600), title: z.string().max(200).nullable() });
+export type ResearchSource = z.infer<typeof researchSourceSchema>;
+
+/** Plano como fica gravado: o que o modelo de estratégia devolveu + a pesquisa (com as fontes). */
+export const storedStrategyPlanSchema = strategyPlanSchema.extend({
+  research: marketResearchSchema.extend({ sources: z.array(researchSourceSchema).max(12) }).nullish(),
+});
+export type StoredStrategyPlan = z.infer<typeof storedStrategyPlanSchema>;
+
 const hex = z.string().regex(/^#[0-9A-Fa-f]{6}$/, "Cor em hexadecimal, ex.: #C2410C");
 
 export const creativeContentSchema = z.object({

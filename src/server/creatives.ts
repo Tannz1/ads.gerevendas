@@ -5,7 +5,16 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { z } from "zod";
 import { apiError, type ApiResult } from "@/contracts/api";
-import { creativeContentSchema, strategyPlanSchema, type AngleKey, type JobStatus } from "@/contracts/creatives";
+import {
+  creativeContentSchema,
+  marketResearchSchema,
+  storedStrategyPlanSchema,
+  strategyPlanSchema,
+  type AngleKey,
+  type JobStatus,
+  type MarketResearch,
+  type StoredStrategyPlan,
+} from "@/contracts/creatives";
 import { fieldErrors } from "@/contracts/onboarding";
 import { initialContents } from "@/lib/creatives";
 import { detectImage, MAX_PHOTO_BYTES } from "@/lib/image-bytes";
@@ -14,10 +23,10 @@ import { log } from "@/lib/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { checkFacts } from "./ai/facts";
 import { ProviderError } from "./ai/openai-text";
-import { confirmedFacts, PROMPT_VERSION } from "./ai/prompt";
+import { confirmedFacts, PROMPT_VERSION, RESEARCH_PROMPT_VERSION } from "./ai/prompt";
 import { buildImagePrompt, IMAGE_PROMPT_VERSION } from "./ai/image-prompt";
 import { selectImageProvider, selectTextProvider } from "./ai/provider";
-import type { StrategyInput } from "./ai/types";
+import type { ResearchInput, StrategyInput, TextProvider } from "./ai/types";
 import { getAppContext, getCorrelationId } from "./context";
 import { ASSETS_BUCKET, loadCreative, loadCreditSummary } from "./creatives-data";
 
@@ -31,7 +40,7 @@ async function loadBriefFacts(supabase: Supabase, briefId: string) {
     .from("briefs")
     .select(
       "objective, audience_description, age_min, age_max, service_radius_km, " +
-        "businesses(name, segment, city, state, tone_of_voice, brand_primary_color), " +
+        "businesses(name, segment, city, state, tone_of_voice, brand_primary_color, instagram_handle, website_url, competitors), " +
         "offers(name, description, price_cents, differentiators)",
     )
     .eq("id", briefId)
@@ -45,10 +54,27 @@ async function loadBriefFacts(supabase: Supabase, briefId: string) {
     age_min: number;
     age_max: number;
     service_radius_km: number | null;
-    businesses: StrategyInput["business"] & { brand_primary_color: string | null };
+    businesses: StrategyInput["business"] & {
+      brand_primary_color: string | null;
+      instagram_handle: string | null;
+      website_url: string | null;
+      competitors: string[] | null;
+    };
     offers: StrategyInput["offer"];
   };
-  const { brand_primary_color, ...business } = row.businesses;
+  const { brand_primary_color, instagram_handle, website_url, competitors, ...business } = row.businesses;
+  const researchInput: ResearchInput = {
+    business: {
+      name: business.name,
+      segment: business.segment,
+      city: business.city,
+      state: business.state,
+      instagram_handle,
+      website_url,
+    },
+    offer: { name: row.offers.name, description: row.offers.description },
+    competitors_listed: competitors ?? [],
+  };
   const input: StrategyInput = {
     business,
     offer: row.offers,
@@ -60,8 +86,34 @@ async function loadBriefFacts(supabase: Supabase, briefId: string) {
     },
     objective: row.objective,
   };
-  return { input, brandColor: brand_primary_color };
+  return { input, researchInput, brandColor: brand_primary_color };
 }
+
+type StoredResearch = NonNullable<StoredStrategyPlan["research"]>;
+
+/**
+ * Pesquisa de mercado na web (primeiro passo da estratégia). Falha não derruba a estratégia:
+ * ela sai só com os fatos do cliente.
+ */
+async function runResearch(provider: TextProvider, input: ResearchInput, meta: Record<string, unknown>) {
+  try {
+    const r = await provider.research(input);
+    const parsed = marketResearchSchema.safeParse(r.data);
+    if (!parsed.success) {
+      log("warn", "creatives.research_invalid", { ...meta, prompt_version: RESEARCH_PROMPT_VERSION });
+      return { research: null, usage: r.usage };
+    }
+    const research: StoredResearch = { ...parsed.data, sources: r.sources };
+    return { research, usage: r.usage };
+  } catch (e) {
+    log("warn", "creatives.research_failed", { ...meta, error_code: e instanceof ProviderError ? e.code : "internal" });
+    return { research: null, usage: { input_tokens: 0, output_tokens: 0 } };
+  }
+}
+
+/** A estratégia recebe a pesquisa sem as fontes (as fontes são só para a tela). */
+const forStrategy = (research: StoredResearch | null | undefined): MarketResearch | null =>
+  research ? marketResearchSchema.parse(research) : null;
 
 /** Executa o job de estratégia (dentro de `after()`): provedor → validação → checagem de fatos → RPC. */
 async function runStrategyJob(jobId: string, briefId: string, correlationId: string) {
@@ -81,9 +133,10 @@ async function runStrategyJob(jobId: string, briefId: string, correlationId: str
 
   let strategyId: string | null = null;
   try {
-    const { input, brandColor } = await loadBriefFacts(supabase, briefId);
+    const { input, researchInput, brandColor } = await loadBriefFacts(supabase, briefId);
     const started = Date.now();
-    const result = await provider.generateStrategy(input);
+    const { research, usage: researchUsage } = await runResearch(provider, researchInput, meta);
+    const result = await provider.generateStrategy({ ...input, research: forStrategy(research) });
 
     const parsed = strategyPlanSchema.safeParse(result.data);
     if (!parsed.success) return await fail("invalid_output");
@@ -95,14 +148,14 @@ async function runStrategyJob(jobId: string, briefId: string, correlationId: str
 
     const { data: savedId, error } = await supabase.rpc("finish_strategy_job", {
       p_job: jobId,
-      p_plan: parsed.data,
+      p_plan: { ...parsed.data, research },
       p_contents: initialContents(parsed.data, brandColor, input.offer.price_cents),
       p_simulated: provider.name === "mock",
       p_provider: provider.name,
       p_model: provider.model,
       p_prompt_version: PROMPT_VERSION,
-      p_input_tokens: result.usage.input_tokens,
-      p_output_tokens: result.usage.output_tokens,
+      p_input_tokens: result.usage.input_tokens + researchUsage.input_tokens,
+      p_output_tokens: result.usage.output_tokens + researchUsage.output_tokens,
     });
     if (error) {
       log("error", "creatives.strategy_save_failed", { ...meta, code: error.code });
@@ -114,6 +167,7 @@ async function runStrategyJob(jobId: string, briefId: string, correlationId: str
       ms: Date.now() - started,
       input_tokens: result.usage.input_tokens,
       output_tokens: result.usage.output_tokens,
+      research: research ? { competitors: research.competitors.length, sources: research.sources.length } : null,
     });
     strategyId = savedId as string;
   } catch (e) {
@@ -277,7 +331,7 @@ export async function regenerateCreativeCopy(
   const supabase = await createSupabaseServerClient();
   const { data: row, error: fetchErr } = await supabase
     .from("creatives")
-    .select("id, angle_key, content, strategies(brief_id)")
+    .select("id, angle_key, content, strategies(brief_id, plan)")
     .eq("id", id.data)
     .maybeSingle();
   if (fetchErr || !row) return apiError("not_found", "Peça não encontrada.", correlationId);
@@ -286,7 +340,7 @@ export async function regenerateCreativeCopy(
     id: string;
     angle_key: AngleKey;
     content: unknown;
-    strategies: { brief_id: string };
+    strategies: { brief_id: string; plan: unknown };
   };
   const currentContent = creativeContentSchema.safeParse(r.content);
   if (!currentContent.success) return apiError("internal", "Conteúdo atual inválido.", correlationId);
@@ -294,7 +348,9 @@ export async function regenerateCreativeCopy(
   try {
     const { input } = await loadBriefFacts(supabase, r.strategies.brief_id);
     const provider = selectTextProvider(serverEnv());
-    const result = await provider.generateStrategy(input);
+    // Mesma pesquisa da estratégia salva: o texto novo segue o mesmo contexto, sem pesquisar de novo.
+    const research = storedStrategyPlanSchema.safeParse(r.strategies.plan).data?.research;
+    const result = await provider.generateStrategy({ ...input, research: forStrategy(research) });
     const parsedPlan = strategyPlanSchema.safeParse(result.data);
     if (!parsedPlan.success) return apiError("external_unavailable", "Falha ao gerar novo texto.", correlationId);
 

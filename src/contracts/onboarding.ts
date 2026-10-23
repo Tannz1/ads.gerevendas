@@ -22,6 +22,11 @@ export const businessStepSchema = z.object({
   website_url: optionalText(
     z.url({ protocol: /^https$/, message: "Use um endereço completo começando com https://" }).max(300),
   ),
+  /** Concorrentes que o cliente conhece (nome e, se souber, @ ou site). A IA pesquisa outros. */
+  competitors: z
+    .array(text(2, 120, "Concorrente"))
+    .max(5)
+    .default([]),
 });
 
 export const offerStepSchema = z

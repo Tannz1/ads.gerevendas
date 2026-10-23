@@ -48,7 +48,8 @@ language sql immutable as $$
   select jsonb_build_object(
     'business', jsonb_build_object(
       'name', 'Padaria Exemplo', 'segment', 'Padaria', 'city', 'Campinas', 'state', 'SP',
-      'instagram_handle', 'padaria.exemplo', 'whatsapp_e164', '+5519999990000'
+      'instagram_handle', 'padaria.exemplo', 'whatsapp_e164', '+5519999990000',
+      'competitors', jsonb_build_array('Padaria Central', 'Café do Zé (@cafedoze)')
     ),
     'offer', jsonb_build_object(
       'name', 'Café da manhã completo', 'description', 'Pão na chapa, café e suco natural.',
@@ -112,6 +113,7 @@ select tests.eq(
   1, 'complete_onboarding é idempotente');
 select tests.eq((select count(*) from public.businesses), 1, 'replay não duplica negócio');
 select tests.eq((select count(*) from public.briefs where status = 'submitted'), 1, 'brief submetido');
+select tests.eq((select cardinality(competitors) from public.businesses limit 1), 2, 'concorrentes informados gravados no negócio');
 
 insert into tests.ctx select 'business_a', id from public.businesses limit 1;
 

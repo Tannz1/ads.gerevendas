@@ -1,9 +1,9 @@
 import "server-only";
 import {
   creativeContentSchema,
-  strategyPlanSchema,
+  storedStrategyPlanSchema,
   type CreativeContent,
-  type StrategyPlan,
+  type StoredStrategyPlan,
 } from "@/contracts/creatives";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -90,7 +90,7 @@ export type CreativesOverview =
       state: "ready" | "empty";
       brief_id: string;
       job: { id: string; status: string; error_code: string | null } | null;
-      strategy: { id: string; version: number; simulated: boolean; plan: StrategyPlan } | null;
+      strategy: { id: string; version: number; simulated: boolean; plan: StoredStrategyPlan } | null;
       creatives: CreativeView[];
       /** Jobs de imagem em andamento das peças desta estratégia (para a lista acompanhar). */
       image_jobs: Array<{ id: string; creative_id: string }>;
@@ -145,7 +145,7 @@ export async function loadCreativesOverview(organizationId: string): Promise<Cre
     plan: unknown;
     creatives: CreativeRow[];
   };
-  const plan = strategyPlanSchema.parse(s.plan);
+  const plan = storedStrategyPlanSchema.parse(s.plan);
   const order = plan.angles.map((a) => a.key as string);
   const urls = await signedUrls(
     supabase,

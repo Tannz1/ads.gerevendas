@@ -21,6 +21,7 @@ export type FormState = {
     instagram_handle: string;
     whatsapp: string;
     website_url: string;
+    competitors: string[];
   };
   offer: {
     name: string;
@@ -40,7 +41,16 @@ export const DEFAULT_BRAND_COLOR = "#2A45E8";
 
 export function emptyForm(): FormState {
   return {
-    business: { name: "", segment: "", city: "", state: "", instagram_handle: "", whatsapp: "", website_url: "" },
+    business: {
+      name: "",
+      segment: "",
+      city: "",
+      state: "",
+      instagram_handle: "",
+      whatsapp: "",
+      website_url: "",
+      competitors: ["", "", ""],
+    },
     offer: {
       name: "",
       description: "",
@@ -101,6 +111,7 @@ export function toPayload(form: FormState): OnboardingInput {
       instagram_handle: cleanInstagram(b.instagram_handle),
       whatsapp_e164: normalizeBrazilWhatsapp(b.whatsapp),
       website_url: b.website_url.trim(),
+      competitors: b.competitors.map((c) => c.trim()).filter(Boolean),
     },
     offer: {
       name: o.name,
