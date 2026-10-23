@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   const env = serverEnv();
   const jar = await cookies();
 
-  // Se o App da Meta (META_APP_ID + META_APP_SECRET) estiver configurado, redireciona para o OAuth real da Meta v21.0
+  // Se o App da Meta (META_APP_ID + META_APP_SECRET) estiver configurado, redireciona para o OAuth real da Meta
   if (env.META_APP_ID && env.META_APP_SECRET) {
     const state = createOAuthState(ctx.organization.id, env.META_APP_SECRET);
     jar.set(META_OAUTH_STATE_COOKIE, state, {

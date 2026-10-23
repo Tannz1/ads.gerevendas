@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildMetaAuthorizeUrl, createOAuthState, verifyOAuthState } from "@/lib/meta-oauth";
+import { buildMetaAuthorizeUrl, createOAuthState, META_GRAPH_VERSION, verifyOAuthState } from "@/lib/meta-oauth";
 
 const secret = "test-secret";
 
@@ -19,7 +19,7 @@ describe("OAuth state da Meta", () => {
 
   it("monta URL de autorização com versão fixada e escopos", () => {
     const url = new URL(buildMetaAuthorizeUrl({ appId: "1", redirectUri: "https://x/cb", state: "s" }));
-    expect(url.pathname).toBe("/v21.0/dialog/oauth");
+    expect(url.pathname).toBe(`/${META_GRAPH_VERSION}/dialog/oauth`);
     expect(url.searchParams.get("scope")).toContain("ads_management");
   });
 });

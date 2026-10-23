@@ -1,9 +1,10 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 /**
- * Versão fixada da Meta Graph API (conforme ADR 0004 e docs/06_INTEGRACOES.md).
+ * Versão fixada da Graph/Marketing API. A v21.0 da Marketing API expirou em 09/09/2025;
+ * v25.0 é a versão de Marketing vigente em 23/10/2026 (developers.facebook.com/docs/graph-api/changelog/versions).
  */
-export const META_GRAPH_VERSION = "v21.0";
+export const META_GRAPH_VERSION = "v25.0";
 
 export const META_REQUIRED_SCOPES = [
   "ads_management",
