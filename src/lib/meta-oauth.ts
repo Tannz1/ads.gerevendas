@@ -90,11 +90,11 @@ export async function exchangeCodeAndDiscoverMetaAssets(params: {
 
   const [adAccountsRes, pagesRes] = await Promise.all([
     fetch(
-      `https://graph.facebook.com/${META_GRAPH_VERSION}/me/adaccounts?fields=id,name,account_status,currency,funding_source`,
+      `https://graph.facebook.com/${META_GRAPH_VERSION}/me/adaccounts?limit=100&fields=id,name,account_status,currency,funding_source`,
       { headers, cache: "no-store" },
     ),
     fetch(
-      `https://graph.facebook.com/${META_GRAPH_VERSION}/me/accounts?fields=id,name,instagram_business_account{id},whatsapp_number`,
+      `https://graph.facebook.com/${META_GRAPH_VERSION}/me/accounts?limit=100&fields=id,name,instagram_business_account{id},whatsapp_number`,
       { headers, cache: "no-store" },
     ),
   ]);

@@ -5,6 +5,7 @@ import { log } from "@/lib/logger";
 import { exchangeCodeAndDiscoverMetaAssets, verifyOAuthState } from "@/lib/meta-oauth";
 import { publicUrl } from "@/lib/public-env";
 import { getAppContext, getCorrelationId } from "@/server/context";
+import { saveDiscovery } from "@/server/meta-discovery";
 import { META_OAUTH_STATE_COOKIE } from "../start/route";
 
 export const META_DISCOVERED_COOKIE = "gv_meta_discovered";
@@ -52,7 +53,7 @@ export async function GET(request: NextRequest) {
       redirectUri,
     });
 
-    jar.set(META_DISCOVERED_COOKIE, JSON.stringify(discovered), {
+    jar.set(META_DISCOVERED_COOKIE, saveDiscovery(ctx.organization.id, discovered), {
       httpOnly: true,
       sameSite: "lax",
       path: "/",

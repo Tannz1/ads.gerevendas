@@ -10,6 +10,7 @@ import { buildSimulatedDiscoveredAssets, type DiscoveredMetaAssets } from "@/lib
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadMetaConnection } from "@/server/campaigns-data";
 import { getAppContext } from "@/server/context";
+import { readDiscovery } from "@/server/meta-discovery";
 
 export const metadata: Metadata = { title: "Conexões Meta" };
 
@@ -63,14 +64,7 @@ export default async function ConnectionsPage({ searchParams }: PageProps) {
   if (oauth === "simulated") {
     discoveredAssets = buildSimulatedDiscoveredAssets(businessName, defaultWhatsapp);
   } else {
-    const rawCookie = jar.get(META_DISCOVERED_COOKIE)?.value;
-    if (rawCookie) {
-      try {
-        discoveredAssets = JSON.parse(rawCookie) as DiscoveredMetaAssets;
-      } catch {
-        discoveredAssets = null;
-      }
-    }
+    discoveredAssets = readDiscovery(jar.get(META_DISCOVERED_COOKIE)?.value, ctx.organization.id);
   }
 
   return (

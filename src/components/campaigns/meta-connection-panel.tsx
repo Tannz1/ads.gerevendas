@@ -198,8 +198,17 @@ export function MetaConnectionPanel({
             )}
           </div>
 
+          {discoveredAssets && (discoveredAssets.ad_accounts.length === 0 || discoveredAssets.pages.length === 0) && (
+            <Alert tone="warning" className="mt-5" title="A Meta não devolveu tudo o que precisamos">
+              {discoveredAssets.ad_accounts.length === 0 && "Nenhuma conta de anúncios foi liberada. "}
+              {discoveredAssets.pages.length === 0 && "Nenhuma página foi liberada. "}
+              Clique em Conectar com Facebook de novo e, na janela da Meta, marque a conta de anúncios e a página da
+              empresa.
+            </Alert>
+          )}
+
           {/* Seletores Automáticos de Ativos Descobertos */}
-          {discoveredAssets && (
+          {discoveredAssets && discoveredAssets.ad_accounts.length > 0 && discoveredAssets.pages.length > 0 && (
             <div className="mt-5 space-y-4 border-t border-line pt-4">
               <div className="text-xs font-semibold tracking-wider text-ink-soft uppercase">
                 Ativos Encontrados {discoveredAssets.simulated ? "(Simulação)" : "(Meta)"}
