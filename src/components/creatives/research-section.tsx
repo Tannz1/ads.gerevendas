@@ -60,16 +60,23 @@ export function ResearchSection({ research }: { research: Research }) {
       {research.competitors.length > 0 && (
         <div className="mt-5">
           <p className="text-sm font-semibold">Concorrentes ({research.competitors.length})</p>
-          <ul className="mt-2 grid gap-2 sm:grid-cols-2">
+          <ul className="mt-2.5 grid gap-3 sm:grid-cols-2">
             {research.competitors.map((c) => {
               const href = safeUrl(c.source_url);
               return (
-                <li key={`${c.name}-${c.source_url ?? ""}`} className="rounded-xl border border-line p-3">
-                  <div className="flex flex-wrap items-center gap-2 text-sm font-semibold">
-                    {href ? <ExternalLink href={href}>{c.name}</ExternalLink> : c.name}
-                    {c.client_listed && <Badge>Informado por você</Badge>}
+                <li
+                  key={`${c.name}-${c.source_url ?? ""}`}
+                  className="rounded-xl border border-line bg-surface p-3.5 shadow-2xs"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm font-semibold">
+                    {href ? (
+                      <ExternalLink href={href}>{c.name}</ExternalLink>
+                    ) : (
+                      <span className="text-ink">{c.name}</span>
+                    )}
+                    {c.client_listed && <Badge tone="brand">Informado por você</Badge>}
                   </div>
-                  <p className="mt-1 text-sm text-ink-soft">{c.positioning}</p>
+                  <p className="mt-1.5 text-xs leading-relaxed text-ink-soft">{c.positioning}</p>
                 </li>
               );
             })}

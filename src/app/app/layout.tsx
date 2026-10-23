@@ -10,9 +10,13 @@ export const metadata: Metadata = { title: { default: "Início", template: "%s �
 
 function PilotNote() {
   return (
-    <p className="rounded-xl bg-surface-muted px-3 py-2.5 text-xs leading-relaxed text-ink-soft">
-      Piloto em andamento. Criativos já disponíveis; publicação na Meta segue em modo Simulação.
-    </p>
+    <div className="rounded-xl border border-line bg-surface-muted/70 p-3 text-xs leading-relaxed text-ink-soft">
+      <div className="flex items-center gap-1.5 font-semibold text-ink">
+        <span className="size-2 rounded-full bg-accent" />
+        Piloto em andamento
+      </div>
+      <p className="mt-1 text-ink-faint">Criativos disponíveis; publicação na Meta em modo Simulação.</p>
+    </div>
   );
 }
 

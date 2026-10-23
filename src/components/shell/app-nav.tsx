@@ -73,17 +73,22 @@ function NavList({ pathname, onNavigate }: { pathname: string | null; onNavigate
               onClick={onNavigate}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors",
-                active ? "bg-ink text-white" : "text-ink-soft hover:bg-surface-muted hover:text-ink",
+                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-all duration-150",
+                active
+                  ? "bg-ink font-semibold text-white shadow-xs"
+                  : "text-ink-soft hover:bg-surface-muted hover:text-ink active:scale-[0.99]",
               )}
             >
               <svg
                 aria-hidden
                 viewBox="0 0 24 24"
-                className="size-5"
+                className={cn(
+                  "size-[18px] transition-transform duration-150 group-hover:scale-105",
+                  active ? "text-white" : "text-ink-faint group-hover:text-ink",
+                )}
                 fill="none"
                 stroke="currentColor"
-                strokeWidth="1.8"
+                strokeWidth={active ? "2" : "1.75"}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
@@ -100,15 +105,17 @@ function NavList({ pathname, onNavigate }: { pathname: string | null; onNavigate
 
 export function Sidebar({ footer }: { footer?: ReactNode }) {
   return (
-    <div className="hidden border-r border-line bg-surface lg:block">
-      <aside className="sticky top-0 flex h-dvh flex-col px-4 py-5">
-        <div className="px-2">
-          <Logo href="/app" />
+    <div className="hidden border-r border-line bg-surface/80 backdrop-blur-md lg:block">
+      <aside className="sticky top-0 flex h-dvh flex-col justify-between px-4 py-6">
+        <div>
+          <div className="px-2">
+            <Logo href="/app" />
+          </div>
+          <nav aria-label="Aplicativo" className="mt-8">
+            <NavLinks />
+          </nav>
         </div>
-        <nav aria-label="Aplicativo" className="mt-8 flex-1">
-          <NavLinks />
-        </nav>
-        {footer}
+        {footer && <div className="pt-4">{footer}</div>}
       </aside>
     </div>
   );

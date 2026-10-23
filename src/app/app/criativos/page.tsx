@@ -195,34 +195,55 @@ export default async function CreativesPage() {
           const angle = plan.angles.find((a) => a.key === c.angle_key);
           return (
             <li key={c.id}>
-              <Card className="flex h-full flex-col gap-4 p-4">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="font-semibold">{TEMPLATE_LABELS[c.angle_key as AngleKey]}</p>
-                  <div className="flex flex-wrap items-center justify-end gap-2">
-                    {generatingImage.has(c.id) && <Badge tone="brand">Gerando imagem</Badge>}
-                    {c.status === "approved" ? <Badge tone="success">Aprovada</Badge> : <Badge>Rascunho</Badge>}
+              <Card className="flex h-full flex-col justify-between overflow-hidden p-5 transition-all duration-200 hover:shadow-[var(--shadow-lift)]">
+                <div className="flex flex-col gap-3.5">
+                  <div className="flex items-center justify-between gap-2 border-b border-line pb-3">
+                    <p className="font-display text-sm font-bold tracking-tight text-ink">
+                      {TEMPLATE_LABELS[c.angle_key as AngleKey]}
+                    </p>
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      {generatingImage.has(c.id) && <Badge tone="brand">Gerando imagem</Badge>}
+                      {c.status === "approved" ? <Badge tone="success">Aprovada</Badge> : <Badge>Rascunho</Badge>}
+                    </div>
                   </div>
+                  <div className="flex justify-center py-1">
+                    <AdPreview
+                      width={300}
+                      label={`Prévia: ${c.content.headline}`}
+                      content={c.content}
+                      format="feed"
+                      businessName={c.business_name}
+                      priceLabel={c.price_cents === null ? null : formatCents(c.price_cents, c.currency)}
+                      imageSrc={c.image_url}
+                    />
+                  </div>
+                  {angle && (
+                    <div className="rounded-xl bg-surface-muted/60 p-3 text-xs leading-relaxed text-ink-soft">
+                      <span className="font-semibold text-ink">Ângulo: </span>
+                      {angle.rationale}
+                    </div>
+                  )}
                 </div>
-                <AdPreview
-                  width={300}
-                  label={`Prévia: ${c.content.headline}`}
-                  content={c.content}
-                  format="feed"
-                  businessName={c.business_name}
-                  priceLabel={c.price_cents === null ? null : formatCents(c.price_cents, c.currency)}
-                  imageSrc={c.image_url}
-                />
-                {angle && <p className="text-sm text-ink-soft">{angle.rationale}</p>}
-                <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-medium">
+                <div className="mt-4 flex items-center justify-between border-t border-line pt-3.5 text-sm font-medium">
                   <ButtonLink href={`/app/criativos/${c.id}`} size="sm" variant="secondary">
-                    Editar
+                    Editar peça
                   </ButtonLink>
-                  <a href={imageUrl(c.id, "feed")} className="text-brand hover:underline" download>
-                    Baixar feed
-                  </a>
-                  <a href={imageUrl(c.id, "stories")} className="text-brand hover:underline" download>
-                    Baixar stories
-                  </a>
+                  <div className="flex items-center gap-3 text-xs font-semibold">
+                    <a
+                      href={imageUrl(c.id, "feed")}
+                      className="rounded-lg px-2 py-1 text-brand hover:bg-brand-soft"
+                      download
+                    >
+                      Feed
+                    </a>
+                    <a
+                      href={imageUrl(c.id, "stories")}
+                      className="rounded-lg px-2 py-1 text-brand hover:bg-brand-soft"
+                      download
+                    >
+                      Stories
+                    </a>
+                  </div>
                 </div>
               </Card>
             </li>
