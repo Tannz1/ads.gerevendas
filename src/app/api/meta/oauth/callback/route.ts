@@ -5,10 +5,8 @@ import { log } from "@/lib/logger";
 import { exchangeCodeAndDiscoverMetaAssets, verifyOAuthState } from "@/lib/meta-oauth";
 import { publicUrl } from "@/lib/public-env";
 import { getAppContext, getCorrelationId } from "@/server/context";
-import { saveDiscovery } from "@/server/meta-discovery";
+import { META_DISCOVERED_COOKIE, saveDiscovery } from "@/server/meta-discovery";
 import { META_OAUTH_STATE_COOKIE } from "../start/route";
-
-export const META_DISCOVERED_COOKIE = "gv_meta_discovered";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = request.nextUrl;

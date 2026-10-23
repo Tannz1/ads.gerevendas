@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { connectMetaAssets, disconnectMetaAssets } from "@/server/campaigns";
 import type { MetaConnectionView } from "@/server/campaigns-data";
+import { suggestAssets } from "@/lib/meta-asset-match";
 import type { DiscoveredMetaAssets } from "@/lib/meta-oauth";
 import { publicEnv } from "@/lib/public-env";
 import { Alert } from "@/components/ui/alert";
@@ -36,33 +37,36 @@ export function MetaConnectionPanel({
   const router = useRouter();
   const isConnected = connection?.status === "connected";
 
-  const firstDiscoveredAccount = discoveredAssets?.ad_accounts[0];
-  const firstDiscoveredPage = discoveredAssets?.pages[0];
+  // Sugere a conta e a página do próprio negócio: o cliente confirma em vez de procurar numa lista.
+  const suggestion = discoveredAssets
+    ? suggestAssets(discoveredAssets, { name: defaultBusinessName, whatsapp: defaultWhatsapp })
+    : null;
+  const suggestedAccount = suggestion?.account ?? null;
+  const suggestedPage = suggestion?.page ?? null;
   // Com o app Meta configurado, nada de IDs de exemplo: só ativos descobertos ou uma conexão real já salva.
   const savedSimulation = hasRealMetaOAuthApp && connection?.simulated === true;
   const saved = savedSimulation ? null : connection;
   const sample = !hasRealMetaOAuthApp;
 
   const [adAccountId, setAdAccountId] = useState(
-    firstDiscoveredAccount?.id ?? saved?.ad_account_id ?? (sample ? "act_1020304050" : ""),
+    suggestedAccount?.id ?? saved?.ad_account_id ?? (sample ? "act_1020304050" : ""),
   );
   const [adAccountName, setAdAccountName] = useState(
-    firstDiscoveredAccount?.name ?? saved?.ad_account_name ?? (sample ? `${defaultBusinessName} Ads` : ""),
+    suggestedAccount?.name ?? saved?.ad_account_name ?? (sample ? `${defaultBusinessName} Ads` : ""),
   );
-  const [pageId, setPageId] = useState(firstDiscoveredPage?.id ?? saved?.page_id ?? (sample ? "page_99887766" : ""));
+  const [pageId, setPageId] = useState(suggestedPage?.id ?? saved?.page_id ?? (sample ? "page_99887766" : ""));
   const [pageName, setPageName] = useState(
-    firstDiscoveredPage?.name ?? saved?.page_name ?? (sample ? defaultBusinessName : ""),
+    suggestedPage?.name ?? saved?.page_name ?? (sample ? defaultBusinessName : ""),
   );
-  const [instagramId, setInstagramId] = useState(
-    firstDiscoveredPage?.instagram_actor_id ?? saved?.instagram_actor_id ?? "",
-  );
+  const [instagramId, setInstagramId] = useState(suggestedPage?.instagram_actor_id ?? saved?.instagram_actor_id ?? "");
   const [whatsappPhone, setWhatsappPhone] = useState(
-    firstDiscoveredPage?.whatsapp_phone_e164 ?? saved?.whatsapp_phone_e164 ?? defaultWhatsapp ?? "",
+    suggestedPage?.whatsapp_phone_e164 ?? saved?.whatsapp_phone_e164 ?? defaultWhatsapp ?? "",
   );
   const [billingVerified, setBillingVerified] = useState(
-    firstDiscoveredAccount?.has_funding_source ?? saved?.billing_verified_on_meta ?? false,
+    suggestedAccount?.has_funding_source ?? saved?.billing_verified_on_meta ?? false,
   );
   const [showManualFields, setShowManualFields] = useState(false);
+  const [choosing, setChoosing] = useState(!(suggestedAccount && suggestedPage));
   const [message, setMessage] = useState<{ tone: "info" | "success" | "danger"; text: string } | null>(() => {
     if (oauthStatus === "error") {
       return { tone: "danger", text: "Erro ao comunicar com a Meta. Tente novamente." };
@@ -74,7 +78,7 @@ export function MetaConnectionPanel({
       return { tone: "danger", text: "Apenas proprietários podem conectar ativos da Meta." };
     }
     if (oauthStatus === "ready") {
-      return { tone: "success", text: "Ativos descobertos via Meta! Selecione as contas abaixo e confirme." };
+      return { tone: "success", text: "Conectado à Meta. Confirme abaixo a conta e a página do seu negócio." };
     }
     if (oauthStatus === "simulated") {
       return { tone: "info", text: "Ativos simulados carregados com 1 clique. Você já pode vincular." };
@@ -155,7 +159,7 @@ export function MetaConnectionPanel({
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {metaMode === "mock" && <Badge tone="demo">Simulação</Badge>}
+            {(connection ? connection.simulated : sample) && <Badge tone="demo">Simulação</Badge>}
             <Badge tone={isConnected ? "success" : "neutral"}>{isConnected ? "Conectada" : "Desconectada"}</Badge>
           </div>
         </div>
@@ -198,26 +202,56 @@ export function MetaConnectionPanel({
             )}
           </div>
 
-          {discoveredAssets && (discoveredAssets.ad_accounts.length === 0 || discoveredAssets.pages.length === 0) && (
+          {suggestion && (suggestion.accounts.length === 0 || suggestion.pages.length === 0) && (
             <Alert tone="warning" className="mt-5" title="A Meta não devolveu tudo o que precisamos">
-              {discoveredAssets.ad_accounts.length === 0 && "Nenhuma conta de anúncios foi liberada. "}
-              {discoveredAssets.pages.length === 0 && "Nenhuma página foi liberada. "}
-              Clique em Conectar com Facebook de novo e, na janela da Meta, marque a conta de anúncios e a página da
-              empresa.
+              {suggestion.accounts.length === 0 &&
+                (suggestion.hiddenAccounts > 0
+                  ? "Nenhuma conta de anúncios ativa e em reais (BRL) foi liberada. "
+                  : "Nenhuma conta de anúncios foi liberada. ")}
+              {suggestion.pages.length === 0 && "Nenhuma página foi liberada. "}
+              Clique em Conectar com Facebook de novo e, na janela da Meta, marque a conta de anúncios e a página do seu
+              negócio.
             </Alert>
           )}
 
-          {/* Seletores Automáticos de Ativos Descobertos */}
-          {discoveredAssets && discoveredAssets.ad_accounts.length > 0 && discoveredAssets.pages.length > 0 && (
-            <div className="mt-5 space-y-4 border-t border-line pt-4">
-              <div className="text-xs font-semibold tracking-wider text-ink-soft uppercase">
-                Ativos Encontrados {discoveredAssets.simulated ? "(Simulação)" : "(Meta)"}
-              </div>
+          {suggestion && suggestion.accounts.length > 0 && suggestion.pages.length > 0 && !choosing && (
+            <div className="mt-5 rounded-xl border-2 border-brand/25 bg-surface p-4 sm:p-5">
+              <p className="font-semibold text-ink">Encontramos a conta de {defaultBusinessName}</p>
+              <dl className="mt-3 grid gap-3 text-sm sm:grid-cols-2">
+                <div>
+                  <dt className="text-ink-faint">Conta de anúncios</dt>
+                  <dd className="font-medium text-ink">{adAccountName}</dd>
+                </div>
+                <div>
+                  <dt className="text-ink-faint">Página do Facebook</dt>
+                  <dd className="font-medium text-ink">{pageName}</dd>
+                </div>
+                <div>
+                  <dt className="text-ink-faint">Instagram</dt>
+                  <dd className="font-medium text-ink">{instagramId ? "Ligado à página" : "Não ligado à página"}</dd>
+                </div>
+                <div>
+                  <dt className="text-ink-faint">WhatsApp</dt>
+                  <dd className="font-medium text-ink">{whatsappPhone || "Não informado"}</dd>
+                </div>
+              </dl>
+              <button
+                type="button"
+                onClick={() => setChoosing(true)}
+                className="mt-4 text-sm font-medium text-brand hover:underline"
+              >
+                Não é esta? Escolher outra
+              </button>
+            </div>
+          )}
 
+          {suggestion && suggestion.accounts.length > 0 && suggestion.pages.length > 0 && choosing && (
+            <div className="mt-5 space-y-4 border-t border-line pt-4">
+              <p className="text-sm font-semibold text-ink">Escolha a conta e a página do seu negócio</p>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <label htmlFor="discovered_account" className="block text-xs font-medium text-ink-soft">
-                    Conta de Anúncios Descoberta
+                    Conta de anúncios
                   </label>
                   <select
                     id="discovered_account"
@@ -225,17 +259,20 @@ export function MetaConnectionPanel({
                     onChange={(e) => handleSelectAdAccount(e.target.value)}
                     className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:ring-2 focus:ring-[var(--color-brand)] focus:outline-none"
                   >
-                    {discoveredAssets.ad_accounts.map((acc) => (
+                    <option value="" disabled>
+                      Escolha a conta
+                    </option>
+                    {suggestion.accounts.map((acc) => (
                       <option key={acc.id} value={acc.id}>
-                        {acc.name} ({acc.id}) {acc.has_funding_source ? "✓ Pagamento OK" : "⚠ Sem cartão"}
+                        {acc.name} ({acc.id.replace(/^act_/, "")})
+                        {acc.has_funding_source ? "" : ", sem forma de pagamento"}
                       </option>
                     ))}
                   </select>
                 </div>
-
                 <div>
                   <label htmlFor="discovered_page" className="block text-xs font-medium text-ink-soft">
-                    Página do Facebook Descoberta
+                    Página do Facebook
                   </label>
                   <select
                     id="discovered_page"
@@ -243,28 +280,40 @@ export function MetaConnectionPanel({
                     onChange={(e) => handleSelectPage(e.target.value)}
                     className="mt-1 w-full rounded-md border border-line bg-surface px-3 py-2 text-sm text-ink focus:ring-2 focus:ring-[var(--color-brand)] focus:outline-none"
                   >
-                    {discoveredAssets.pages.map((pg) => (
+                    <option value="" disabled>
+                      Escolha a página
+                    </option>
+                    {suggestion.pages.map((pg) => (
                       <option key={pg.id} value={pg.id}>
-                        {pg.name} ({pg.id})
+                        {pg.name}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
+              {suggestion.hiddenAccounts > 0 && (
+                <p className="text-xs text-ink-faint">
+                  {suggestion.hiddenAccounts === 1
+                    ? "1 conta inativa ou em outra moeda foi ocultada."
+                    : `${suggestion.hiddenAccounts} contas inativas ou em outra moeda foram ocultadas.`}
+                </p>
+              )}
             </div>
           )}
         </div>
 
-        {/* Alternância para edição manual avançada */}
-        <div className="mt-6 flex items-center justify-between">
-          <button
-            type="button"
-            onClick={() => setShowManualFields(!showManualFields)}
-            className="text-xs font-medium text-ink-soft underline decoration-dotted hover:text-ink"
-          >
-            {showManualFields ? "Ocultar campos manuais avançados" : "Mostrar / Editar campos manuais avançados"}
-          </button>
-        </div>
+        {/* Campos manuais só na simulação: no modo real, conta e página vêm da Meta. */}
+        {!hasRealMetaOAuthApp && (
+          <div className="mt-6 flex items-center justify-between">
+            <button
+              type="button"
+              onClick={() => setShowManualFields(!showManualFields)}
+              className="text-xs font-medium text-ink-soft underline decoration-dotted hover:text-ink"
+            >
+              {showManualFields ? "Ocultar campos manuais avançados" : "Mostrar / Editar campos manuais avançados"}
+            </button>
+          </div>
+        )}
 
         <form onSubmit={handleConnect} className="mt-4 space-y-4">
           {showManualFields && (
@@ -350,9 +399,11 @@ export function MetaConnectionPanel({
               <Button type="submit" disabled={pending || !adAccountId.trim() || !pageId.trim()}>
                 {pending
                   ? "Salvando…"
-                  : metaMode === "mock"
-                    ? "Vincular ativos selecionados (Simulação)"
-                    : "Salvar ativos conectados"}
+                  : hasRealMetaOAuthApp
+                    ? "Confirmar e conectar"
+                    : metaMode === "mock"
+                      ? "Vincular ativos selecionados (Simulação)"
+                      : "Salvar ativos conectados"}
               </Button>
               {isConnected && (
                 <Button type="button" variant="secondary" onClick={handleDisconnect} disabled={pending}>

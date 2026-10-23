@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { META_DISCOVERED_COOKIE } from "@/app/api/meta/oauth/callback/route";
 import { MetaConnectionPanel } from "@/components/campaigns/meta-connection-panel";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -10,7 +9,7 @@ import { buildSimulatedDiscoveredAssets, type DiscoveredMetaAssets } from "@/lib
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadMetaConnection } from "@/server/campaigns-data";
 import { getAppContext } from "@/server/context";
-import { readDiscovery } from "@/server/meta-discovery";
+import { META_DISCOVERED_COOKIE, readDiscovery } from "@/server/meta-discovery";
 
 export const metadata: Metadata = { title: "Conexões Meta" };
 

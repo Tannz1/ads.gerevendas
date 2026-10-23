@@ -7,6 +7,7 @@ import type { DiscoveredMetaAssets } from "@/lib/meta-oauth";
  * O cookie leva só a chave; a leitura confere a organização.
  */
 const TTL_MS = 10 * 60_000;
+export const META_DISCOVERED_COOKIE = "gv_meta_discovered";
 
 type Entry = { orgId: string; assets: DiscoveredMetaAssets; expires: number };
 
