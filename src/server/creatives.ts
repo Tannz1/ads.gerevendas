@@ -26,7 +26,7 @@ import { ProviderError } from "./ai/openai-text";
 import { confirmedFacts, PROMPT_VERSION, RESEARCH_PROMPT_VERSION } from "./ai/prompt";
 import { buildImagePrompt, IMAGE_PROMPT_VERSION } from "./ai/image-prompt";
 import { selectImageProvider, selectTextProvider } from "./ai/provider";
-import type { ResearchInput, StrategyInput, TextProvider } from "./ai/types";
+import type { PreviousAngle, ResearchInput, StrategyInput, TextProvider } from "./ai/types";
 import { getAppContext, getCorrelationId } from "./context";
 import { ASSETS_BUCKET, loadCreative, loadCreditSummary } from "./creatives-data";
 
@@ -115,6 +115,19 @@ async function runResearch(provider: TextProvider, input: ResearchInput, meta: R
 const forStrategy = (research: StoredResearch | null | undefined): MarketResearch | null =>
   research ? marketResearchSchema.parse(research) : null;
 
+/** Peças das 2 últimas versões do cadastro, para a nova versão trazer conceitos novos. */
+async function loadPreviousAngles(supabase: Supabase, briefId: string): Promise<PreviousAngle[]> {
+  const { data } = await supabase
+    .from("strategies")
+    .select("plan")
+    .eq("brief_id", briefId)
+    .order("version", { ascending: false })
+    .limit(2);
+  return ((data ?? []) as Array<{ plan: unknown }>)
+    .flatMap((s) => storedStrategyPlanSchema.safeParse(s.plan).data?.angles ?? [])
+    .map(({ key, headline, layout, visual_concept }) => ({ key, headline, layout, visual_concept }));
+}
+
 /** Executa o job de estratégia (dentro de `after()`): provedor → validação → checagem de fatos → RPC. */
 async function runStrategyJob(jobId: string, briefId: string, correlationId: string) {
   const supabase = await createSupabaseServerClient();
@@ -135,8 +148,11 @@ async function runStrategyJob(jobId: string, briefId: string, correlationId: str
   try {
     const { input, researchInput, brandColor } = await loadBriefFacts(supabase, briefId);
     const started = Date.now();
-    const { research, usage: researchUsage } = await runResearch(provider, researchInput, meta);
-    const result = await provider.generateStrategy({ ...input, research: forStrategy(research) });
+    const [{ research, usage: researchUsage }, previous] = await Promise.all([
+      runResearch(provider, researchInput, meta),
+      loadPreviousAngles(supabase, briefId),
+    ]);
+    const result = await provider.generateStrategy({ ...input, research: forStrategy(research), previous });
 
     const parsed = strategyPlanSchema.safeParse(result.data);
     if (!parsed.success) return await fail("invalid_output");
@@ -217,7 +233,7 @@ export async function generateStrategy(briefId: unknown): Promise<ApiResult<{ jo
     if (error.message.includes("credit_limit_reached")) {
       return apiError(
         "credit_limit_reached",
-        "Você já gerou as 4 estratégias deste mês. O limite renova no dia 1º.",
+        "Você chegou ao limite de estratégias deste mês. O limite renova no dia 1º.",
         correlationId,
       );
     }
@@ -407,26 +423,34 @@ async function runImageJob(jobId: string, creativeId: string, orgId: string, cor
   try {
     const { data } = await supabase
       .from("creatives")
-      .select("angle_key, content, strategies(briefs(businesses(segment, city), offers(name, description)))")
+      .select("angle_key, content, strategies(plan, briefs(businesses(segment, city), offers(name, description)))")
       .eq("id", creativeId)
       .single();
     const row = data as unknown as {
       angle_key: AngleKey;
-      content: { headline?: string; body?: string } | null;
+      content: unknown;
       strategies: {
+        plan: unknown;
         briefs: { businesses: { segment: string; city: string }; offers: { name: string; description: string | null } };
       };
     } | null;
     if (!row) return await fail("internal");
     const { businesses: b, offers: o } = row.strategies.briefs;
+    const content = creativeContentSchema.safeParse(row.content).data;
+    const angle = storedStrategyPlanSchema
+      .safeParse(row.strategies.plan)
+      .data?.angles.find((a) => a.key === row.angle_key);
     const prompt = buildImagePrompt(
       {
         segment: b.segment,
         offer_name: o.name,
         offer_description: o.description,
         city: b.city,
-        headline: row.content?.headline,
-        body: row.content?.body,
+        headline: content?.headline,
+        body: content?.body,
+        visual_concept: angle?.visual_concept,
+        // Layout atual da peça: o cliente pode ter trocado no editor.
+        layout: content?.template,
       },
       row.angle_key,
     );
@@ -518,7 +542,7 @@ export async function generateMissingImages(strategyId: unknown): Promise<ApiRes
   if (jobs.length === 0 && limitReached) {
     return apiError(
       "credit_limit_reached",
-      "Você já gerou as 20 imagens com IA deste mês. Envie uma foto ou aguarde o dia 1º.",
+      "Você chegou ao limite de imagens com IA deste mês. Envie uma foto ou aguarde o dia 1º.",
       correlationId,
     );
   }
@@ -549,7 +573,7 @@ export async function generateImage(creativeId: unknown): Promise<ApiResult<{ jo
     if (error.message.includes("credit_limit_reached")) {
       return apiError(
         "credit_limit_reached",
-        "Você já gerou as 20 imagens com IA deste mês. Envie uma foto ou aguarde o dia 1º.",
+        "Você chegou ao limite de imagens com IA deste mês. Envie uma foto ou aguarde o dia 1º.",
         correlationId,
       );
     }

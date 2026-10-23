@@ -18,6 +18,26 @@ export const TEMPLATE_LABELS: Record<AngleKey, string> = {
   conveniencia: "Conveniência",
 };
 
+/**
+ * Composição da peça (`content.template`). Os ids são os mesmos dos ângulos por compatibilidade com
+ * as peças já gravadas, mas o layout é independente do ângulo: a estratégia escolhe qual usar.
+ */
+export const LAYOUT_LABELS: Record<AngleKey, string> = {
+  oferta: "Foto inteira, texto na base",
+  problema: "Texto centralizado",
+  beneficio: "Texto na base com barra de destaque",
+  demonstracao: "Foto em cima, painel com texto embaixo",
+  conveniencia: "Título no topo, botão largo embaixo",
+};
+
+/** Etapa do funil de cada peça, em linguagem de dono de negócio. */
+export const FUNNEL_STAGES = ["topo", "meio", "fundo"] as const;
+export const FUNNEL_LABELS: Record<(typeof FUNNEL_STAGES)[number], string> = {
+  topo: "Para quem ainda não conhece",
+  meio: "Para quem está comparando",
+  fundo: "Para quem já quer comprar",
+};
+
 const text = (max: number) => z.string().trim().min(1).max(max);
 
 export const LIMITS = { headline: 60, body: 140, cta: 24 } as const;
@@ -29,15 +49,27 @@ export const strategyAngleSchema = z.object({
   headline: text(LIMITS.headline),
   body: text(LIMITS.body),
   cta: text(LIMITS.cta),
+  // Visão de gestor de tráfego (strategy.v3).
+  persona: text(160),
+  funnel_stage: z.enum(FUNNEL_STAGES),
+  test_hypothesis: text(240),
+  // Direção de arte: composição da peça e briefing da foto (nunca vira texto na peça).
+  layout: angleKeySchema,
+  visual_concept: text(400),
 });
+
+const anglesOf = <T extends z.ZodType<{ key: AngleKey }>>(angle: T) =>
+  z
+    .array(angle)
+    .length(ANGLE_KEYS.length)
+    .refine((a) => new Set(a.map((x) => x.key)).size === ANGLE_KEYS.length, "Um ângulo de cada tipo");
 
 export const strategyPlanSchema = z.object({
   business_summary: text(400),
-  angles: z
-    .array(strategyAngleSchema)
-    .length(ANGLE_KEYS.length)
-    .refine((a) => new Set(a.map((x) => x.key)).size === ANGLE_KEYS.length, "Um ângulo de cada tipo"),
+  angles: anglesOf(strategyAngleSchema),
   targeting_proposal: z.object({ locations: z.array(text(80)).max(5), age_range: text(40) }),
+  /** Passos simples para o dono testar as peças na Meta. Sem valores de orçamento. */
+  test_plan: z.array(text(240)).max(5),
   assumptions: z.array(text(200)).max(6),
   fields_requiring_confirmation: z.array(text(200)).max(6),
 });
@@ -70,6 +102,17 @@ export type ResearchSource = z.infer<typeof researchSourceSchema>;
 
 /** Plano como fica gravado: o que o modelo de estratégia devolveu + a pesquisa (com as fontes). */
 export const storedStrategyPlanSchema = strategyPlanSchema.extend({
+  // Planos anteriores ao strategy.v3 não têm os campos de tráfego e de direção de arte.
+  angles: anglesOf(
+    strategyAngleSchema.partial({
+      persona: true,
+      funnel_stage: true,
+      test_hypothesis: true,
+      layout: true,
+      visual_concept: true,
+    }),
+  ),
+  test_plan: z.array(text(240)).max(5).optional(),
   research: marketResearchSchema.extend({ sources: z.array(researchSourceSchema).max(12) }).nullish(),
 });
 export type StoredStrategyPlan = z.infer<typeof storedStrategyPlanSchema>;

@@ -87,6 +87,12 @@ RPCs: `create_organization(p_name, p_correlation_id)`,
 - Tabelas: `generation_jobs`, `strategies`, `creatives`, `assets`, `usage_ledger`.
 - RPCs: `start_strategy_job`, `finish_strategy_job`, `fail_generation_job`, `approve_creative`,
   `start_image_job`, `finish_image_job`, `register_photo`, `credit_summary`.
+- `StrategyPlan` (prompt `strategy.v3`): cada ângulo traz, além do texto, `persona`, `funnel_stage`
+  (`topo|meio|fundo`), `test_hypothesis`, `layout` (composição da peça, um dos ids de `content.template`) e
+  `visual_concept` (briefing da foto, nunca vira texto na peça); o plano traz `test_plan` (sem valores de
+  orçamento). Planos gravados antes do v3 seguem válidos em `storedStrategyPlanSchema` (campos opcionais).
+- A nova versão recebe as peças das 2 versões anteriores do cadastro (`versoes_anteriores`) para não repetir
+  ganchos, personas, estilos de foto nem layouts.
 
 ## Conta, Convites e LGPD (`src/contracts/account.ts`)
 - Tabelas: `organization_invites`, `user_consents` e coluna `businesses.logo_asset_id`.

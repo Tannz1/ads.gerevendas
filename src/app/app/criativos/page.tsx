@@ -11,7 +11,7 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { TEMPLATE_LABELS, type AngleKey } from "@/contracts/creatives";
+import { FUNNEL_LABELS, TEMPLATE_LABELS, type AngleKey } from "@/contracts/creatives";
 import { serverEnv } from "@/lib/env";
 import { formatCents } from "@/lib/money";
 import { selectImageProvider } from "@/server/ai/provider";
@@ -137,6 +137,16 @@ export default async function CreativesPage() {
             <dd className="text-ink-soft">{plan.targeting_proposal.age_range}</dd>
           </div>
         </dl>
+        {plan.test_plan && plan.test_plan.length > 0 && (
+          <div className="mt-5">
+            <p className="text-sm font-semibold">Como testar estas peças na Meta</p>
+            <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-ink-soft">
+              {plan.test_plan.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          </div>
+        )}
         {plan.research && <ResearchSection research={plan.research} />}
         {plan.fields_requiring_confirmation.length > 0 && (
           <div className="mt-5">
@@ -208,9 +218,26 @@ export default async function CreativesPage() {
                     />
                   </div>
                   {angle && (
-                    <div className="rounded-xl bg-surface-muted/60 p-3 text-xs leading-relaxed text-ink-soft">
-                      <span className="font-semibold text-ink">Ângulo: </span>
-                      {angle.rationale}
+                    <div className="flex flex-col gap-1.5 rounded-xl bg-surface-muted/60 p-3 text-xs leading-relaxed text-ink-soft">
+                      {angle.funnel_stage && (
+                        <p className="font-semibold text-ink">{FUNNEL_LABELS[angle.funnel_stage]}</p>
+                      )}
+                      {angle.persona && (
+                        <p>
+                          <span className="font-semibold text-ink">Fala com: </span>
+                          {angle.persona}
+                        </p>
+                      )}
+                      <p>
+                        <span className="font-semibold text-ink">Por que: </span>
+                        {angle.rationale}
+                      </p>
+                      {angle.test_hypothesis && (
+                        <p>
+                          <span className="font-semibold text-ink">O que testa: </span>
+                          {angle.test_hypothesis}
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>

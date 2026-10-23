@@ -1,4 +1,4 @@
-import type { AngleKey, CreativeContent, StrategyPlan } from "@/contracts/creatives";
+import { ANGLE_KEYS, type AngleKey, type CreativeContent, type StrategyPlan } from "@/contracts/creatives";
 
 const LIGHT = "#FFFFFF";
 const DARK = "#111827";
@@ -22,7 +22,22 @@ export function readableOn(bg: string): string {
   return contrastRatio(bg, LIGHT) >= contrastRatio(bg, DARK) ? LIGHT : DARK;
 }
 
-/** Conteúdo inicial das 5 peças a partir do plano: cor da marca como destaque (accent/botões), fundo neutro escuro ou limpo para a foto. */
+/**
+ * Layout de cada peça: o que a estratégia escolheu, sem repetir. Escolha repetida fica com um
+ * layout ainda livre, para as 5 peças nunca saírem com a mesma composição.
+ */
+function distinctLayouts(plan: StrategyPlan): AngleKey[] {
+  const used = new Set<AngleKey>();
+  const picked = plan.angles.map((a) => {
+    if (used.has(a.layout)) return null;
+    used.add(a.layout);
+    return a.layout;
+  });
+  const free = ANGLE_KEYS.filter((k) => !used.has(k));
+  return picked.map((l) => l ?? free.shift()!);
+}
+
+/** Conteúdo inicial das 5 peças a partir do plano: cor da marca só no botão e nos destaques, fundo neutro. */
 export function initialContents(
   plan: StrategyPlan,
   brandColor: string | null,
@@ -31,10 +46,11 @@ export function initialContents(
   const accent = brandColor ?? "#2A45E8";
   const background = "#0F172A";
   const text = "#FFFFFF";
-  return plan.angles.map((a) => ({
+  const layouts = distinctLayouts(plan);
+  return plan.angles.map((a, i) => ({
     angle_key: a.key,
     content: {
-      template: a.key,
+      template: layouts[i],
       headline: a.headline,
       body: a.body,
       cta: a.cta,

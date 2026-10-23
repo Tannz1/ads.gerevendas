@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { describedBy, Field, Input, Select, Textarea } from "@/components/ui/field";
-import { ANGLE_KEYS, LIMITS, TEMPLATE_LABELS, type CreativeContent } from "@/contracts/creatives";
+import { ANGLE_KEYS, LAYOUT_LABELS, LIMITS, type CreativeContent } from "@/contracts/creatives";
 import { approveCreative, regenerateCreativeCopy, updateCreative } from "@/server/creatives";
 import { AdPreview, imageUrl } from "./ad-preview";
 import { ImageSection } from "./image-section";
@@ -109,7 +109,7 @@ export function CreativeEditor({
           {status === "approved" && !dirty ? <Badge tone="success">Aprovada</Badge> : <Badge>Rascunho</Badge>}
         </div>
 
-        <Field id="template" label="Modelo">
+        <Field id="template" label="Layout">
           <Select
             id="template"
             value={content.template}
@@ -117,7 +117,7 @@ export function CreativeEditor({
           >
             {ANGLE_KEYS.map((k) => (
               <option key={k} value={k}>
-                {TEMPLATE_LABELS[k]}
+                {LAYOUT_LABELS[k]}
               </option>
             ))}
           </Select>

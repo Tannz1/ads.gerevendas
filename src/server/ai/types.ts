@@ -9,7 +9,11 @@ export type StrategyInput = {
   objective: Objective;
   /** Pesquisa de mercado (contexto, não fato do cliente). Ausente quando a pesquisa falhou. */
   research?: MarketResearch | null;
+  /** Peças das versões anteriores deste cadastro: a nova versão não pode repeti-las. */
+  previous?: PreviousAngle[];
 };
+
+export type PreviousAngle = { key: string; headline: string; layout?: string; visual_concept?: string };
 
 /** O que a pesquisa na web recebe: identificação pública do negócio e os concorrentes que o cliente citou. */
 export type ResearchInput = {

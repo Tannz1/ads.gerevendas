@@ -130,4 +130,28 @@ describe("pesquisa na estratégia", () => {
     expect(storedStrategyPlanSchema.parse(validPlan).research).toBeUndefined();
     expect("research" in strategyPlanSchema.parse(stored)).toBe(false);
   });
+
+  it("manda as versões anteriores separadas, para a nova versão não repetir conceito", () => {
+    const previous = [{ key: "oferta", headline: "Banho e tosa em Itajaí", layout: "oferta" }];
+    expect(JSON.parse(buildStrategyUserMessage({ ...input, previous })).versoes_anteriores).toEqual(previous);
+    expect(JSON.parse(buildStrategyUserMessage(input)).versoes_anteriores).toBeNull();
+    expect(confirmedFacts({ ...input, previous }).confirmed_text).not.toContain("Banho e tosa em Itajaí");
+  });
+
+  it("lê planos gravados antes do strategy.v3, sem os campos de tráfego e direção de arte", () => {
+    const legacy = {
+      ...validPlan,
+      test_plan: undefined,
+      angles: validPlan.angles.map(({ key, label, rationale, headline, body, cta }) => ({
+        key,
+        label,
+        rationale,
+        headline,
+        body,
+        cta,
+      })),
+    };
+    expect(storedStrategyPlanSchema.safeParse(legacy).success).toBe(true);
+    expect(strategyPlanSchema.safeParse(legacy).success).toBe(false);
+  });
 });

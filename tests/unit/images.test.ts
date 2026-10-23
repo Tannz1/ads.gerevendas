@@ -60,10 +60,28 @@ describe("buildImagePrompt", () => {
 
   it("tira preço e números do texto antes de mandar para a imagem", () => {
     const p = buildImagePrompt(
-      { ...facts, offer_description: "Combo por R$ 24,90", headline: "Café por R$ 24,90", body: "Até 10h, 20% off" },
+      {
+        ...facts,
+        offer_description: "Combo por R$ 24,90",
+        headline: "Café por R$ 24,90",
+        body: "Até 10h, 20% off",
+        visual_concept: "Balcão com 3 bolos e placa de R$ 15",
+      },
       "oferta",
     );
-    expect(p).not.toMatch(/R\$|24,90|10h|20%/);
+    expect(p).not.toMatch(/R\$|24,90|10h|20%|\b3\b|15/);
+  });
+
+  it("usa o briefing de foto da estratégia no lugar da cena padrão", () => {
+    const concept = "Close de mãos passando manteiga no pão, vista de cima";
+    const p = buildImagePrompt({ ...facts, visual_concept: concept }, "oferta");
+    expect(p).toContain(concept);
+    expect(p).not.toContain("fundo liso");
+  });
+
+  it("deixa livre a área de texto do layout da peça", () => {
+    expect(buildImagePrompt({ ...facts, layout: "conveniencia" }, "oferta")).toMatch(/terço superior simples/);
+    expect(buildImagePrompt(facts, "oferta")).toMatch(/terço inferior simples/);
   });
 
   it("limita o tamanho do texto da peça no prompt", () => {

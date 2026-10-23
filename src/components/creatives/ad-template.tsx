@@ -1,9 +1,11 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import { FORMATS, type CreativeContent, type Format } from "@/contracts/creatives";
+import { readableOn } from "@/lib/creatives";
 
 /**
  * Peça estática (ADR 0003). O mesmo JSX serve à prévia e ao PNG (Satori: flexbox e estilos inline).
- * Cada ângulo tem composição própria, para que as peças do mesmo anúncio não pareçam iguais.
+ * `content.template` escolhe a composição; cada uma tem uma área fixa de texto, que o prompt da
+ * imagem deixa livre (`FREE_AREA` em image-prompt.ts). A cor da marca fica só no botão e nos destaques.
  */
 
 export type AdFonts = { display: string; body: string };
@@ -32,12 +34,28 @@ export function headlineSize(headline: string): number {
   return n <= 22 ? 112 : n <= 36 ? 92 : 76;
 }
 
+// Véus neutros (nunca na cor da marca), escuros só onde o texto fica.
+const SHADE = {
+  base: "linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.55) 60%, rgba(0,0,0,0.9) 100%)",
+  topo: "linear-gradient(180deg, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.5) 32%, rgba(0,0,0,0) 55%, rgba(0,0,0,0) 72%, rgba(0,0,0,0.45) 100%)",
+  centro: "linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.62) 50%, rgba(0,0,0,0.5) 100%)",
+};
+
+/** Altura da foto no layout de painel (o resto é o painel sólido com o texto). */
+const PANEL_PHOTO: Record<Format, number> = { feed: 0.48, stories: 0.55 };
+
+type Align = "flex-start" | "center" | "stretch";
+
 export function AdTemplate({ content, format, businessName, priceLabel, fonts, imageSrc, logoSrc }: AdTemplateProps) {
   const { width, height } = FORMATS[format];
   const safe = SAFE_AREA[format];
   const { background, accent, text } = content.colors;
+  const onAccent = readableOn(accent);
   const price = content.show_price ? priceLabel : null;
   const t = content.template;
+  // Sombra no texto só quando ele fica sobre a foto (no painel o fundo já é sólido).
+  // Satori quebra com `textShadow: undefined`: a propriedade só entra quando há sombra.
+  const shadow = (value: string): CSSProperties => (imageSrc && t !== "demonstracao" ? { textShadow: value } : {});
 
   const root: CSSProperties = {
     width,
@@ -60,71 +78,83 @@ export function AdTemplate({ content, format, businessName, priceLabel, fonts, i
     flexDirection: "column",
     justifyContent: "space-between",
   };
+  const column = (gap: number, extra?: CSSProperties): CSSProperties => ({
+    display: "flex",
+    flexDirection: "column",
+    gap,
+    ...extra,
+  });
 
-  const title = (
+  const title = (size = headlineSize(content.headline)) => (
     <div
       style={{
         display: "flex",
         fontFamily: fonts.display,
         fontWeight: 800,
-        fontSize: headlineSize(content.headline),
+        fontSize: size,
         lineHeight: 1.05,
         letterSpacing: -2,
-        textShadow: "0 4px 20px rgba(0,0,0,0.6)",
+        ...shadow("0 2px 18px rgba(0,0,0,0.45)"),
       }}
     >
       {content.headline}
     </div>
   );
-  const body = (
+  const body = (size = 42) => (
     <div
       style={{
         display: "flex",
-        fontSize: 42,
+        fontSize: size,
         lineHeight: 1.35,
         fontWeight: 500,
-        opacity: 0.98,
-        textShadow: "0 2px 12px rgba(0,0,0,0.7)",
+        ...shadow("0 2px 12px rgba(0,0,0,0.6)"),
       }}
     >
       {content.body}
     </div>
   );
-  const cta = (
+  const cta = (align: Align = "flex-start") => (
     <div
       style={{
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        padding: "24px 52px",
+        alignSelf: align,
+        flexShrink: 0,
+        whiteSpace: "nowrap",
+        padding: align === "stretch" ? "30px 0" : "24px 52px",
         borderRadius: 999,
         backgroundColor: accent,
-        color: background,
-        fontSize: 42,
+        color: onAccent,
+        fontSize: align === "stretch" ? 46 : 42,
         fontWeight: 800,
-        boxShadow: "0 10px 25px -5px rgba(0,0,0,0.35)",
         letterSpacing: -0.5,
+        boxShadow: "0 10px 25px -5px rgba(0,0,0,0.35)",
       }}
     >
       {content.cta}
     </div>
   );
-  const priceBlock = price ? (
-    <div
-      style={{
-        display: "flex",
-        padding: "18px 40px",
-        borderRadius: 20,
-        backgroundColor: accent,
-        color: background,
-        fontFamily: fonts.display,
-        fontWeight: 800,
-        fontSize: 72,
-      }}
-    >
-      {price}
-    </div>
-  ) : null;
+  const priceBlock = (align: Align = "flex-start") =>
+    price ? (
+      <div
+        style={{
+          display: "flex",
+          alignSelf: align,
+          flexShrink: 0,
+          whiteSpace: "nowrap",
+          padding: "16px 36px",
+          borderRadius: 20,
+          backgroundColor: accent,
+          color: onAccent,
+          fontFamily: fonts.display,
+          fontWeight: 800,
+          fontSize: 68,
+        }}
+      >
+        {price}
+      </div>
+    ) : null;
   const brand = (
     <div
       style={{
@@ -135,7 +165,8 @@ export function AdTemplate({ content, format, businessName, priceLabel, fonts, i
         fontWeight: 700,
         letterSpacing: 4,
         textTransform: "uppercase",
-        opacity: 0.9,
+        opacity: 0.92,
+        ...shadow("0 2px 10px rgba(0,0,0,0.5)"),
       }}
     >
       {logoSrc && (
@@ -152,149 +183,161 @@ export function AdTemplate({ content, format, businessName, priceLabel, fonts, i
     </div>
   );
 
-  // Foto de fundo limpa com gradiente neutro escuro suave na base apenas para legibilidade do texto.
-  const photo = imageSrc ? (
-    <>
-      {/* eslint-disable-next-line @next/next/no-img-element -- o mesmo JSX vira PNG no Satori, que só aceita <img> */}
-      <img src={imageSrc} alt="" width={width} height={height} style={{ ...layer, objectFit: "cover" }} />
-      <div
-        style={{
-          ...layer,
-          backgroundImage: `linear-gradient(180deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.3) 45%, rgba(0, 0, 0, 0.85) 100%)`,
-        }}
-      />
-    </>
-  ) : null;
+  // Foto inteira com véu neutro só na área do texto; sem foto, fundo sólido com formas discretas.
+  const fullPhoto = (shade: string) =>
+    imageSrc ? (
+      <>
+        {/* eslint-disable-next-line @next/next/no-img-element -- o mesmo JSX vira PNG no Satori, que só aceita <img> */}
+        <img src={imageSrc} alt="" width={width} height={height} style={{ ...layer, objectFit: "cover" }} />
+        <div style={{ ...layer, backgroundImage: shade }} />
+      </>
+    ) : (
+      <Decoration template={t} color={text} width={width} height={height} />
+    );
 
-  // Composição por ângulo.
-  let scene: ReactNode;
   switch (t) {
     case "oferta":
-      scene = (
-        <div style={frame}>
-          {brand}
-          <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-            {priceBlock}
-            {title}
-            {body}
-          </div>
-          {cta}
-        </div>
-      );
-      break;
-    case "problema":
-      scene = (
-        <div style={{ ...frame, alignItems: "center", textAlign: "center" }}>
-          {brand}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 32 }}>
-            {title}
-            {body}
-          </div>
-          {cta}
-        </div>
-      );
-      break;
-    case "beneficio":
-      scene = (
-        <div style={frame}>
-          {brand}
-          <div style={{ display: "flex", gap: 36, alignItems: "stretch" }}>
-            <div style={{ display: "flex", width: 14, borderRadius: 7, backgroundColor: accent }} />
-            <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-              {title}
-              {body}
+      return (
+        <div style={root}>
+          {fullPhoto(SHADE.base)}
+          <div style={frame}>
+            {brand}
+            <div style={column(26)}>
+              {priceBlock()}
+              {title()}
+              {body()}
+              <div style={{ display: "flex", marginTop: 14 }}>{cta()}</div>
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-            {priceBlock}
-            {cta}
-          </div>
         </div>
       );
-      break;
-    case "demonstracao":
-      scene = (
-        <div style={frame}>
-          {brand}
-          <div style={{ display: "flex", flexDirection: "column", gap: 28, maxWidth: "78%" }}>
-            {title}
-            {body}
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-            {priceBlock}
-            {cta}
-          </div>
-        </div>
-      );
-      break;
-    case "conveniencia":
-      scene = (
-        <div style={frame}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    case "problema":
+      return (
+        <div style={root}>
+          {fullPhoto(SHADE.centro)}
+          <div style={{ ...frame, alignItems: "center", textAlign: "center" }}>
             {brand}
-            {title}
+            <div style={column(32, { alignItems: "center" })}>
+              {title()}
+              {body()}
+            </div>
+            <div style={column(24, { alignItems: "center" })}>
+              {priceBlock("center")}
+              {cta("center")}
+            </div>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
-            {body}
-            {priceBlock}
+        </div>
+      );
+    case "beneficio":
+      return (
+        <div style={root}>
+          {fullPhoto(SHADE.base)}
+          <div style={frame}>
+            {brand}
+            <div style={column(36)}>
+              <div style={{ display: "flex", gap: 32, alignItems: "stretch" }}>
+                <div style={{ display: "flex", width: 12, borderRadius: 6, backgroundColor: accent }} />
+                <div style={column(24, { flex: 1 })}>
+                  {priceBlock()}
+                  {title()}
+                  {body()}
+                </div>
+              </div>
+              {cta()}
+            </div>
           </div>
+        </div>
+      );
+    case "demonstracao": {
+      const photoHeight = Math.round(height * PANEL_PHOTO[format]);
+      return (
+        <div style={{ ...root, flexDirection: "column" }}>
           <div
             style={{
               display: "flex",
-              justifyContent: "center",
-              padding: "28px 0",
-              borderRadius: 32,
-              backgroundColor: accent,
-              color: background,
-              fontSize: 48,
-              fontWeight: 800,
+              width,
+              height: photoHeight,
+              overflow: "hidden",
+              backgroundColor: "rgba(255,255,255,0.06)",
             }}
           >
-            {content.cta}
+            {imageSrc && (
+              // eslint-disable-next-line @next/next/no-img-element -- compatível com Satori
+              <img
+                src={imageSrc}
+                alt=""
+                width={width}
+                height={photoHeight}
+                style={{ width, height: photoHeight, objectFit: "cover" }}
+              />
+            )}
+          </div>
+          <div
+            style={column(22, {
+              flex: 1,
+              justifyContent: "center",
+              padding: `48px ${safe.x}px ${safe.bottom}px`,
+            })}
+          >
+            <div style={{ display: "flex", width: 88, height: 8, borderRadius: 4, backgroundColor: accent }} />
+            {brand}
+            {title(Math.round(headlineSize(content.headline) * 0.82))}
+            {body(36)}
+            <div style={{ display: "flex", marginTop: 8 }}>{cta()}</div>
+          </div>
+          {/* Preço como selo no canto da foto: no painel não cabe ao lado do botão. */}
+          {price && (
+            <div style={{ display: "flex", position: "absolute", left: safe.x, top: photoHeight - 146 }}>
+              {priceBlock()}
+            </div>
+          )}
+        </div>
+      );
+    }
+    case "conveniencia":
+      return (
+        <div style={root}>
+          {fullPhoto(SHADE.topo)}
+          <div style={frame}>
+            <div style={column(24)}>
+              {brand}
+              {title()}
+              {body()}
+            </div>
+            <div style={column(24)}>
+              {priceBlock()}
+              {cta("stretch")}
+            </div>
           </div>
         </div>
       );
-      break;
   }
-
-  return (
-    <div style={root}>
-      {photo ?? <Decoration template={t} accent={accent} width={width} height={height} />}
-      {scene}
-    </div>
-  );
 }
 
+/** Formas discretas na cor do texto (nunca na cor da marca) para a peça sem foto não ficar chapada. */
 function Decoration({
   template,
-  accent,
+  color,
   width,
   height,
 }: {
   template: CreativeContent["template"];
-  accent: string;
+  color: string;
   width: number;
   height: number;
 }) {
   const shape = (style: CSSProperties) => (
-    <div style={{ display: "flex", position: "absolute", backgroundColor: accent, opacity: 0.12, ...style }} />
+    <div style={{ display: "flex", position: "absolute", backgroundColor: color, opacity: 0.06, ...style }} />
   );
   switch (template) {
     case "oferta":
       return shape({ width: 820, height: 820, borderRadius: 410, right: -300, top: -260 });
     case "problema":
-      return shape({
-        width: 300,
-        height: 14,
-        borderRadius: 7,
-        left: (width - 300) / 2,
-        top: height * 0.3,
-        opacity: 0.4,
-      });
+      return shape({ width: 300, height: 14, borderRadius: 7, left: (width - 300) / 2, top: height * 0.3 });
     case "beneficio":
       return shape({ width, height: 300, left: 0, bottom: 0 });
     case "demonstracao":
-      return shape({ width: 560, height: 560, borderRadius: 72, right: -180, bottom: -140 });
+      return null;
     case "conveniencia":
       return shape({ width: 920, height: 920, borderRadius: 460, right: -440, bottom: -400 });
   }

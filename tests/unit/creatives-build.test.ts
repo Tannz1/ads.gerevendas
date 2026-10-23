@@ -23,6 +23,13 @@ describe("initialContents", () => {
     for (const c of out) expect(creativeContentSchema.safeParse(c.content).success).toBe(true);
   });
 
+  it("usa o layout escolhido pela estratégia, sem repetir entre as peças", () => {
+    const layouts = ["demonstracao", "demonstracao", "oferta", "problema", "conveniencia"] as const;
+    const plan = { ...validPlan, angles: validPlan.angles.map((a, i) => ({ ...a, layout: layouts[i] })) };
+    const out = initialContents(plan, "#C2410C", null).map((c) => c.content.template);
+    expect(out).toEqual(["demonstracao", "beneficio", "oferta", "problema", "conveniencia"]);
+  });
+
   it("mostra preço só na peça de oferta e só se houver preço confirmado", () => {
     expect(
       initialContents(validPlan, "#C2410C", 2490)

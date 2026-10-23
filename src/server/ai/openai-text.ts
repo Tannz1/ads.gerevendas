@@ -188,6 +188,8 @@ export function openaiText(opts: Options): TextProvider {
           ],
           text: { format: { type: "json_schema", name: "strategy_plan", strict: true, schema: STRATEGY_JSON_SCHEMA } },
         }),
+        // strategy.v3 devolve persona, hipótese e briefing de foto por peça: resposta maior que a do v2.
+        opts.timeoutMs ?? 90_000,
       );
       if (!res.ok) throw new ProviderError("external_unavailable", `OpenAI respondeu ${res.status}`);
 

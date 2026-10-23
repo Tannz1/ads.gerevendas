@@ -1,4 +1,4 @@
-import { LIMITS, type MarketResearch, type StrategyPlan } from "@/contracts/creatives";
+import { LIMITS, type AngleKey, type MarketResearch, type StrategyPlan } from "@/contracts/creatives";
 import { formatCents } from "@/lib/money";
 import type { ResearchInput, StrategyInput, TextProvider } from "./types";
 
@@ -30,12 +30,20 @@ export function mockStrategy(input: StrategyInput): StrategyPlan {
   const place = `${b.city}/${b.state}`;
   const h = (s: string) => clip(s, LIMITS.headline);
   const body = (s: string) => clip(s, LIMITS.body);
+  const more = (layout: AngleKey, funnel_stage: StrategyPlan["angles"][number]["funnel_stage"]) => ({
+    persona: clip(a.description, 160),
+    funnel_stage,
+    test_hypothesis: "Compare o custo por resultado desta peça com o das outras.",
+    layout,
+    visual_concept: clip(`Foto real de ${o.name} em ${b.city}, luz natural.`, 400),
+  });
 
   return {
     business_summary: clip(`${b.name}: ${b.segment.toLowerCase()} em ${place}. Oferta principal: ${o.name}.`, 400),
     angles: [
       {
         key: "oferta",
+        ...more("oferta", "fundo"),
         label: "Oferta",
         rationale: "Mostra direto o que você vende, para quem já está procurando.",
         headline: h(o.name),
@@ -45,6 +53,7 @@ export function mockStrategy(input: StrategyInput): StrategyPlan {
       },
       {
         key: "problema",
+        ...more("problema", "topo"),
         label: "Rotina do cliente",
         rationale: "Fala com a necessidade de quem compra antes de apresentar a solução.",
         headline: h(`Pensando em ${o.name.toLowerCase()}?`),
@@ -53,6 +62,7 @@ export function mockStrategy(input: StrategyInput): StrategyPlan {
       },
       {
         key: "beneficio",
+        ...more("beneficio", "meio"),
         label: "Benefício",
         rationale: "Destaca o diferencial que você mesmo informou.",
         headline: h(diff),
@@ -61,6 +71,7 @@ export function mockStrategy(input: StrategyInput): StrategyPlan {
       },
       {
         key: "demonstracao",
+        ...more("demonstracao", "meio"),
         label: "Demonstração",
         rationale: "Apresenta o negócio e o que ele faz, para gerar confiança.",
         headline: h(`Conheça ${b.name}`),
@@ -69,6 +80,7 @@ export function mockStrategy(input: StrategyInput): StrategyPlan {
       },
       {
         key: "conveniencia",
+        ...more("conveniencia", "fundo"),
         label: "Conveniência",
         rationale: "Reforça que é perto e fácil de falar com você.",
         headline: h(`Perto de você em ${b.city}`),
@@ -80,6 +92,11 @@ export function mockStrategy(input: StrategyInput): StrategyPlan {
       locations: [a.service_radius_km ? `${place}, raio de ${a.service_radius_km} km` : place],
       age_range: `${a.age_min} a ${a.age_max} anos`,
     },
+    test_plan: [
+      "Suba as 5 peças juntas em um conjunto, com público amplo na região proposta.",
+      "Não edite nada por cerca de 7 dias, enquanto a Meta aprende.",
+      "Depois compare o custo por resultado e pause as peças mais caras.",
+    ],
     assumptions: ["Textos montados a partir do seu cadastro, sem uso de IA (simulação)."],
     fields_requiring_confirmation: price
       ? []
