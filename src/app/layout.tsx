@@ -15,6 +15,13 @@ const display = localFont({
   weight: "600 800",
   display: "swap",
 });
+// Archivo (eixo de largura): letreiro da landing page.
+const sign = localFont({
+  src: "./fonts/archivo-latin.woff2",
+  variable: "--font-sign",
+  weight: "100 900",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: { default: "GereVendas Ads", template: "%s · GereVendas Ads" },
@@ -26,7 +33,7 @@ export const viewport: Viewport = { themeColor: "#f6f5f1" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR" className={`${body.variable} ${display.variable} h-full`}>
+    <html lang="pt-BR" className={`${body.variable} ${display.variable} ${sign.variable} h-full`}>
       <body className="min-h-full">{children}</body>
     </html>
   );

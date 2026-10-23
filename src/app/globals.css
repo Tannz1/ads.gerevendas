@@ -50,6 +50,7 @@
   --color-danger-soft: var(--danger-soft);
   --font-sans: var(--font-body);
   --font-display: var(--font-display);
+  --font-sign: var(--font-sign);
   --shadow-card: 0 1px 2px rgb(16 24 40 / 0.04), 0 4px 16px -6px rgb(16 24 40 / 0.08);
   --shadow-lift: 0 2px 4px rgb(16 24 40 / 0.04), 0 18px 40px -16px rgb(16 24 40 / 0.22);
 }
@@ -73,5 +74,28 @@ body {
   *::after {
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
+  }
+}
+
+/* Landing: letreiro (Archivo com eixo de largura) e etiqueta de preço. */
+.sign-wide {
+  font-family: var(--font-sign), system-ui, sans-serif;
+  font-variation-settings: "wdth" 125;
+}
+
+.price-tag {
+  background: #d93a26;
+  border-radius: 6px 18px 18px 6px;
+  box-shadow: 0 10px 20px -10px rgb(60 10 0 / 0.6);
+}
+
+.demo-swap {
+  animation: demo-swap 320ms ease-out;
+}
+
+@keyframes demo-swap {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
   }
 }
