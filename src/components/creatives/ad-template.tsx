@@ -87,12 +87,16 @@ export function AdTemplate({ content, format, businessName, priceLabel, fonts, i
     <div
       style={{
         display: "flex",
-        padding: "24px 48px",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px 52px",
         borderRadius: 999,
         backgroundColor: accent,
         color: background,
-        fontSize: 40,
-        fontWeight: 700,
+        fontSize: 42,
+        fontWeight: 800,
+        boxShadow: "0 10px 25px -5px rgba(0,0,0,0.35)",
+        letterSpacing: -0.5,
       }}
     >
       {content.cta}

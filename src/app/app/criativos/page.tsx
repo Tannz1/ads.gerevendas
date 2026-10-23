@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { AdPreview, imageUrl } from "@/components/creatives/ad-preview";
 import {
   GenerateButton,
@@ -7,7 +6,6 @@ import {
   JOB_ERRORS,
   JobProgress,
 } from "@/components/creatives/generation-controls";
-import { PilotFeedbackBox } from "@/components/creatives/pilot-feedback-box";
 import { ResearchSection } from "@/components/creatives/research-section";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -57,11 +55,8 @@ export default async function CreativesPage() {
       <div className="mx-auto max-w-3xl">
         <Header />
         <Card className="mt-8 p-6 sm:p-8">
-          <h2 className="font-display text-xl font-bold">Disponível no piloto com conta</h2>
-          <p className="mt-2 text-ink-soft">
-            A estratégia e as peças são geradas a partir do cadastro salvo na sua conta. No modo demonstração nada é
-            gravado, então esta etapa não está disponível.
-          </p>
+          <h2 className="font-display text-xl font-bold">Faça login para criar anúncios</h2>
+          <p className="mt-2 text-ink-soft">A estratégia e as peças são geradas a partir do cadastro do seu negócio.</p>
         </Card>
       </div>
     );
@@ -121,18 +116,13 @@ export default async function CreativesPage() {
     );
   }
 
-  const { plan, simulated } = data.strategy;
+  const { plan } = data.strategy;
   const generatingImage = new Set(data.image_jobs.map((j) => j.creative_id));
   const missingImages = data.creatives.filter((c) => !c.image_url && !generatingImage.has(c.id)).length;
   const aiImages = Boolean(selectImageProvider(serverEnv()));
   return (
     <div className="mx-auto max-w-6xl">
-      <Header simulated={simulated} credits={credits} />
-      {simulated && (
-        <p className="mt-2 text-sm text-ink-faint">
-          Textos montados a partir do seu cadastro, sem IA. Com a IA ativada, as sugestões ficam mais variadas.
-        </p>
-      )}
+      <Header simulated={false} credits={credits} />
 
       <Card className="mt-8 p-6 sm:p-7">
         <h2 className="font-display text-xl font-bold">Sua estratégia</h2>
@@ -173,7 +163,7 @@ export default async function CreativesPage() {
         </div>
       </Card>
 
-      <h2 className="mt-10 font-display text-xl font-bold">Peças</h2>
+      <h2 className="mt-10 font-display text-xl font-bold">Peças de Anúncio</h2>
       {data.image_jobs.length > 0 ? (
         <div className="mt-3">
           <JobProgress
@@ -250,20 +240,11 @@ export default async function CreativesPage() {
           );
         })}
       </ul>
-      <div className="mt-8">
-        <PilotFeedbackBox stage="strategy" />
+      <div className="mt-8 flex items-center justify-between">
+        <ButtonLink href="/app/campanhas/nova" size="lg" className="w-full sm:w-auto">
+          Próximo passo: Preparar Campanha →
+        </ButtonLink>
       </div>
-      <p className="mt-6 text-sm text-ink-faint">
-        Nenhuma peça é publicada automaticamente. Depois de aprovar as peças, você pode preparar a campanha em{" "}
-        <Link href="/app/campanhas" className="font-medium text-brand hover:underline">
-          Campanhas
-        </Link>{" "}
-        ou{" "}
-        <Link href="/app/conta" className="font-medium text-brand hover:underline">
-          ver status da conta
-        </Link>
-        .
-      </p>
     </div>
   );
 }

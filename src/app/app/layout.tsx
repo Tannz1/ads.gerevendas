@@ -9,15 +9,7 @@ import { isSupabaseConfigured } from "@/lib/public-env";
 export const metadata: Metadata = { title: { default: "Início", template: "%s · GereVendas Ads" } };
 
 function PilotNote() {
-  return (
-    <div className="rounded-xl border border-line bg-surface-muted/70 p-3 text-xs leading-relaxed text-ink-soft">
-      <div className="flex items-center gap-1.5 font-semibold text-ink">
-        <span className="size-2 rounded-full bg-accent" />
-        Piloto em andamento
-      </div>
-      <p className="mt-1 text-ink-faint">Criativos disponíveis; publicação na Meta em modo Simulação.</p>
-    </div>
-  );
+  return null;
 }
 
 export default function AppLayout({ children }: LayoutProps<"/app">) {
