@@ -12,6 +12,7 @@ describe("campaigns and Meta contracts (Milestone 3)", () => {
       duration_days: 7,
       creative_ids: ["22222222-2222-4222-8222-222222222222"],
       spend_confirmed_by_owner: true,
+      no_special_category_confirmed: true,
       idempotency_key: "idemp_1234567890",
     });
     expect(valid.success).toBe(true);
@@ -27,6 +28,7 @@ describe("campaigns and Meta contracts (Milestone 3)", () => {
         duration_days: 7,
         creative_ids: ["22222222-2222-4222-8222-222222222222"],
         spend_confirmed_by_owner: true,
+        no_special_category_confirmed: true,
         idempotency_key: "idemp_1234567890",
       }).success,
     ).toBe(false);
@@ -42,9 +44,26 @@ describe("campaigns and Meta contracts (Milestone 3)", () => {
         duration_days: 7,
         creative_ids: ["22222222-2222-4222-8222-222222222222"],
         spend_confirmed_by_owner: false,
+        no_special_category_confirmed: true,
         idempotency_key: "idemp_1234567890",
       }).success,
     ).toBe(false);
+  });
+
+  it("exige confirmar que o anúncio não é de categoria especial", () => {
+    const input = {
+      strategy_id: "11111111-1111-4111-8111-111111111111",
+      name: "Campanha Café da Manhã",
+      objective: "trafego_site",
+      daily_budget_cents: 2500,
+      currency: "BRL",
+      duration_days: 7,
+      creative_ids: ["22222222-2222-4222-8222-222222222222"],
+      spend_confirmed_by_owner: true,
+      idempotency_key: "idemp_1234567890",
+    };
+    expect(createPausedCampaignSchema.safeParse(input).success).toBe(false);
+    expect(createPausedCampaignSchema.safeParse({ ...input, no_special_category_confirmed: true }).success).toBe(true);
   });
 
   it("exige segunda confirmação explícita do owner para ativar campanha", () => {

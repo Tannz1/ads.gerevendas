@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { parseServerEnv } from "@/lib/env";
 import { resolveFlags } from "@/lib/flags";
-import { resolveMetaBusinessMode } from "@/server/meta/mode";
+import { resolveMetaBusinessMode, resolveMetaStopMode } from "@/server/meta/mode";
 
 const mode = (vars: Record<string, string>) => {
   const env = parseServerEnv(vars);
@@ -43,5 +43,17 @@ describe("resolveMetaBusinessMode", () => {
   it("kill switch desliga tudo, inclusive a Simulação", () => {
     expect(mode({ ...real, FEATURE_FLAG_KILL_SWITCH: "true" })).toEqual({ kind: "disabled", reason: "kill_switch" });
     expect(mode({ FEATURE_FLAG_KILL_SWITCH: "true" })).toEqual({ kind: "disabled", reason: "kill_switch" });
+  });
+});
+
+describe("resolveMetaStopMode", () => {
+  it("permite pausar campanha real mesmo com kill switch", () => {
+    const env = parseServerEnv({ ...real, FEATURE_FLAG_KILL_SWITCH: "true" });
+    expect(resolveMetaStopMode(env)).toMatchObject({ kind: "real", businessId: "111" });
+  });
+
+  it("sem as variáveis da BM não há como falar com a Meta", () => {
+    expect(resolveMetaStopMode(parseServerEnv({ META_MODE: "real" }))).toBeNull();
+    expect(resolveMetaStopMode(parseServerEnv({ ...real, META_MODE: "mock" }))).toBeNull();
   });
 });

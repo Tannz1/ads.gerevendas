@@ -3,7 +3,7 @@
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { apiError, type ApiResult } from "@/contracts/api";
+import { apiError, type ApiError, type ApiResult } from "@/contracts/api";
 import { activateCampaignSchema, createPausedCampaignSchema } from "@/contracts/campaigns";
 import { fieldErrors } from "@/contracts/onboarding";
 import { serverEnv } from "@/lib/env";
@@ -11,6 +11,17 @@ import { resolveFlags } from "@/lib/flags";
 import { log } from "@/lib/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAppContext, getCorrelationId } from "./context";
+import {
+  activateRealCampaign,
+  loadRealCampaign,
+  pauseRealCampaign,
+  publishRealCampaign,
+  syncRealCampaign,
+} from "./meta/campaign-real";
+import { MetaError } from "./meta/errors";
+import { metaBusinessClient } from "./meta/index";
+import { resolveMetaBusinessMode, resolveMetaStopMode } from "./meta/mode";
+import { PublishError, type PublishErrorCode } from "./meta/publish";
 
 const uuid = z.uuid();
 
@@ -23,13 +34,56 @@ function simulatedExternalIds(orgId: string, idempotencyKey: string) {
   };
 }
 
+const PUBLISH_ERROR_MESSAGES: Record<PublishErrorCode, string> = {
+  missing_website: "Este objetivo leva ao seu site, mas o cadastro não tem site. Adicione em Meu negócio.",
+  missing_whatsapp: "Este objetivo leva ao seu WhatsApp, mas o cadastro não tem WhatsApp. Adicione em Meu negócio.",
+  missing_instagram: "Este objetivo leva ao seu Instagram, mas o cadastro não tem o @. Adicione em Meu negócio.",
+  missing_destination: "Adicione site, WhatsApp ou Instagram em Meu negócio para o anúncio ter para onde levar.",
+  city_not_found: "A Meta não encontrou a cidade do seu cadastro. Confira a cidade e o estado em Meu negócio.",
+};
+
+/** Mensagem para o cliente quando a publicação na Meta parou no meio (a campanha fica salva para retomar). */
+function publishFailureMessage(e: unknown, correlationId: string): string {
+  if (e instanceof PublishError) return PUBLISH_ERROR_MESSAGES[e.code];
+  if (e instanceof MetaError) {
+    log(e.code === "rate_limited" ? "warn" : "error", "campaigns.real_publish_failed", {
+      correlation_id: correlationId,
+      code: e.code,
+      meta_code: e.metaCode,
+      meta_subcode: e.metaSubcode,
+    });
+    return e.code === "rate_limited"
+      ? "A Meta pediu uma pausa. Tente retomar a publicação em alguns minutos."
+      : "A Meta não aceitou parte da publicação agora. Tente retomar em instantes.";
+  }
+  log("error", "campaigns.real_publish_failed", {
+    correlation_id: correlationId,
+    error: e instanceof Error ? e.message : "unknown",
+  });
+  return "A publicação parou no meio. Tente retomar em instantes.";
+}
+
+function realMetaError(e: unknown, correlationId: string, event: string): ApiError {
+  log("error", event, {
+    correlation_id: correlationId,
+    code: e instanceof MetaError ? e.code : "unknown",
+    meta_code: e instanceof MetaError ? e.metaCode : undefined,
+  });
+  return apiError(
+    "external_unavailable",
+    "Não conseguimos falar com a Meta agora. Tente de novo em instantes.",
+    correlationId,
+  );
+}
+
 /**
  * Cria a campanha obrigatoriamente em estado PAUSED.
  * Exige papel `owner` e consentimento explícito de orçamento.
+ * Em modo real (FEATURE_FLAG_REAL_PUBLISHING + BM configurada) cria de fato na conta do cliente (ADR 0006).
  */
 export async function publishPausedCampaign(
   input: unknown,
-): Promise<ApiResult<{ campaign_id: string; simulated: boolean }>> {
+): Promise<ApiResult<{ campaign_id: string; simulated: boolean; warning?: string }>> {
   const correlationId = await getCorrelationId();
   const parsed = createPausedCampaignSchema.safeParse(input);
   if (!parsed.success) {
@@ -47,7 +101,8 @@ export async function publishPausedCampaign(
     );
   }
 
-  const flags = resolveFlags(serverEnv());
+  const env = serverEnv();
+  const flags = resolveFlags(env);
   if (flags.killSwitch) {
     return apiError(
       "feature_disabled",
@@ -55,17 +110,37 @@ export async function publishPausedCampaign(
       correlationId,
     );
   }
-  const simulated = !flags.realPublishing || flags.metaMode === "mock";
-  // Sem adaptador real da Meta ainda: nunca gravar IDs simulados como campanha real.
-  if (!simulated) {
-    return apiError("feature_disabled", "Publicação real na Meta ainda não está disponível.", correlationId);
+  const mode = resolveMetaBusinessMode(env, flags);
+  const supabase = await createSupabaseServerClient();
+
+  if (flags.realPublishing && mode.kind === "real") {
+    const { data, error } = await supabase.rpc("start_real_publication", {
+      p_org: ctx.organization.id,
+      p_strategy: parsed.data.strategy_id,
+      p_name: parsed.data.name,
+      p_objective: parsed.data.objective,
+      p_daily_budget_cents: parsed.data.daily_budget_cents,
+      p_duration_days: parsed.data.duration_days,
+      p_creative_ids: parsed.data.creative_ids,
+      p_idempotency_key: parsed.data.idempotency_key,
+      p_correlation_id: correlationId,
+    });
+    if (error) return publishRpcError(error, correlationId);
+    const campaignId = (data as { campaign_id: string }).campaign_id;
+    let warning: string | undefined;
+    try {
+      await publishRealCampaign(campaignId, metaBusinessClient(mode), correlationId);
+    } catch (e) {
+      warning = publishFailureMessage(e, correlationId);
+    }
+    revalidatePath("/app/campanhas", "layout");
+    return { ok: true, data: { campaign_id: campaignId, simulated: false, warning }, correlation_id: correlationId };
   }
+
   const { externalCampaignId, externalAdsetId } = simulatedExternalIds(
     ctx.organization.id,
     parsed.data.idempotency_key,
   );
-
-  const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("publish_campaign_paused", {
     p_org: ctx.organization.id,
     p_strategy: parsed.data.strategy_id,
@@ -77,27 +152,69 @@ export async function publishPausedCampaign(
     p_idempotency_key: parsed.data.idempotency_key,
     p_external_campaign_id: externalCampaignId,
     p_external_adset_id: externalAdsetId,
-    p_simulated: simulated,
+    p_simulated: true,
     p_correlation_id: correlationId,
   });
-
-  if (error) {
-    if (error.code === "42501") {
-      return apiError("forbidden", "Apenas o proprietário da empresa pode publicar campanhas.", correlationId);
-    }
-    if (error.message.includes("meta_not_connected")) {
-      return apiError("conflict", "Conecte a conta Meta antes de publicar a campanha.", correlationId);
-    }
-    if (error.message.includes("creatives_not_approved")) {
-      return apiError("conflict", "Todas as peças selecionadas precisam estar aprovadas.", correlationId);
-    }
-    log("error", "campaigns.publish_paused_failed", { correlation_id: correlationId, code: error.code });
-    return apiError("internal", "Não foi possível criar a campanha pausada agora.", correlationId);
-  }
+  if (error) return publishRpcError(error, correlationId);
 
   const res = data as { campaign_id: string; replayed: boolean };
   revalidatePath("/app/campanhas", "layout");
-  return { ok: true, data: { campaign_id: res.campaign_id, simulated }, correlation_id: correlationId };
+  return { ok: true, data: { campaign_id: res.campaign_id, simulated: true }, correlation_id: correlationId };
+}
+
+function publishRpcError(error: { code?: string; message: string }, correlationId: string): ApiError {
+  if (error.code === "42501") {
+    return apiError("forbidden", "Apenas o proprietário da empresa pode publicar campanhas.", correlationId);
+  }
+  if (error.message.includes("meta_not_connected")) {
+    return apiError("conflict", "Conclua os 4 passos em Conexões antes de publicar a campanha.", correlationId);
+  }
+  if (error.message.includes("meta_connection_simulated")) {
+    return apiError("conflict", "Sua conexão Meta é de Simulação. Refaça a conexão em Conexões.", correlationId);
+  }
+  if (error.message.includes("creatives_not_approved")) {
+    return apiError("conflict", "Todas as peças selecionadas precisam estar aprovadas.", correlationId);
+  }
+  log("error", "campaigns.publish_paused_failed", { correlation_id: correlationId, code: error.code });
+  return apiError("internal", "Não foi possível criar a campanha pausada agora.", correlationId);
+}
+
+/** Retoma uma publicação real que parou no meio (só cria o que ainda não tem ID na Meta). */
+export async function resumeRealPublication(
+  campaignId: unknown,
+): Promise<ApiResult<{ completed: boolean; warning?: string }>> {
+  const correlationId = await getCorrelationId();
+  const id = uuid.safeParse(campaignId);
+  if (!id.success) return apiError("validation_failed", "Campanha inválida.", correlationId);
+  const ctx = await getAppContext();
+  if (ctx.mode !== "supabase" || !ctx.organization) {
+    return apiError("feature_disabled", "Disponível no piloto com conta.", correlationId);
+  }
+  if (ctx.organization.role !== "owner") {
+    return apiError("forbidden", "Apenas o proprietário pode retomar a publicação.", correlationId);
+  }
+  const env = serverEnv();
+  const flags = resolveFlags(env);
+  const mode = resolveMetaBusinessMode(env, flags);
+  if (!flags.realPublishing || mode.kind !== "real") {
+    return apiError("feature_disabled", "Publicação real suspensa no momento.", correlationId);
+  }
+  const campaign = await loadRealCampaign(id.data);
+  if (!campaign || campaign.simulated) return apiError("not_found", "Campanha não encontrada.", correlationId);
+  if (campaign.status !== "draft") return { ok: true, data: { completed: true }, correlation_id: correlationId };
+
+  try {
+    await publishRealCampaign(campaign.id, metaBusinessClient(mode), correlationId);
+  } catch (e) {
+    revalidatePath("/app/campanhas", "layout");
+    return {
+      ok: true,
+      data: { completed: false, warning: publishFailureMessage(e, correlationId) },
+      correlation_id: correlationId,
+    };
+  }
+  revalidatePath("/app/campanhas", "layout");
+  return { ok: true, data: { completed: true }, correlation_id: correlationId };
 }
 
 /**
@@ -122,19 +239,52 @@ export async function activatePausedCampaign(input: unknown): Promise<ApiResult<
     return apiError("forbidden", "Apenas o proprietário da empresa pode ativar a veiculação.", correlationId);
   }
 
-  const flags = resolveFlags(serverEnv());
+  const env = serverEnv();
+  const flags = resolveFlags(env);
   if (flags.killSwitch) {
     return apiError("feature_disabled", "Kill switch ativo: ativações suspensas.", correlationId);
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("activate_campaign", {
-    p_campaign: parsed.data.campaign_id,
-    p_confirmed_daily_budget_cents: parsed.data.confirmed_daily_budget_cents,
-    p_confirmed_duration_days: parsed.data.confirmed_duration_days,
-    p_idempotency_key: parsed.data.idempotency_key,
-    p_correlation_id: correlationId,
-  });
+  const campaign = await loadRealCampaign(parsed.data.campaign_id);
+  if (!campaign) return apiError("not_found", "Campanha não encontrada.", correlationId);
+
+  let error: { code?: string; message: string } | null;
+  if (campaign.simulated) {
+    const supabase = await createSupabaseServerClient();
+    ({ error } = await supabase.rpc("activate_campaign", {
+      p_campaign: parsed.data.campaign_id,
+      p_confirmed_daily_budget_cents: parsed.data.confirmed_daily_budget_cents,
+      p_confirmed_duration_days: parsed.data.confirmed_duration_days,
+      p_idempotency_key: parsed.data.idempotency_key,
+      p_correlation_id: correlationId,
+    }));
+  } else {
+    const mode = resolveMetaBusinessMode(env, flags);
+    if (!flags.realPublishing || mode.kind !== "real") {
+      return apiError("feature_disabled", "Publicação real suspensa no momento.", correlationId);
+    }
+    // Confere antes de mexer na Meta; o banco confere de novo dentro da transação.
+    if (campaign.status !== "paused") {
+      return apiError("conflict", "Apenas campanhas pausadas podem ser ativadas.", correlationId);
+    }
+    if (
+      campaign.daily_budget_cents !== parsed.data.confirmed_daily_budget_cents ||
+      campaign.duration_days !== parsed.data.confirmed_duration_days
+    ) {
+      return apiError("conflict", "O orçamento ou duração mudou. Recarregue a página antes de ativar.", correlationId);
+    }
+    try {
+      ({ error } = await activateRealCampaign(
+        campaign,
+        ctx.user.id,
+        parsed.data,
+        metaBusinessClient(mode),
+        correlationId,
+      ));
+    } catch (e) {
+      return realMetaError(e, correlationId, "campaigns.real_activate_failed");
+    }
+  }
 
   if (error) {
     if (error.code === "42501") {
@@ -145,6 +295,9 @@ export async function activatePausedCampaign(input: unknown): Promise<ApiResult<
     }
     if (error.message.includes("campaign_not_paused")) {
       return apiError("conflict", "Apenas campanhas pausadas podem ser ativadas.", correlationId);
+    }
+    if (error.message.includes("publication_incomplete")) {
+      return apiError("conflict", "Conclua a publicação antes de ativar.", correlationId);
     }
     log("error", "campaigns.activate_failed", { correlation_id: correlationId, code: error.code });
     return apiError("internal", "Não foi possível ativar a campanha agora.", correlationId);
@@ -163,11 +316,27 @@ export async function pauseActiveCampaign(campaignId: unknown): Promise<ApiResul
     return apiError("feature_disabled", "Disponível no piloto com conta.", correlationId);
   }
 
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("pause_campaign", {
-    p_campaign: id.data,
-    p_correlation_id: correlationId,
-  });
+  const campaign = await loadRealCampaign(id.data);
+  if (!campaign) return apiError("not_found", "Campanha não encontrada.", correlationId);
+
+  let error: { code?: string; message: string } | null;
+  if (campaign.simulated) {
+    const supabase = await createSupabaseServerClient();
+    ({ error } = await supabase.rpc("pause_campaign", { p_campaign: id.data, p_correlation_id: correlationId }));
+  } else {
+    if (ctx.organization.role !== "owner" && ctx.organization.role !== "admin") {
+      return apiError("forbidden", "Apenas o proprietário ou administrador pode pausar a campanha.", correlationId);
+    }
+    // Pausar reduz gasto: funciona mesmo com kill switch ligado.
+    const mode = resolveMetaStopMode(serverEnv());
+    if (!mode) return apiError("feature_disabled", "A integração com a Meta não está configurada.", correlationId);
+    try {
+      ({ error } = await pauseRealCampaign(campaign, ctx.user.id, metaBusinessClient(mode), correlationId));
+    } catch (e) {
+      return realMetaError(e, correlationId, "campaigns.real_pause_failed");
+    }
+  }
+
   if (error) {
     if (error.code === "42501") {
       return apiError("forbidden", "Apenas o proprietário ou administrador pode pausar a campanha.", correlationId);
@@ -178,4 +347,28 @@ export async function pauseActiveCampaign(campaignId: unknown): Promise<ApiResul
 
   revalidatePath("/app/campanhas", "layout");
   return { ok: true, data: { paused: true }, correlation_id: correlationId };
+}
+
+/** Atualiza status de revisão e métricas a partir da Meta (no máximo 1 vez por minuto por campanha). */
+export async function syncCampaignFromMeta(campaignId: unknown): Promise<ApiResult<{ synced: boolean }>> {
+  const correlationId = await getCorrelationId();
+  const id = uuid.safeParse(campaignId);
+  if (!id.success) return apiError("validation_failed", "Campanha inválida.", correlationId);
+  const ctx = await getAppContext();
+  if (ctx.mode !== "supabase" || !ctx.organization) {
+    return apiError("feature_disabled", "Disponível no piloto com conta.", correlationId);
+  }
+  const campaign = await loadRealCampaign(id.data);
+  if (!campaign) return apiError("not_found", "Campanha não encontrada.", correlationId);
+  if (campaign.simulated) return { ok: true, data: { synced: false }, correlation_id: correlationId };
+
+  const mode = resolveMetaStopMode(serverEnv());
+  if (!mode) return apiError("feature_disabled", "A integração com a Meta não está configurada.", correlationId);
+  try {
+    const synced = await syncRealCampaign(campaign, metaBusinessClient(mode));
+    if (synced) revalidatePath(`/app/campanhas/${campaign.id}`);
+    return { ok: true, data: { synced }, correlation_id: correlationId };
+  } catch (e) {
+    return realMetaError(e, correlationId, "campaigns.sync_failed");
+  }
 }
