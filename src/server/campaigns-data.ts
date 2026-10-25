@@ -48,6 +48,15 @@ export type CampaignDetailView = CampaignListItem & {
     simulated: boolean;
     created_at: string;
   }>;
+  /** Métricas lidas da Meta (só campanhas reais). null = ainda não sincronizadas. */
+  insights: {
+    spend_cents: number;
+    impressions: number;
+    reach: number;
+    clicks: number;
+    conversations: number;
+    fetched_at: string;
+  } | null;
 };
 
 export async function loadMetaConnection(organizationId: string): Promise<MetaConnectionView | null> {
@@ -77,7 +86,7 @@ export async function loadCampaignsList(organizationId: string): Promise<Campaig
 
 export async function loadCampaignDetail(campaignId: string): Promise<CampaignDetailView | null> {
   const supabase = await createSupabaseServerClient();
-  const [{ data: camp }, { data: links }, { data: ops }] = await Promise.all([
+  const [{ data: camp }, { data: links }, { data: ops }, { data: insights }] = await Promise.all([
     supabase
       .from("campaigns")
       .select(
@@ -94,10 +103,15 @@ export async function loadCampaignDetail(campaignId: string): Promise<CampaignDe
       .select("id, operation, simulated, created_at")
       .eq("campaign_id", campaignId)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("campaign_insights")
+      .select("spend_cents, impressions, reach, clicks, conversations, fetched_at")
+      .eq("campaign_id", campaignId)
+      .maybeSingle(),
   ]);
 
   if (!camp) return null;
-  const c = camp as unknown as Omit<CampaignDetailView, "creatives" | "operations">;
+  const c = camp as unknown as Omit<CampaignDetailView, "creatives" | "operations" | "insights">;
 
   const creatives = (
     (links ?? []) as unknown as Array<{
@@ -116,5 +130,6 @@ export async function loadCampaignDetail(campaignId: string): Promise<CampaignDe
     ...c,
     creatives,
     operations: (ops ?? []) as CampaignDetailView["operations"],
+    insights: (insights as CampaignDetailView["insights"]) ?? null,
   };
 }

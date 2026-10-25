@@ -10,12 +10,14 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { loadMetaConnection } from "@/server/campaigns-data";
 import { getAppContext } from "@/server/context";
 import { loadCreativesOverview } from "@/server/creatives-data";
+import { resolveMetaBusinessMode } from "@/server/meta/mode";
 
 export const metadata: Metadata = { title: "Nova Campanha" };
 
 export default async function NewCampaignPage() {
   const ctx = await getAppContext();
-  const flags = resolveFlags(serverEnv());
+  const env = serverEnv();
+  const flags = resolveFlags(env);
 
   if (ctx.mode === "demo" || !ctx.organization) {
     return (
@@ -82,7 +84,7 @@ export default async function NewCampaignPage() {
     offers: { name: string } | null;
   } | null;
 
-  const simulated = !flags.realPublishing || flags.metaMode === "mock";
+  const simulated = !(flags.realPublishing && resolveMetaBusinessMode(env, flags).kind === "real");
 
   return (
     <div className="mx-auto max-w-3xl">
