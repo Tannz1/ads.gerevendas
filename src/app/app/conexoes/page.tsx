@@ -1,70 +1,21 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
-import { MetaConnectionPanel } from "@/components/campaigns/meta-connection-panel";
+import { ConnectionSteps } from "@/components/meta/connection-steps";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { serverEnv } from "@/lib/env";
 import { resolveFlags } from "@/lib/flags";
-import { buildSimulatedDiscoveredAssets, type DiscoveredMetaAssets } from "@/lib/meta-oauth";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { loadMetaConnection } from "@/server/campaigns-data";
 import { getAppContext } from "@/server/context";
-import { META_DISCOVERED_COOKIE, readDiscovery } from "@/server/meta-discovery";
+import { loadMetaOnboarding } from "@/server/meta/data";
+import { resolveMetaBusinessMode } from "@/server/meta/mode";
 
 export const metadata: Metadata = { title: "Conexões Meta" };
 
-type PageProps = {
-  searchParams: Promise<{ oauth?: string }>;
-};
-
-export default async function ConnectionsPage({ searchParams }: PageProps) {
+export default async function ConnectionsPage() {
   const ctx = await getAppContext();
+  const demo = ctx.mode === "demo" || !ctx.organization;
   const env = serverEnv();
-  const flags = resolveFlags(env);
-  const { oauth } = await searchParams;
-
-  if (ctx.mode === "demo" || !ctx.organization) {
-    return (
-      <div className="mx-auto max-w-3xl">
-        <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl font-bold tracking-tight">Conexões Meta</h1>
-          <Badge tone="demo">Demonstração</Badge>
-        </div>
-        <Card className="mt-8 p-6">
-          <p className="text-[15px] text-ink-soft">
-            A conexão de Conta de Anúncios, Página do Facebook, Instagram e WhatsApp está disponível no piloto com conta
-            conectada.
-          </p>
-        </Card>
-      </div>
-    );
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const [connection, bizRes, jar] = await Promise.all([
-    loadMetaConnection(ctx.organization.id),
-    supabase
-      .from("businesses")
-      .select("name, whatsapp_e164")
-      .eq("organization_id", ctx.organization.id)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    cookies(),
-  ]);
-
-  const biz = bizRes.data as { name: string; whatsapp_e164: string | null } | null;
-  const businessName = biz?.name ?? ctx.organization.name;
-  const defaultWhatsapp = biz?.whatsapp_e164 ?? null;
-  const canManage = ctx.organization.role === "owner" || ctx.organization.role === "admin";
-  const hasRealMetaOAuthApp = Boolean(env.META_APP_ID && env.META_APP_SECRET);
-
-  let discoveredAssets: DiscoveredMetaAssets | null = null;
-  if (oauth === "simulated") {
-    discoveredAssets = buildSimulatedDiscoveredAssets(businessName, defaultWhatsapp);
-  } else {
-    discoveredAssets = readDiscovery(jar.get(META_DISCOVERED_COOKIE)?.value, ctx.organization.id);
-  }
+  const mode = resolveMetaBusinessMode(env, resolveFlags(env));
+  const connection =
+    demo || ctx.mode !== "supabase" || !ctx.organization ? null : await loadMetaOnboarding(ctx.organization.id);
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -72,21 +23,24 @@ export default async function ConnectionsPage({ searchParams }: PageProps) {
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight">Conexões Meta</h1>
           <p className="mt-1 text-[15px] text-ink-soft">
-            Vincule os ativos da sua empresa para preparar publicações no Facebook e Instagram.
+            Quatro passos para seus anúncios rodarem no Facebook e no Instagram.
           </p>
         </div>
-        {flags.metaMode === "mock" && <Badge tone="demo">Modo Simulação</Badge>}
+        {demo ? (
+          <Badge tone="demo">Demonstração</Badge>
+        ) : (
+          mode.kind === "mock" && <Badge tone="demo">Modo Simulação</Badge>
+        )}
       </div>
 
-      <MetaConnectionPanel
+      <ConnectionSteps
         connection={connection}
-        canManage={canManage}
-        metaMode={flags.metaMode}
-        hasRealMetaOAuthApp={hasRealMetaOAuthApp}
-        oauthStatus={oauth ?? null}
-        discoveredAssets={discoveredAssets}
-        defaultBusinessName={businessName}
-        defaultWhatsapp={defaultWhatsapp}
+        canManage={ctx.mode === "supabase" && ctx.organization?.role === "owner"}
+        demo={demo}
+        simulated={mode.kind !== "real"}
+        disabledReason={mode.kind === "disabled" ? mode.reason : null}
+        businessId={mode.kind === "real" ? mode.businessId : null}
+        defaultInviteEmail={ctx.mode === "supabase" ? (ctx.user.email ?? "") : ""}
       />
     </div>
   );

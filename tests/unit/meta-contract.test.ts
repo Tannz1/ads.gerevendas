@@ -4,11 +4,15 @@ import { metaBillingUrl } from "@/lib/meta-links";
 
 describe("contratos Meta", () => {
   it("normaliza o @ do Instagram e aceita campo vazio", () => {
-    expect(linkPageSchema.parse({ page_url: "facebook.com/x1", instagram_username: "@Padaria.Joao" }).instagram_username).toBe(
-      "padaria.joao",
+    expect(
+      linkPageSchema.parse({ page_url: "facebook.com/x1", instagram_username: "@Padaria.Joao" }).instagram_username,
+    ).toBe("padaria.joao");
+    expect(
+      linkPageSchema.parse({ page_url: "facebook.com/x1", instagram_username: "" }).instagram_username,
+    ).toBeUndefined();
+    expect(linkPageSchema.safeParse({ page_url: "facebook.com/x1", instagram_username: "com espaço" }).success).toBe(
+      false,
     );
-    expect(linkPageSchema.parse({ page_url: "facebook.com/x1", instagram_username: "" }).instagram_username).toBeUndefined();
-    expect(linkPageSchema.safeParse({ page_url: "facebook.com/x1", instagram_username: "com espaço" }).success).toBe(false);
   });
 
   it("valida e-mail do convite e IDs de conta", () => {

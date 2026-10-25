@@ -197,7 +197,10 @@ export class RealMetaBusinessClient implements MetaBusinessClient {
   }
 
   async getFunding(adAccountId: string): Promise<MetaFunding> {
-    const raw = this.parse(fundingRaw, await this.call("GET", adAccountId, { fields: "funding_source,account_status" }));
+    const raw = this.parse(
+      fundingRaw,
+      await this.call("GET", adAccountId, { fields: "funding_source,account_status" }),
+    );
     return { has_funding_source: Boolean(raw.funding_source), account_status: raw.account_status ?? 0 };
   }
 }

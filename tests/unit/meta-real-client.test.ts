@@ -20,9 +20,13 @@ const cfg = { businessId: "111", accessToken: "tok", appSecret: "sec", retryDela
 
 describe("RealMetaBusinessClient", () => {
   it("lê contas da BM com versão fixada, token no cabeçalho e appsecret_proof", async () => {
-    const f = fakeFetch([{ status: 200, body: { data: [{ id: "act_1", name: "A", account_status: 1, currency: "BRL" }] } }]);
+    const f = fakeFetch([
+      { status: 200, body: { data: [{ id: "act_1", name: "A", account_status: 1, currency: "BRL" }] } },
+    ]);
     const client = new RealMetaBusinessClient({ ...cfg, fetchImpl: f.impl });
-    expect(await client.listBusinessAdAccounts()).toEqual([{ id: "act_1", name: "A", account_status: 1, currency: "BRL" }]);
+    expect(await client.listBusinessAdAccounts()).toEqual([
+      { id: "act_1", name: "A", account_status: 1, currency: "BRL" },
+    ]);
     const { url, init } = f.calls[0];
     expect(url.pathname).toBe(`/${META_GRAPH_VERSION}/111/owned_ad_accounts`);
     expect(url.searchParams.get("appsecret_proof")).toBe(appSecretProof("tok", "sec"));
@@ -78,7 +82,10 @@ describe("RealMetaBusinessClient", () => {
   it("convite aceito devolve o ID do usuário da BM", async () => {
     const f = fakeFetch([{ status: 200, body: { data: [{ id: "bsu_9", email: "Dono@Padaria.com" }] } }]);
     const client = new RealMetaBusinessClient({ ...cfg, fetchImpl: f.impl });
-    expect(await client.getBusinessUserInvite("dono@padaria.com")).toEqual({ status: "accepted", business_user_id: "bsu_9" });
+    expect(await client.getBusinessUserInvite("dono@padaria.com")).toEqual({
+      status: "accepted",
+      business_user_id: "bsu_9",
+    });
   });
 
   it("convite ainda pendente", async () => {
@@ -87,7 +94,10 @@ describe("RealMetaBusinessClient", () => {
       { status: 200, body: { data: [{ id: "req_1", email: "dono@padaria.com", status: "PENDING" }] } },
     ]);
     const client = new RealMetaBusinessClient({ ...cfg, fetchImpl: f.impl });
-    expect(await client.getBusinessUserInvite("dono@padaria.com")).toEqual({ status: "pending", business_user_id: null });
+    expect(await client.getBusinessUserInvite("dono@padaria.com")).toEqual({
+      status: "pending",
+      business_user_id: null,
+    });
     expect(f.calls[1].url.pathname).toBe(`/${META_GRAPH_VERSION}/111/pending_users`);
   });
 

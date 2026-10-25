@@ -2,17 +2,15 @@
 
 import { createHash } from "node:crypto";
 import { revalidatePath } from "next/cache";
-import { cookies } from "next/headers";
 import { z } from "zod";
 import { apiError, type ApiResult } from "@/contracts/api";
-import { activateCampaignSchema, connectMetaAssetsSchema, createPausedCampaignSchema } from "@/contracts/campaigns";
+import { activateCampaignSchema, createPausedCampaignSchema } from "@/contracts/campaigns";
 import { fieldErrors } from "@/contracts/onboarding";
 import { serverEnv } from "@/lib/env";
 import { resolveFlags } from "@/lib/flags";
 import { log } from "@/lib/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAppContext, getCorrelationId } from "./context";
-import { META_DISCOVERED_COOKIE, readDiscovery } from "./meta-discovery";
 
 const uuid = z.uuid();
 
@@ -23,93 +21,6 @@ function simulatedExternalIds(orgId: string, idempotencyKey: string) {
     externalCampaignId: `sim_camp_${digest}`,
     externalAdsetId: `sim_adset_${digest}`,
   };
-}
-
-export async function connectMetaAssets(input: unknown): Promise<ApiResult<{ connected: true; simulated: boolean }>> {
-  const correlationId = await getCorrelationId();
-  const parsed = connectMetaAssetsSchema.safeParse(input);
-  if (!parsed.success) {
-    return apiError("validation_failed", "Revise os dados dos ativos Meta.", correlationId, fieldErrors(parsed.error));
-  }
-  const ctx = await getAppContext();
-  if (ctx.mode !== "supabase" || !ctx.organization) {
-    return apiError("feature_disabled", "Disponível no piloto com conta.", correlationId);
-  }
-  if (ctx.organization.role !== "owner" && ctx.organization.role !== "admin") {
-    return apiError("forbidden", "Apenas proprietários ou administradores podem conectar a Meta.", correlationId);
-  }
-
-  const env = serverEnv();
-  const flags = resolveFlags(env);
-  if (flags.killSwitch) {
-    return apiError("feature_disabled", "Kill switch ativo: integrações externas suspensas.", correlationId);
-  }
-  // Com o app Meta configurado, só vale conta e página que a própria Meta devolveu para esta empresa:
-  // nada de ID digitado ou de exemplo. Aí a conexão é real (a publicação segue o próprio flag).
-  const realApp = Boolean(env.META_APP_ID && env.META_APP_SECRET);
-  if (realApp) {
-    const discovered = readDiscovery((await cookies()).get(META_DISCOVERED_COOKIE)?.value, ctx.organization.id);
-    const fromMeta =
-      discovered !== null &&
-      !discovered.simulated &&
-      discovered.ad_accounts.some((a) => a.id === parsed.data.ad_account_id) &&
-      discovered.pages.some((p) => p.id === parsed.data.page_id);
-    if (!fromMeta) {
-      return apiError(
-        "conflict",
-        "Clique em Conectar com Facebook e confirme a conta e a página que a Meta mostrar.",
-        correlationId,
-      );
-    }
-  }
-  const simulated = !realApp;
-
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("upsert_meta_connection", {
-    p_org: ctx.organization.id,
-    p_ad_account_id: parsed.data.ad_account_id,
-    p_ad_account_name: parsed.data.ad_account_name,
-    p_page_id: parsed.data.page_id,
-    p_page_name: parsed.data.page_name,
-    p_instagram_actor_id: parsed.data.instagram_actor_id ?? null,
-    p_whatsapp_phone_e164: parsed.data.whatsapp_phone_e164 ?? null,
-    p_billing_verified: parsed.data.billing_verified_on_meta,
-    p_simulated: simulated,
-    p_correlation_id: correlationId,
-  });
-
-  if (error) {
-    if (error.code === "42501") return apiError("forbidden", "Sem permissão para conectar ativos.", correlationId);
-    log("error", "meta.connect_failed", { correlation_id: correlationId, code: error.code });
-    return apiError("internal", "Não foi possível salvar a conexão Meta agora.", correlationId);
-  }
-
-  revalidatePath("/app/conexoes");
-  revalidatePath("/app/campanhas", "layout");
-  return { ok: true, data: { connected: true, simulated }, correlation_id: correlationId };
-}
-
-export async function disconnectMetaAssets(): Promise<ApiResult<{ disconnected: true }>> {
-  const correlationId = await getCorrelationId();
-  const ctx = await getAppContext();
-  if (ctx.mode !== "supabase" || !ctx.organization) {
-    return apiError("feature_disabled", "Disponível no piloto com conta.", correlationId);
-  }
-
-  const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.rpc("disconnect_meta_connection", {
-    p_org: ctx.organization.id,
-    p_correlation_id: correlationId,
-  });
-  if (error) {
-    if (error.code === "42501") return apiError("forbidden", "Sem permissão para desconectar.", correlationId);
-    log("error", "meta.disconnect_failed", { correlation_id: correlationId, code: error.code });
-    return apiError("internal", "Não foi possível desconectar agora.", correlationId);
-  }
-
-  revalidatePath("/app/conexoes");
-  revalidatePath("/app/campanhas", "layout");
-  return { ok: true, data: { disconnected: true }, correlation_id: correlationId };
 }
 
 /**

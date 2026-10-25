@@ -61,9 +61,17 @@ function metaFailure(e: unknown, correlationId: string, event: string): ApiError
       meta_subcode: e.metaSubcode,
     });
     if (e.code === "rate_limited") {
-      return apiError("external_unavailable", "A Meta pediu uma pausa. Tente de novo em alguns minutos.", correlationId);
+      return apiError(
+        "external_unavailable",
+        "A Meta pediu uma pausa. Tente de novo em alguns minutos.",
+        correlationId,
+      );
     }
-    return apiError("external_unavailable", "Não conseguimos falar com a Meta agora. Tente de novo em instantes.", correlationId);
+    return apiError(
+      "external_unavailable",
+      "Não conseguimos falar com a Meta agora. Tente de novo em instantes.",
+      correlationId,
+    );
   }
   log("error", event, { correlation_id: correlationId, error: e instanceof Error ? e.message : "unknown" });
   return apiError("internal", "Algo deu errado. Tente de novo.", correlationId);
@@ -326,7 +334,9 @@ export async function refreshMetaStatus(): Promise<ApiResult<{ checked: boolean;
     if (inviteAccepted && row.billing_status !== "verified") {
       const funding = await client.getFunding(row.ad_account_id);
       if (funding.has_funding_source) {
-        await rpcOrThrow(admin.rpc("meta_set_billing", { p_org: c.orgId, p_verified: true, p_correlation_id: c.correlationId }));
+        await rpcOrThrow(
+          admin.rpc("meta_set_billing", { p_org: c.orgId, p_verified: true, p_correlation_id: c.correlationId }),
+        );
         changed = true;
       }
     }
@@ -349,7 +359,8 @@ export async function unlinkMetaPage(): Promise<ApiResult<{ unlinked: true }>> {
     p_correlation_id: correlationId,
   });
   if (error) {
-    if (error.code === "42501") return apiError("forbidden", "Apenas o proprietário pode trocar a Página.", correlationId);
+    if (error.code === "42501")
+      return apiError("forbidden", "Apenas o proprietário pode trocar a Página.", correlationId);
     log("error", "meta.unlink_failed", { correlation_id: correlationId, code: error.code });
     return apiError("internal", "Não foi possível trocar a Página agora.", correlationId);
   }
