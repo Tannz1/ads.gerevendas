@@ -7,6 +7,8 @@ import type {
   MetaFunding,
   MetaInstagramAsset,
   MetaInvite,
+  MetaCity,
+  MetaInsightsRow,
 } from "./client";
 
 const digest = (value: string) => createHash("sha256").update(value).digest("hex").slice(0, 12);
@@ -59,5 +61,40 @@ export class MockMetaBusinessClient implements MetaBusinessClient {
 
   async getFunding(): Promise<MetaFunding> {
     return { has_funding_source: true, account_status: 1 };
+  }
+
+  async searchCities(query: string): Promise<MetaCity[]> {
+    return [{ key: `sim_city_${digest(query.toLowerCase())}`, name: query, region: null }];
+  }
+
+  async uploadImage(_adAccountId: string, png: Buffer): Promise<string> {
+    return `sim_hash_${createHash("sha256").update(png).digest("hex").slice(0, 12)}`;
+  }
+
+  async createCampaign(): Promise<string> {
+    return `sim_campaign_${randomBytes(4).toString("hex")}`;
+  }
+
+  async createAdSet(): Promise<string> {
+    return `sim_adset_${randomBytes(4).toString("hex")}`;
+  }
+
+  async createAdCreative(): Promise<string> {
+    return `sim_creative_${randomBytes(4).toString("hex")}`;
+  }
+
+  async createAd(): Promise<string> {
+    return `sim_ad_${randomBytes(4).toString("hex")}`;
+  }
+
+  async setStatus(): Promise<void> {}
+
+  async getAdsEffectiveStatus(adIds: string[]): Promise<string[]> {
+    return adIds.map(() => "PAUSED");
+  }
+
+  // Simulação não tem métricas: a tela diz isso em vez de mostrar números inventados.
+  async getCampaignInsights(): Promise<MetaInsightsRow | null> {
+    return null;
   }
 }

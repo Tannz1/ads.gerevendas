@@ -7,6 +7,8 @@ import type {
   MetaFunding,
   MetaInstagramAsset,
   MetaInvite,
+  MetaCity,
+  MetaInsightsRow,
 } from "./client";
 import { MetaError, mapGraphError } from "./errors";
 import { appSecretProof, META_GRAPH_BASE } from "./graph";
@@ -48,6 +50,16 @@ const businessUserRaw = z.object({ id: z.string(), email: z.string().nullish() }
 const pendingUserRaw = z.object({ id: z.string(), email: z.string().nullish(), status: z.string().nullish() });
 const fundingRaw = z.object({ funding_source: z.string().nullish(), account_status: z.number().optional() });
 const createdRaw = z.object({ id: z.string() });
+const cityRaw = z.object({ key: z.string(), name: z.string(), region: z.string().nullish() });
+const imagesRaw = z.object({ images: z.record(z.string(), z.object({ hash: z.string() })) });
+const adStatusRaw = z.object({ effective_status: z.string().optional() });
+const insightsRaw = z.object({
+  spend: z.string().optional(),
+  impressions: z.string().optional(),
+  reach: z.string().optional(),
+  clicks: z.string().optional(),
+  actions: z.array(z.object({ action_type: z.string(), value: z.string() })).optional(),
+});
 
 const toAdAccount = (a: z.infer<typeof adAccountRaw>): MetaAdAccount => ({
   id: a.id.startsWith("act_") ? a.id : `act_${a.id}`,
@@ -202,5 +214,73 @@ export class RealMetaBusinessClient implements MetaBusinessClient {
       await this.call("GET", adAccountId, { fields: "funding_source,account_status" }),
     );
     return { has_funding_source: Boolean(raw.funding_source), account_status: raw.account_status ?? 0 };
+  }
+
+  async searchCities(query: string): Promise<MetaCity[]> {
+    const raw = this.parse(
+      listSchema(cityRaw),
+      await this.call("GET", "search", {
+        type: "adgeolocation",
+        location_types: JSON.stringify(["city"]),
+        country_code: "BR",
+        q: query,
+        limit: "25",
+      }),
+    );
+    return raw.data.map((c) => ({ key: c.key, name: c.name, region: c.region ?? null }));
+  }
+
+  async uploadImage(adAccountId: string, png: Buffer): Promise<string> {
+    const raw = this.parse(
+      imagesRaw,
+      await this.call("POST", `${adAccountId}/adimages`, { bytes: png.toString("base64") }),
+    );
+    const first = Object.values(raw.images)[0];
+    if (!first) throw new MetaError("unknown");
+    return first.hash;
+  }
+
+  private async create(adAccountId: string, edge: string, params: Record<string, string>): Promise<string> {
+    return this.parse(createdRaw, await this.call("POST", `${adAccountId}/${edge}`, params)).id;
+  }
+
+  createCampaign(adAccountId: string, params: Record<string, string>): Promise<string> {
+    return this.create(adAccountId, "campaigns", params);
+  }
+
+  createAdSet(adAccountId: string, params: Record<string, string>): Promise<string> {
+    return this.create(adAccountId, "adsets", params);
+  }
+
+  createAdCreative(adAccountId: string, params: Record<string, string>): Promise<string> {
+    return this.create(adAccountId, "adcreatives", params);
+  }
+
+  createAd(adAccountId: string, params: Record<string, string>): Promise<string> {
+    return this.create(adAccountId, "ads", params);
+  }
+
+  async setStatus(objectId: string, status: "ACTIVE" | "PAUSED"): Promise<void> {
+    await this.call("POST", objectId, { status });
+  }
+
+  async getAdsEffectiveStatus(adIds: string[]): Promise<string[]> {
+    if (adIds.length === 0) return [];
+    const raw = this.parse(
+      z.record(z.string(), adStatusRaw),
+      await this.call("GET", "", { ids: adIds.join(","), fields: "effective_status" }),
+    );
+    return adIds.map((id) => raw[id]?.effective_status ?? "UNKNOWN");
+  }
+
+  async getCampaignInsights(campaignId: string): Promise<MetaInsightsRow | null> {
+    const raw = this.parse(
+      listSchema(insightsRaw),
+      await this.call("GET", `${campaignId}/insights`, {
+        fields: "spend,impressions,reach,clicks,actions",
+        date_preset: "maximum",
+      }),
+    );
+    return raw.data[0] ?? null;
   }
 }
