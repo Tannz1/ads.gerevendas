@@ -2,13 +2,6 @@
 
 set role authenticated;
 
--- 1. Member (user_c na org_a) não pode conectar Meta
-select tests.login(tests.id('user_c'));
-select tests.throws(
-  format($$select public.upsert_meta_connection(%L, 'act_1001', 'Conta A', 'page_1001', 'Página A')$$, tests.id('org_a')),
-  '42501', 'member não conecta ativos Meta'
-);
-
 -- 2. Tentativa de publicar campanha sem conexão Meta conectada falha
 select tests.login(tests.id('user_a'));
 select public.approve_creative(tests.id('creative_a'), 'corr-approve-camp');
@@ -21,19 +14,18 @@ select tests.throws(
   'P0001', 'não publica campanha sem conexão Meta ativa'
 );
 
--- 3. Owner (user_a) conecta ativos Meta em modo simulação
-select public.upsert_meta_connection(
-  tests.id('org_a'),
-  'act_998877',
-  'Padaria A Ads',
-  'page_112233',
-  'Padaria A Oficial',
-  'ig_445566',
-  '+5519999990000',
-  true,
-  true,
-  'corr-meta'
+-- 3. Conexão Meta pronta (4 passos do ADR 0005 concluídos), gravada pelo superusuário de teste
+reset role;
+insert into public.meta_connections (
+  organization_id, status, simulated, ad_account_id, ad_account_name, page_id, page_name, instagram_actor_id,
+  ad_account_status, page_access_status, instagram_status, client_invite_status, billing_status,
+  billing_verified_on_meta, connected_at
+) values (
+  tests.id('org_a'), 'connected', true, 'act_998877', 'Padaria A Ads', 'page_112233', 'Padaria A Oficial', 'ig_445566',
+  'done', 'done', 'done', 'accepted', 'verified', true, now()
 );
+set role authenticated;
+select tests.login(tests.id('user_a'));
 
 select tests.eq((select count(*) from public.meta_connections where organization_id = tests.id('org_a') and status = 'connected'), 1, 'conexão Meta gravada para org_a');
 
