@@ -1,25 +1,10 @@
 import { z } from "zod";
-import { currencySchema, externalIdSchema, uuidSchema } from "./common";
+import { currencySchema, uuidSchema } from "./common";
 import { objectiveSchema } from "./onboarding";
 
 export const META_CONNECTION_STATUSES = ["disconnected", "connected", "missing_permissions", "token_expired"] as const;
 export const metaConnectionStatusSchema = z.enum(META_CONNECTION_STATUSES);
 export type MetaConnectionStatus = z.infer<typeof metaConnectionStatusSchema>;
-
-export const connectMetaAssetsSchema = z.object({
-  ad_account_id: externalIdSchema.regex(/^act_[0-9A-Za-z_]{3,60}$/, "Informe um ID de conta (ex.: act_123456)"),
-  ad_account_name: z.string().trim().min(2, "Informe o nome da conta de anúncios").max(120),
-  page_id: externalIdSchema,
-  page_name: z.string().trim().min(2, "Informe o nome da Página do Facebook").max(120),
-  instagram_actor_id: externalIdSchema.optional(),
-  whatsapp_phone_e164: z
-    .string()
-    .trim()
-    .regex(/^\+[1-9][0-9]{7,14}$/, "Telefone WhatsApp em formato E.164")
-    .optional(),
-  billing_verified_on_meta: z.boolean().default(false),
-});
-export type ConnectMetaAssetsInput = z.infer<typeof connectMetaAssetsSchema>;
 
 export const CAMPAIGN_STATUSES = ["draft", "paused", "active", "ended"] as const;
 export const campaignStatusSchema = z.enum(CAMPAIGN_STATUSES);

@@ -1,27 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { activateCampaignSchema, connectMetaAssetsSchema, createPausedCampaignSchema } from "@/contracts/campaigns";
+import { activateCampaignSchema, createPausedCampaignSchema } from "@/contracts/campaigns";
 
 describe("campaigns and Meta contracts (Milestone 3)", () => {
-  it("valida conexão de ativos Meta com ID de conta act_*", () => {
-    const ok = connectMetaAssetsSchema.safeParse({
-      ad_account_id: "act_123456789",
-      ad_account_name: "Padaria Exemplo Ads",
-      page_id: "987654321",
-      page_name: "Padaria Exemplo",
-      whatsapp_phone_e164: "+5519999990000",
-      billing_verified_on_meta: true,
-    });
-    expect(ok.success).toBe(true);
-
-    const badAccount = connectMetaAssetsSchema.safeParse({
-      ad_account_id: "123456", // falta prefixo act_
-      ad_account_name: "Padaria",
-      page_id: "987",
-      page_name: "Padaria",
-    });
-    expect(badAccount.success).toBe(false);
-  });
-
   it("exige confirmação de orçamento pelo owner e limites em centavos para criar campanha pausada", () => {
     const valid = createPausedCampaignSchema.safeParse({
       strategy_id: "11111111-1111-4111-8111-111111111111",
