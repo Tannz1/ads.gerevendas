@@ -31,8 +31,8 @@ export default async function BillingPage() {
         </div>
         <Card className="mt-8 p-6">
           <p className="text-[15px] text-ink-soft">
-            Plano GereVendas Ads: <strong>R$ 199,00/mês</strong> por empresa (até 4 estratégias e 20 imagens com IA por
-            mês). A verba de anúncios é paga diretamente à Meta.
+            Plano GereVendas Ads: <strong>R$ 199,00/mês</strong> por empresa (até 100 estratégias e 200 imagens com IA
+            por mês). A verba de anúncios é paga diretamente à Meta.
           </p>
         </Card>
       </div>

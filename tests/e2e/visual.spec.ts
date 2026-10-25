@@ -32,7 +32,7 @@ test("navegação por teclado alcança o CTA principal", async ({ page }) => {
   for (let i = 0; i < 8; i++) {
     await page.keyboard.press("Tab");
     const name = await page.evaluate(() => document.activeElement?.textContent?.trim());
-    if (name === "Quero participar do piloto") return;
+    if (name === "Criar meus anúncios") return;
   }
   throw new Error("CTA principal não recebeu foco em 8 tabs");
 });

@@ -31,21 +31,24 @@ insert into tests.ctx select 'job_mock', (public.start_strategy_job(tests.id('br
 select public.finish_strategy_job(tests.id('job_mock'), tests.plan(), tests.contents(), true, 'mock', 'simulacao', 'strategy.v1', 0, 0);
 select tests.eq(tests.used('strategy'), 1, 'estratégia simulada não consome crédito');
 
--- Esgota o mês: mais 3 cobráveis chegam a 4; a quinta é recusada.
+-- Esgota o mês: preenche até o limite vigente (100); a seguinte é recusada.
 do $$
-declare v_job uuid;
+declare
+  v_job uuid;
+  v_limit integer := private.credit_limit('strategy');
+  v_used integer := tests.used('strategy');
 begin
-  for i in 1..3 loop
+  for i in 1..(v_limit - v_used) loop
     v_job := (public.start_strategy_job(tests.id('brief_a')) ->> 'job_id')::uuid;
     perform public.finish_strategy_job(v_job, tests.plan(), tests.contents(), false, 'openai', 'm', 'strategy.v1', 100, 50);
   end loop;
 end;
 $$;
-select tests.eq(tests.used('strategy'), 4, 'quatro estratégias no mês');
-select tests.throws(format($$select public.start_strategy_job(%L)$$, tests.id('brief_a')), 'P0001', 'quinta estratégia cobrável é recusada');
+select tests.eq(tests.used('strategy'), private.credit_limit('strategy'), 'limite de estratégias atingido no mês');
+select tests.throws(format($$select public.start_strategy_job(%L)$$, tests.id('brief_a')), 'P0001', 'estratégia além do limite é recusada');
 select tests.eq((select count(*) from public.generation_jobs where brief_id = tests.id('brief_a') and status = 'running'), 0,
   'recusa não deixa job pendurado');
-select tests.eq(((public.credit_summary(tests.id('org_a')) ->> 'tokens'))::bigint, 450, 'resumo soma os tokens do mês');
+select tests.eq(((public.credit_summary(tests.id('org_a')) ->> 'tokens'))::bigint, ((tests.used('strategy') - 1) * 150)::bigint, 'resumo soma os tokens do mês');
 
 -- ---------------------------------------------------------------- B não vê A
 select tests.login(tests.id('user_b'));

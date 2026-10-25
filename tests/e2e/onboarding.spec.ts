@@ -113,5 +113,5 @@ test("objetivo exige o canal correspondente", async ({ page }) => {
 test("criativos no modo demonstração avisam que exigem conta", async ({ page }) => {
   await startDemo(page);
   await page.goto(p("/app/criativos"));
-  await expect(page.getByRole("heading", { name: "Disponível no piloto com conta" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Faça login para criar anúncios" })).toBeVisible();
 });
