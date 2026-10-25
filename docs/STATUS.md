@@ -1,6 +1,6 @@
 # Status do GereVendas Ads
 
-Atualizado em 22/10/2026. Legenda: **REAL** (funciona com persistência real), **MOCK** (simulação
+Atualizado em 25/10/2026. Legenda: **REAL** (funciona com persistência real), **MOCK** (simulação
 rotulada), **BLOQUEADO** (depende de decisão ou acesso externo), **PRÓXIMO** (ainda não existe código).
 
 Os documentos 03 e 06 citam um monorepo (`apps/web`, `packages/contracts`). O código é um app
@@ -38,7 +38,11 @@ Next.js único (ADR 0001): `apps/web` corresponde a `src/app`, `packages/contrac
 - Dataset de avaliação automatizada com 12 segmentos locais (`tests/unit/evaluation-dataset.test.ts`): **REAL**.
 
 ### M3 — Integração Meta e Campanhas: concluído em modo Simulação + persistência real no Postgres (ADR 0004)
-- `META_ENABLED_IN_THIS_BUILD = false` até homologação do App Meta (M0).
+- BM única com estoque de contas (ADR 0005, `docs/META_OPERADOR.md`): estoque, papel de operador e
+  trilha de 4 passos em `/app/conexoes` (conta do estoque, Página/Instagram compartilhados como parceiro,
+  convite da BM, pagamento confirmado pela Meta) **REAL** no banco e em **Simulação**; painel
+  `/app/operador/estoque`. Modo real **BLOQUEADO** até System User + teste de contrato
+  (`npm run test:meta-contract`). Login do Facebook do cliente removido.
 - Tabelas `meta_connections`, `campaigns`, `campaign_creatives` e `publication_operations` com RLS e RPCs (`20261020120000_campanhas_meta.sql`, testes de RLS em `60_campanhas_meta_rls.test.sql`): **REAL** no banco.
 - Telas `/app/conexoes`, `/app/campanhas`, `/app/campanhas/nova` e `/app/campanhas/[id]` com separação explícita de livros financeiros (`R$ 199/mês` software vs mídia paga à Meta), criação obrigatoriamente `PAUSED` e ativação mediante segunda confirmação do `owner`: **REAL** no banco, operando com adaptador Meta **MOCK** rotulado **Simulação**.
 

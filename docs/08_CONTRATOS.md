@@ -104,9 +104,24 @@ RPCs: `create_organization(p_name, p_correlation_id)`,
 - Tabelas: `meta_connections`, `campaigns`, `campaign_creatives`, `publication_operations`.
 - Guardrail no banco: trigger `campaigns_enforce_paused_on_insert` impede qualquer INSERT em `campaigns`
   com `status = 'active'`.
-- RPCs: `upsert_meta_connection`, `disconnect_meta_connection`, `publish_campaign_paused` (exige `owner`
-  e todas as peças `approved`), `activate_campaign` (exige segunda confirmação do `owner` com o mesmo
-  snapshot de orçamento e duração), `pause_campaign`.
+- RPCs: `publish_campaign_paused` (exige `owner`, conexão `connected` e todas as peças `approved`),
+  `activate_campaign` (exige segunda confirmação do `owner` com o mesmo snapshot de orçamento e duração),
+  `pause_campaign`. A conexão Meta é feita pelos RPCs da seção seguinte (ADR 0005); `upsert_meta_connection`
+  e `disconnect_meta_connection` foram removidos.
+
+## BM única: estoque e conexões (`src/contracts/meta.ts`, ADR 0005)
+- Tabelas: `meta_ad_account_pool` (estoque; operador lê tudo, cliente só a própria conta), `meta_pool_events`
+  (ações do operador), `private.platform_operators`. `meta_connections` ganha os status dos 4 passos.
+- RPCs do cliente (owner): `assign_pool_account`, `unlink_meta_page`. Do operador: `register_pool_accounts`,
+  `retire_pool_account`, `meta_pool_overview`, `am_i_platform_operator`.
+- RPCs só do servidor (`service_role`), gravam o que a Graph API confirmou: `meta_set_ad_account_name`,
+  `meta_set_page`, `meta_set_instagram`, `meta_set_invite`, `meta_set_billing`, `meta_touch_checked`,
+  `meta_link_attempt`.
+- `status = 'connected'` só com conta atribuída, Página ligada, convite aceito e pagamento verificado.
+- Server actions: `requestAdAccount`, `linkMetaPage`, `linkMetaInstagram`, `sendMetaInvite`,
+  `refreshMetaStatus`, `unlinkMetaPage` (`src/server/meta/actions.ts`); operador em
+  `src/server/meta/operator-actions.ts`.
+- Graph API `v25.0`; chamadas com token do System User + `appsecret_proof`; nenhum token de cliente.
 
 ## Assinatura SaaS e Feedback do Piloto (`src/contracts/billing.ts`)
 - Tabelas: `subscriptions`, `billing_events` (único por `(provider, event_id)`), `pilot_feedback`.
