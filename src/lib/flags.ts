@@ -1,10 +1,10 @@
 import type { ServerEnv } from "./env";
 
 /**
- * Fase 1 (ADR 0002): Meta Ads e CRM ficam fora do escopo. Mesmo que alguém ligue as
- * flags por variável de ambiente, este build não habilita publicação real.
+ * ADR 0005: a BM única da GereVendas pode operar em modo real (contas e conexões). Publicação real
+ * continua bloqueada no código de campanhas até a Spec 2, mesmo com FEATURE_FLAG_REAL_PUBLISHING.
  */
-export const META_ENABLED_IN_THIS_BUILD = false;
+export const META_ENABLED_IN_THIS_BUILD = true;
 
 export type FeatureFlags = {
   whatsappAds: boolean;

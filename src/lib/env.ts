@@ -12,7 +12,7 @@ const optional = z
 
 /**
  * Variáveis de servidor. Segredos nunca devem usar o prefixo NEXT_PUBLIC_.
- * Fase 1: integrações Meta e cobrança ficam em `mock`; ver docs/adr/0002.
+ * Integrações começam em `mock`; Meta real exige META_MODE=real (ADR 0005).
  */
 export const serverEnvSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.url().default("http://localhost:3000"),
@@ -28,6 +28,15 @@ export const serverEnvSchema = z.object({
   META_MODE: z.enum(["mock", "real"]).default("mock"),
   META_APP_ID: optional,
   META_APP_SECRET: optional,
+  // BM única da GereVendas (ADR 0005). O token é do System User e só existe no servidor.
+  META_BUSINESS_ID: optional,
+  META_SYSTEM_USER_TOKEN: optional,
+  META_AD_ACCOUNT_TIMEZONE_ID: z
+    .string()
+    .optional()
+    .transform((v) => (v ? Number(v) : undefined))
+    .pipe(z.number().int().positive().optional()),
+  META_POOL_MIN_AVAILABLE: z.coerce.number().int().min(0).default(2),
   BILLING_PROVIDER: z.enum(["mock"]).default("mock"),
   BILLING_WEBHOOK_SECRET: optional,
   FEATURE_FLAG_WHATSAPP_ADS: flag,

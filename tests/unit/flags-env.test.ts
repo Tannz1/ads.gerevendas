@@ -22,22 +22,14 @@ describe("env", () => {
 });
 
 describe("feature flags (fase 1)", () => {
-  it("mantém Meta desligada mesmo com flags ligadas por env", () => {
-    expect(META_ENABLED_IN_THIS_BUILD).toBe(false);
-    const flags = resolveFlags(
-      parseServerEnv({
-        META_MODE: "real",
-        FEATURE_FLAG_REAL_PUBLISHING: "true",
-        FEATURE_FLAG_WHATSAPP_ADS: "true",
-        FEATURE_FLAG_ACCOUNT_CREATION: "true",
-      }),
+  it("liga o modo real da Meta só com META_MODE=real e respeita o kill switch", () => {
+    expect(META_ENABLED_IN_THIS_BUILD).toBe(true);
+    const on = resolveFlags(parseServerEnv({ META_MODE: "real", FEATURE_FLAG_ACCOUNT_CREATION: "true" }));
+    expect(on).toMatchObject({ accountCreation: true, metaMode: "real" });
+    const killed = resolveFlags(
+      parseServerEnv({ META_MODE: "real", FEATURE_FLAG_ACCOUNT_CREATION: "true", FEATURE_FLAG_KILL_SWITCH: "1" }),
     );
-    expect(flags).toMatchObject({
-      realPublishing: false,
-      whatsappAds: false,
-      accountCreation: false,
-      metaMode: "mock",
-    });
+    expect(killed).toMatchObject({ accountCreation: false, metaMode: "mock", killSwitch: true });
   });
 
   it("expõe kill switch e modo piloto", () => {
