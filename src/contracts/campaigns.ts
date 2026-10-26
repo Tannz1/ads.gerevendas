@@ -44,6 +44,10 @@ export const createPausedCampaignSchema = z.object({
   spend_confirmed_by_owner: z.literal(true, {
     error: "Confirme que autoriza este orçamento e que o pagamento de mídia é feito direto na Meta",
   }),
+  // Crédito, emprego, moradia, política e temas sociais exigem regras próprias da Meta: bloqueados no app.
+  no_special_category_confirmed: z.literal(true, {
+    error: "Confirme que o anúncio não é sobre crédito, emprego, moradia, política ou tema social",
+  }),
   idempotency_key: z.string().trim().min(8).max(64),
 });
 export type CreatePausedCampaignInput = z.infer<typeof createPausedCampaignSchema>;

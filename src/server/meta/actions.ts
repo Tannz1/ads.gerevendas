@@ -15,7 +15,7 @@ import { loadMetaOnboarding } from "./data";
 import { MetaError } from "./errors";
 import { metaBusinessClient } from "./index";
 import { resolveMetaBusinessMode, type ActiveMetaBusinessMode } from "./mode";
-import { computeSteps } from "./steps";
+import { computeSteps, isAdAccountUsable } from "./steps";
 
 type OwnerContext = {
   orgId: string;
@@ -92,6 +92,17 @@ function done<T>(data: T, correlationId: string): ApiResult<T> {
 export async function requestAdAccount(): Promise<ApiResult<{ pool_empty: boolean }>> {
   const c = await ownerContext();
   if (isApiError(c)) return c;
+  const existing = await loadMetaOnboarding(c.orgId);
+  if (existing?.ad_account_id) {
+    if (existing.ad_account_status === "error") {
+      return apiError(
+        "conflict",
+        "Sua conta precisa de atenção na Meta. Use Verificar agora após resolver a pendência.",
+        c.correlationId,
+      );
+    }
+    return done({ pool_empty: false }, c.correlationId);
+  }
 
   const supabase = await createSupabaseServerClient();
   const { data, error } = await supabase.rpc("assign_pool_account", {
@@ -284,7 +295,7 @@ export async function refreshMetaStatus(): Promise<ApiResult<{ checked: boolean;
   if (isApiError(c)) return c;
 
   const row = await loadMetaOnboarding(c.orgId);
-  if (row && row.ad_account_status !== "done") {
+  if (row && !row.ad_account_id) {
     const assigned = await requestAdAccount();
     if (!assigned.ok) return assigned;
     return done({ checked: true, changed: !assigned.data.pool_empty }, c.correlationId);
@@ -303,6 +314,20 @@ export async function refreshMetaStatus(): Promise<ApiResult<{ checked: boolean;
   let changed = false;
   let inviteAccepted = row.client_invite_status === "accepted";
   try {
+    const funding = await client.getFunding(row.ad_account_id);
+    const usable = isAdAccountUsable(funding.account_status);
+    const accountStatus = usable ? "done" : "error";
+    if (row.ad_account_status !== accountStatus) {
+      await rpcOrThrow(
+        admin.rpc("meta_set_ad_account_status", {
+          p_org: c.orgId,
+          p_status: accountStatus,
+          p_correlation_id: c.correlationId,
+        }),
+      );
+      changed = true;
+    }
+    if (!usable) return done({ checked: true, changed }, c.correlationId);
     if (row.client_invite_status === "pending" && row.client_invite_email) {
       const inv = await client.getBusinessUserInvite(row.client_invite_email);
       if (inv.status === "accepted" && inv.business_user_id) {
@@ -331,14 +356,15 @@ export async function refreshMetaStatus(): Promise<ApiResult<{ checked: boolean;
         changed = true;
       }
     }
-    if (inviteAccepted && row.billing_status !== "verified") {
-      const funding = await client.getFunding(row.ad_account_id);
-      if (funding.has_funding_source) {
-        await rpcOrThrow(
-          admin.rpc("meta_set_billing", { p_org: c.orgId, p_verified: true, p_correlation_id: c.correlationId }),
-        );
-        changed = true;
-      }
+    if (inviteAccepted && (row.billing_status === "verified") !== funding.has_funding_source) {
+      await rpcOrThrow(
+        admin.rpc("meta_set_billing", {
+          p_org: c.orgId,
+          p_verified: funding.has_funding_source,
+          p_correlation_id: c.correlationId,
+        }),
+      );
+      changed = true;
     }
   } catch (e) {
     return metaFailure(e, c.correlationId, "meta.refresh_failed");

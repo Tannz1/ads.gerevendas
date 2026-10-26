@@ -21,4 +21,24 @@ export interface MetaBusinessClient {
   getBusinessUserInvite(email: string): Promise<MetaInvite>;
   assignAdAccountUser(adAccountId: string, businessUserId: string): Promise<void>;
   getFunding(adAccountId: string): Promise<MetaFunding>;
+
+  // Publicação (ADR 0006): objetos sempre criados PAUSED na conta do cliente.
+  searchCities(query: string): Promise<MetaCity[]>;
+  uploadImage(adAccountId: string, png: Buffer): Promise<string>;
+  createCampaign(adAccountId: string, params: Record<string, string>): Promise<string>;
+  createAdSet(adAccountId: string, params: Record<string, string>): Promise<string>;
+  createAdCreative(adAccountId: string, params: Record<string, string>): Promise<string>;
+  createAd(adAccountId: string, params: Record<string, string>): Promise<string>;
+  setStatus(objectId: string, status: "ACTIVE" | "PAUSED"): Promise<void>;
+  getAdsEffectiveStatus(adIds: string[]): Promise<string[]>;
+  getCampaignInsights(campaignId: string): Promise<MetaInsightsRow | null>;
 }
+
+export type MetaCity = { key: string; name: string; region: string | null };
+export type MetaInsightsRow = {
+  spend?: string;
+  impressions?: string;
+  reach?: string;
+  clicks?: string;
+  actions?: Array<{ action_type: string; value: string }>;
+};

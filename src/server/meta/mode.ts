@@ -31,3 +31,19 @@ export function resolveMetaBusinessMode(env: ServerEnv, flags: FeatureFlags): Me
     ...(env.META_AD_ACCOUNT_TIMEZONE_ID ? { timezoneId: env.META_AD_ACCOUNT_TIMEZONE_ID } : {}),
   };
 }
+
+/**
+ * Para PARAR gasto (pausar campanha real) o kill switch não bloqueia: basta a BM estar configurada em
+ * modo real. Sem configuração devolve null.
+ */
+export function resolveMetaStopMode(env: ServerEnv): Extract<MetaBusinessMode, { kind: "real" }> | null {
+  if (env.META_MODE !== "real" || !env.META_BUSINESS_ID || !env.META_SYSTEM_USER_TOKEN || !env.META_APP_SECRET) {
+    return null;
+  }
+  return {
+    kind: "real",
+    businessId: env.META_BUSINESS_ID,
+    accessToken: env.META_SYSTEM_USER_TOKEN,
+    appSecret: env.META_APP_SECRET,
+  };
+}

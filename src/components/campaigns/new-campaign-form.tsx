@@ -39,6 +39,7 @@ export function NewCampaignForm({
   const [durationDays, setDurationDays] = useState(7);
   const [selectedIds, setSelectedIds] = useState<string[]>(() => approvedCreatives.map((c) => c.id));
   const [spendConfirmed, setSpendConfirmed] = useState(false);
+  const [noSpecialCategory, setNoSpecialCategory] = useState(false);
   const [idempotencyKey] = useState(() => `pub_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
@@ -63,13 +64,18 @@ export function NewCampaignForm({
         duration_days: durationDays,
         creative_ids: selectedIds,
         spend_confirmed_by_owner: spendConfirmed,
+        no_special_category_confirmed: noSpecialCategory,
         idempotency_key: idempotencyKey,
-      });
+      }).catch(() => null);
+      if (!res) {
+        setError("Não foi possível confirmar a publicação. Confira a lista de campanhas antes de tentar novamente.");
+        return;
+      }
       if (!res.ok) {
         setError(res.error.message);
         return;
       }
-      router.push(`/app/campanhas/${res.data.campaign_id}`);
+      router.push(`/app/campanhas/${res.data.campaign_id}${res.data.warning ? "?publicacao=incompleta" : ""}`);
       router.refresh();
     });
   }
@@ -195,6 +201,28 @@ export function NewCampaignForm({
           </span>
         </label>
 
+        <label className="flex items-start gap-2.5 rounded-xl border border-line bg-surface-muted p-4 text-sm">
+          <input
+            type="checkbox"
+            checked={noSpecialCategory}
+            disabled={!isOwner || pending}
+            onChange={(e) => setNoSpecialCategory(e.target.checked)}
+            className="mt-1 size-4 accent-[var(--color-brand)]"
+          />
+          <span>
+            Confirmo que o anúncio <strong>não</strong> é sobre crédito ou empréstimo, vagas de emprego, venda ou
+            aluguel de imóveis, política ou temas sociais. Esses assuntos têm regras próprias da Meta e não podem ser
+            publicados por aqui.
+          </span>
+        </label>
+
+        {objective === "mensagens_whatsapp" && !simulated && (
+          <Alert tone="info" title="Como o anúncio leva ao seu WhatsApp">
+            Enquanto o objetivo “Conversas no WhatsApp” da Meta não é liberado para o GereVendas Ads, o botão do anúncio
+            abre o seu WhatsApp por link. A Meta mede cliques, não conversas.
+          </Alert>
+        )}
+
         {error && <Alert tone="danger">{error}</Alert>}
 
         {!isOwner ? (
@@ -204,7 +232,7 @@ export function NewCampaignForm({
         ) : !metaConnected ? (
           <Alert tone="warning">Conecte os ativos da Meta em Conexões antes de criar a campanha.</Alert>
         ) : (
-          <Button type="submit" disabled={pending || !spendConfirmed || selectedIds.length === 0}>
+          <Button type="submit" disabled={pending || !spendConfirmed || !noSpecialCategory || selectedIds.length === 0}>
             {pending
               ? "Criando campanha pausada…"
               : simulated

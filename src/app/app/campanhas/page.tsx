@@ -10,7 +10,7 @@ import { loadCreativesOverview } from "@/server/creatives-data";
 export const metadata: Metadata = { title: "Campanhas" };
 
 const STATUS_LABELS = {
-  draft: "Rascunho",
+  draft: "Publicação incompleta",
   paused: "Pausada",
   active: "Ativa",
   ended: "Encerrada",

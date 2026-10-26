@@ -1,8 +1,8 @@
 import type { ServerEnv } from "./env";
 
 /**
- * ADR 0005: a BM única da GereVendas pode operar em modo real (contas e conexões). Publicação real
- * continua bloqueada no código de campanhas até a Spec 2, mesmo com FEATURE_FLAG_REAL_PUBLISHING.
+ * A BM opera em modo real com configuração explícita. A publicação real exige
+ * FEATURE_FLAG_REAL_PUBLISHING e homologação prévia pelos testes de contrato.
  */
 export const META_ENABLED_IN_THIS_BUILD = true;
 

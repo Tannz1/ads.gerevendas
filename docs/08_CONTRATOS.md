@@ -128,3 +128,12 @@ RPCs: `create_organization(p_name, p_correlation_id)`,
 - RPCs: `process_billing_event`, `submit_pilot_feedback`.
 - Rota de webhook: `POST /api/webhooks/billing` validada com HMAC-SHA256 (`x-webhook-signature`).
 
+## Painel por empresa e execução segura (ADR 0007)
+
+- `/app/painel`: conta atribuída e campanhas da organização atual; dados lidos com sessão e RLS. O operador mantém o painel de estoque separado.
+- `refreshDashboardMetrics()` não aceita organização do navegador. Retorna `ApiResult<{ synced: number; failed: number }>` para até 20 campanhas da sessão; falhas parciais preservam as métricas já obtidas.
+- Detalhes e ações de campanha restringem o ID à organização atual antes de usar o cliente administrativo ou a Meta.
+- RPCs exclusivas de `service_role`: `meta_claim_execution`, `meta_release_execution`, `meta_freeze_publication`, `meta_begin_publication_step`, `meta_check_activation`. A confirmação da intenção faz parte da transação de `meta_record_publication`.
+- `meta_execution_overview` é leitura autenticada de IDs de campanha e datas da própria organização; não retorna tokens ou snapshots e permite manter avisos de operação pendente no painel.
+- Uma intenção pendente não pode ser repetida automaticamente. Uma trava sem pausa confirmada só é liberada após recuperação técnica. Consulte o ADR 0007 para os procedimentos e os limites da homologação.
+

@@ -116,13 +116,13 @@ export default async function CreativesPage() {
     );
   }
 
-  const { plan } = data.strategy;
+  const { plan, simulated } = data.strategy;
   const generatingImage = new Set(data.image_jobs.map((j) => j.creative_id));
   const missingImages = data.creatives.filter((c) => !c.image_url && !generatingImage.has(c.id)).length;
   const aiImages = Boolean(selectImageProvider(serverEnv()));
   return (
     <div className="mx-auto max-w-6xl">
-      <Header simulated={false} credits={credits} />
+      <Header simulated={simulated} credits={credits} />
 
       <Card className="mt-8 p-6 sm:p-7">
         <h2 className="font-display text-xl font-bold">Sua estratégia</h2>

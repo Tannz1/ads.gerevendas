@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { CampaignDetailActions } from "@/components/campaigns/campaign-detail-actions";
+import { CampaignMetaPanel } from "@/components/campaigns/campaign-meta-panel";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { TEMPLATE_LABELS, type AngleKey } from "@/contracts/creatives";
@@ -13,7 +14,7 @@ import { getAppContext } from "@/server/context";
 export const metadata: Metadata = { title: "Detalhe da Campanha" };
 
 const STATUS_LABELS = {
-  draft: "Rascunho",
+  draft: "Publicação incompleta",
   paused: "Pausada",
   active: "Ativa",
   ended: "Encerrada",
@@ -26,8 +27,15 @@ const REVIEW_LABELS = {
   rejected: "Rejeitada",
 } as const;
 
-export default async function CampaignDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function CampaignDetailPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ publicacao?: string }>;
+}) {
   const { id } = await params;
+  const { publicacao } = await searchParams;
   if (!z.uuid().safeParse(id).success) notFound();
 
   const ctx = await getAppContext();
@@ -71,13 +79,21 @@ export default async function CampaignDetailPage({ params }: { params: Promise<{
           <p className="mt-1 text-xs text-ink-soft">Pago diretamente à Meta</p>
         </Card>
         <Card className="p-4">
-          <p className="text-xs font-semibold tracking-wider text-ink-soft uppercase">Resultados / Conversas</p>
-          <p className="mt-1 text-sm font-semibold text-ink-soft">
-            {campaign.simulated ? "Não disponível em modo Simulação" : "Aguardando sincronização da conta Meta"}
-          </p>
-          <p className="mt-1 text-xs text-ink-faint">Nenhum dado inventado é exibido.</p>
+          <p className="text-xs font-semibold tracking-wider text-ink-soft uppercase">Revisão da Meta</p>
+          <p className="mt-1 font-display text-lg font-bold">{REVIEW_LABELS[campaign.meta_review_status]}</p>
+          <p className="mt-1 text-xs text-ink-soft">Anúncio enviado não é o mesmo que anúncio aprovado.</p>
         </Card>
       </div>
+
+      <CampaignMetaPanel
+        campaignId={campaign.id}
+        status={campaign.status}
+        simulated={campaign.simulated}
+        isOwner={isOwner}
+        currency={campaign.currency}
+        insights={campaign.insights}
+        justFailed={publicacao === "incompleta"}
+      />
 
       <CampaignDetailActions
         campaignId={campaign.id}
