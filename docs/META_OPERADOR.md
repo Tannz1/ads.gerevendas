@@ -99,3 +99,11 @@ Depois abra `/app/operador/estoque` (a página não aparece no menu).
    e registre. Nunca registre a conta de anúncios da própria GereVendas.
 4. O painel avisa quando há menos contas livres que `META_POOL_MIN_AVAILABLE` e quantas empresas
    estão na fila.
+
+## 8. Painel do cliente e publicação
+
+O cliente acessa `/app/painel` pelo menu **Resultados**. A conta e as métricas são da empresa da sessão, compartilhadas com seus membros. A atualização é manual e mostra cobertura e data dos dados; Simulação não gera métricas.
+
+Antes de liberar publicação real, aplicar a migration aditiva `20261026140000_painel_publicacao_segura.sql` no projeto isolado do Ads, executar os testes de banco e homologar a publicação pausada. A nova migration não foi aplicada automaticamente ao ambiente remoto. O contrato de publicação, as variáveis necessárias, as restrições e o procedimento de recuperação estão no [ADR 0007](adr/0007-painel-e-execucao-segura.md).
+
+Não liberar uma execução pendente apenas por estar antiga: pode haver um objeto criado na Meta cujo ID não foi salvo. Conferir e reconciliar antes de retomar. Se uma ativação ficou incerta, interromper a veiculação no ambiente oficial da Meta e confirmar a pausa antes de qualquer nova autorização.

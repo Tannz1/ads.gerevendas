@@ -12,12 +12,14 @@ import { log } from "@/lib/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAppContext, getCorrelationId } from "./context";
 import {
+  withCampaignExecution,
   activateRealCampaign,
   loadRealCampaign,
   pauseRealCampaign,
   publishRealCampaign,
   syncRealCampaign,
 } from "./meta/campaign-real";
+import { loadMetaConnection } from "./campaigns-data";
 import { MetaError } from "./meta/errors";
 import { metaBusinessClient } from "./meta/index";
 import { resolveMetaBusinessMode, resolveMetaStopMode } from "./meta/mode";
@@ -44,6 +46,12 @@ const PUBLISH_ERROR_MESSAGES: Record<PublishErrorCode, string> = {
 
 /** Mensagem para o cliente quando a publicação na Meta parou no meio (a campanha fica salva para retomar). */
 function publishFailureMessage(e: unknown, correlationId: string): string {
+  if (
+    e instanceof Error &&
+    (e.message === "campaign_execution_busy" || e.message.includes("publication_reconciliation_required"))
+  ) {
+    return "A publicação aguarda conferência dos objetos já enviados à Meta. Fale com o suporte antes de tentar novamente.";
+  }
   if (e instanceof PublishError) return PUBLISH_ERROR_MESSAGES[e.code];
   if (e instanceof MetaError) {
     log(e.code === "rate_limited" ? "warn" : "error", "campaigns.real_publish_failed", {
@@ -64,6 +72,21 @@ function publishFailureMessage(e: unknown, correlationId: string): string {
 }
 
 function realMetaError(e: unknown, correlationId: string, event: string): ApiError {
+  if (e instanceof Error && e.message === "campaign_execution_busy") {
+    return apiError(
+      "conflict",
+      "Esta campanha tem uma operação em andamento ou aguardando conferência. Se precisar interromper a veiculação agora, pause no Gerenciador de Anúncios da Meta.",
+      correlationId,
+    );
+  }
+  if (e instanceof Error && e.message === "activation_recovery_required") {
+    log("error", "campaigns.activation_recovery_required", { correlation_id: correlationId });
+    return apiError(
+      "external_unavailable",
+      "Não foi possível confirmar a pausa após uma falha. Confira e pause a campanha no Gerenciador de Anúncios da Meta e fale com o suporte.",
+      correlationId,
+    );
+  }
   log("error", event, {
     correlation_id: correlationId,
     code: e instanceof MetaError ? e.code : "unknown",
@@ -113,6 +136,14 @@ export async function publishPausedCampaign(
   const mode = resolveMetaBusinessMode(env, flags);
   const supabase = await createSupabaseServerClient();
 
+  if (flags.realPublishing && mode.kind !== "real") {
+    return apiError(
+      "feature_disabled",
+      "A publicação real não está configurada. Confira a integração antes de publicar.",
+      correlationId,
+    );
+  }
+
   if (flags.realPublishing && mode.kind === "real") {
     const { data, error } = await supabase.rpc("start_real_publication", {
       p_org: ctx.organization.id,
@@ -129,7 +160,9 @@ export async function publishPausedCampaign(
     const campaignId = (data as { campaign_id: string }).campaign_id;
     let warning: string | undefined;
     try {
-      await publishRealCampaign(campaignId, metaBusinessClient(mode), correlationId);
+      await withCampaignExecution(campaignId, () =>
+        publishRealCampaign(campaignId, metaBusinessClient(mode), correlationId),
+      );
     } catch (e) {
       warning = publishFailureMessage(e, correlationId);
     }
@@ -204,7 +237,9 @@ export async function resumeRealPublication(
   if (campaign.status !== "draft") return { ok: true, data: { completed: true }, correlation_id: correlationId };
 
   try {
-    await publishRealCampaign(campaign.id, metaBusinessClient(mode), correlationId);
+    await withCampaignExecution(campaign.id, () =>
+      publishRealCampaign(campaign.id, metaBusinessClient(mode), correlationId),
+    );
   } catch (e) {
     revalidatePath("/app/campanhas", "layout");
     return {
@@ -274,13 +309,22 @@ export async function activatePausedCampaign(input: unknown): Promise<ApiResult<
       return apiError("conflict", "O orçamento ou duração mudou. Recarregue a página antes de ativar.", correlationId);
     }
     try {
-      ({ error } = await activateRealCampaign(
-        campaign,
-        ctx.user.id,
-        parsed.data,
-        metaBusinessClient(mode),
-        correlationId,
-      ));
+      ({ error } = await withCampaignExecution(campaign.id, async () => {
+        const current = await loadRealCampaign(campaign.id);
+        if (
+          !current ||
+          current.status !== "paused" ||
+          current.daily_budget_cents !== parsed.data.confirmed_daily_budget_cents ||
+          current.duration_days !== parsed.data.confirmed_duration_days
+        ) {
+          return { error: { message: "budget_snapshot_mismatch" } };
+        }
+        const connection = await loadMetaConnection(ctx.organization!.id);
+        if (!connection || connection.simulated || connection.status !== "connected") {
+          return { error: { message: "meta_not_connected" } };
+        }
+        return activateRealCampaign(current, ctx.user.id, parsed.data, metaBusinessClient(mode), correlationId);
+      }));
     } catch (e) {
       return realMetaError(e, correlationId, "campaigns.real_activate_failed");
     }
@@ -293,8 +337,18 @@ export async function activatePausedCampaign(input: unknown): Promise<ApiResult<
     if (error.message.includes("budget_snapshot_mismatch")) {
       return apiError("conflict", "O orçamento ou duração mudou. Recarregue a página antes de ativar.", correlationId);
     }
+    if (error.message.includes("idempotency_conflict")) {
+      return apiError(
+        "conflict",
+        "Esta autorização já foi usada. Recarregue a página e confirme uma nova ativação.",
+        correlationId,
+      );
+    }
     if (error.message.includes("campaign_not_paused")) {
       return apiError("conflict", "Apenas campanhas pausadas podem ser ativadas.", correlationId);
+    }
+    if (error.message.includes("meta_not_connected")) {
+      return apiError("conflict", "Confira os passos da sua conta em Conexões antes de ativar.", correlationId);
     }
     if (error.message.includes("publication_incomplete")) {
       return apiError("conflict", "Conclua a publicação antes de ativar.", correlationId);
@@ -331,7 +385,9 @@ export async function pauseActiveCampaign(campaignId: unknown): Promise<ApiResul
     const mode = resolveMetaStopMode(serverEnv());
     if (!mode) return apiError("feature_disabled", "A integração com a Meta não está configurada.", correlationId);
     try {
-      ({ error } = await pauseRealCampaign(campaign, ctx.user.id, metaBusinessClient(mode), correlationId));
+      ({ error } = await withCampaignExecution(campaign.id, () =>
+        pauseRealCampaign(campaign, ctx.user.id, metaBusinessClient(mode), correlationId),
+      ));
     } catch (e) {
       return realMetaError(e, correlationId, "campaigns.real_pause_failed");
     }
@@ -371,4 +427,39 @@ export async function syncCampaignFromMeta(campaignId: unknown): Promise<ApiResu
   } catch (e) {
     return realMetaError(e, correlationId, "campaigns.sync_failed");
   }
+}
+
+/** Atualiza até 20 campanhas da organização atual, começando pelas mais antigas. */
+export async function refreshDashboardMetrics(): Promise<ApiResult<{ synced: number; failed: number }>> {
+  const correlationId = await getCorrelationId();
+  const ctx = await getAppContext();
+  if (ctx.mode !== "supabase" || !ctx.organization) {
+    return apiError("feature_disabled", "Entre com sua conta para atualizar as métricas.", correlationId);
+  }
+  const mode = resolveMetaStopMode(serverEnv());
+  if (!mode) return apiError("feature_disabled", "A integração com a Meta não está configurada.", correlationId);
+  const db = await createSupabaseServerClient();
+  const { data, error } = await db
+    .from("campaigns")
+    .select("id")
+    .eq("organization_id", ctx.organization.id)
+    .eq("simulated", false)
+    .neq("status", "draft")
+    .order("last_synced_at", { ascending: true, nullsFirst: true })
+    .limit(20);
+  if (error) return apiError("internal", "Não foi possível carregar suas campanhas.", correlationId);
+  let synced = 0;
+  let failed = 0;
+  for (const row of data ?? []) {
+    try {
+      const campaign = await loadRealCampaign(row.id);
+      if (campaign && (await syncRealCampaign(campaign, metaBusinessClient(mode)))) synced++;
+    } catch (e) {
+      failed++;
+      realMetaError(e, correlationId, "dashboard.sync_failed");
+    }
+  }
+  revalidatePath("/app/painel");
+  revalidatePath("/app/campanhas", "layout");
+  return { ok: true, data: { synced, failed }, correlation_id: correlationId };
 }

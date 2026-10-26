@@ -66,7 +66,11 @@ export function NewCampaignForm({
         spend_confirmed_by_owner: spendConfirmed,
         no_special_category_confirmed: noSpecialCategory,
         idempotency_key: idempotencyKey,
-      });
+      }).catch(() => null);
+      if (!res) {
+        setError("Não foi possível confirmar a publicação. Confira a lista de campanhas antes de tentar novamente.");
+        return;
+      }
       if (!res.ok) {
         setError(res.error.message);
         return;

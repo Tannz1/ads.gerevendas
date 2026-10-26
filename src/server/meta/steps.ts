@@ -29,7 +29,13 @@ export type StepView = { key: StepKey; state: StepState };
 /** Um passo por vez: cada um só libera quando o anterior está concluído. */
 export function computeSteps(row: MetaOnboardingView | null): StepView[] {
   const adAccount: StepState =
-    row?.ad_account_status === "done" && row.ad_account_id ? "done" : row?.pool_requested_at ? "waiting" : "todo";
+    row?.ad_account_status === "error" && row.ad_account_id
+      ? "error"
+      : row?.ad_account_status === "done" && row.ad_account_id
+        ? "done"
+        : row?.pool_requested_at
+          ? "waiting"
+          : "todo";
   const page: StepState =
     adAccount !== "done" ? "locked" : row?.page_access_status === "done" && row.page_id ? "done" : "todo";
   const invite: StepState =
@@ -49,4 +55,12 @@ export function computeSteps(row: MetaOnboardingView | null): StepView[] {
     { key: "invite", state: invite },
     { key: "billing", state: billing },
   ];
+}
+
+// account_status da Meta: 1 = ativa, 9 = período de carência (ainda veicula). Os demais
+// (desativada, pendências de pagamento, revisão de risco, encerramento) impedem anúncios.
+const USABLE_AD_ACCOUNT_STATUSES = new Set([1, 9]);
+
+export function isAdAccountUsable(accountStatus: number): boolean {
+  return USABLE_AD_ACCOUNT_STATUSES.has(accountStatus);
 }

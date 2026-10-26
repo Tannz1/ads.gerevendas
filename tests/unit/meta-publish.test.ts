@@ -78,6 +78,7 @@ function deps(client: CountingClient) {
     records,
     deps: {
       client,
+      beginStep: async () => {},
       record: async (payload: unknown) => {
         records.push(payload);
       },
@@ -88,6 +89,24 @@ function deps(client: CountingClient) {
 }
 
 describe("runPublication", () => {
+  it("não repete uma escrita cujo ID pode ter se perdido", async () => {
+    const client = new CountingClient();
+    const started = new Set<string>();
+    const d = {
+      ...deps(client).deps,
+      beginStep: async (key: string) => {
+        if (started.has(key)) throw new Error("publication_reconciliation_required");
+        started.add(key);
+      },
+      record: async () => {
+        throw new Error("database unavailable after Meta success");
+      },
+    };
+    await expect(runPublication(base, d)).rejects.toThrow("database unavailable");
+    await expect(runPublication(base, d)).rejects.toThrow("publication_reconciliation_required");
+    expect(client.calls).toEqual(["createCampaign"]);
+  });
+
   it("cria tudo pausado e grava cada ID assim que a Meta devolve", async () => {
     const client = new CountingClient();
     const { records, deps: d } = deps(client);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeSteps, type MetaOnboardingView } from "@/server/meta/steps";
+import { computeSteps, isAdAccountUsable, type MetaOnboardingView } from "@/server/meta/steps";
 
 const base: MetaOnboardingView = {
   status: "disconnected",
@@ -52,5 +52,29 @@ describe("computeSteps", () => {
       "done",
       "done",
     ]);
+  });
+});
+
+describe("conta de anúncios com problema na Meta", () => {
+  it("passo 1 fica em atenção e os seguintes travam", () => {
+    expect(
+      computeSteps({
+        ...base,
+        ad_account_id: "act_1",
+        ad_account_status: "error",
+        page_id: "p1",
+        page_access_status: "done",
+        client_invite_status: "accepted",
+        billing_status: "verified",
+      }).map((s) => s.state),
+    ).toEqual(["error", "locked", "locked", "locked"]);
+  });
+});
+
+describe("isAdAccountUsable", () => {
+  it("só conta ativa ou em período de carência pode veicular", () => {
+    expect(isAdAccountUsable(1)).toBe(true);
+    expect(isAdAccountUsable(9)).toBe(true);
+    for (const status of [2, 3, 7, 8, 100, 101, 0]) expect(isAdAccountUsable(status)).toBe(false);
   });
 });

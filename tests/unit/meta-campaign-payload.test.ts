@@ -192,7 +192,10 @@ describe("pickCity", () => {
 
 describe("retorno da Meta", () => {
   it("status de revisão a partir dos anúncios", () => {
-    expect(reviewFromAds(["PAUSED", "ACTIVE"])).toBe("approved");
+    expect(reviewFromAds(["PAUSED", "ACTIVE"])).toBe("pending_review");
+    expect(reviewFromAds(["UNKNOWN"])).toBe("pending_review");
+    expect(reviewFromAds(["WITH_ISSUES"])).toBe("pending_review");
+    expect(reviewFromAds(["ACTIVE", "ACTIVE"])).toBe("approved");
     expect(reviewFromAds(["PAUSED", "PENDING_REVIEW"])).toBe("pending_review");
     expect(reviewFromAds(["IN_PROCESS"])).toBe("pending_review");
     expect(reviewFromAds(["ACTIVE", "DISAPPROVED"])).toBe("rejected");

@@ -8,6 +8,7 @@ import {
   resolveDestination,
 } from "./campaign-payload";
 import type { MetaBusinessClient } from "./client";
+import type { CreativeView } from "../creatives-data";
 
 export type PublicationInput = {
   campaign: {
@@ -27,6 +28,7 @@ export type PublicationInput = {
     image_hash: string | null;
     external_creative_id: string | null;
     external_ad_id: string | null;
+    render_view?: CreativeView;
   }>;
   connection: { ad_account_id: string; page_id: string; instagram_actor_id: string | null };
   business: {
@@ -57,6 +59,8 @@ export type PublicationDeps = {
   record: (payload: PublicationRecord) => Promise<void>;
   renderPng: (creativeId: string) => Promise<Buffer>;
   now: () => Date;
+  /** Persiste a intenção ANTES de uma escrita externa. Intenção sem ID exige reconciliação. */
+  beginStep: (key: string) => Promise<void>;
 };
 
 export type PublishErrorCode =
@@ -84,6 +88,7 @@ export async function runPublication(
 
   let campaignId = campaign.external_campaign_id;
   if (!campaignId) {
+    await deps.beginStep("campaign");
     campaignId = await deps.client.createCampaign(account, campaignParams(campaign.objective, campaign.name));
     await deps.record({ external_campaign_id: campaignId });
   }
@@ -96,6 +101,7 @@ export async function runPublication(
       input.business.state,
     );
     if (!city) throw new PublishError("city_not_found");
+    await deps.beginStep("adset");
     adsetId = await deps.client.createAdSet(
       account,
       adSetParams({
@@ -118,11 +124,14 @@ export async function runPublication(
     const label = `${campaign.name} — ${creative.angle_key}`;
     let imageHash = creative.image_hash;
     if (!imageHash) {
-      imageHash = await deps.client.uploadImage(account, await deps.renderPng(creative.creative_id));
+      const png = await deps.renderPng(creative.creative_id);
+      await deps.beginStep(`image:${creative.creative_id}`);
+      imageHash = await deps.client.uploadImage(account, png);
       await deps.record({ creatives: [{ creative_id: creative.creative_id, image_hash: imageHash }] });
     }
     let creativeId = creative.external_creative_id;
     if (!creativeId) {
+      await deps.beginStep(`creative:${creative.creative_id}`);
       creativeId = await deps.client.createAdCreative(
         account,
         creativeParams({
@@ -138,6 +147,7 @@ export async function runPublication(
       await deps.record({ creatives: [{ creative_id: creative.creative_id, external_creative_id: creativeId }] });
     }
     if (!creative.external_ad_id) {
+      await deps.beginStep(`ad:${creative.creative_id}`);
       const adId = await deps.client.createAd(account, adParams({ name: label, adsetId, creativeId }));
       await deps.record({ creatives: [{ creative_id: creative.creative_id, external_ad_id: adId }] });
     }

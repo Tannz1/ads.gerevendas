@@ -37,9 +37,15 @@ export function CampaignMetaPanel({ campaignId, status, simulated, isOwner, curr
   useEffect(() => {
     if (!live) return;
     let cancelled = false;
-    void syncCampaignFromMeta(campaignId).then((res) => {
-      if (!cancelled && res.ok && res.data.synced) router.refresh();
-    });
+    void syncCampaignFromMeta(campaignId)
+      .then((res) => {
+        if (cancelled) return;
+        if (res.ok && res.data.synced) router.refresh();
+        if (!res.ok) setMessage({ tone: "warning", text: res.error.message });
+      })
+      .catch(() => {
+        if (!cancelled) setMessage({ tone: "warning", text: "Não foi possível atualizar os dados. Tente novamente." });
+      });
     return () => {
       cancelled = true;
     };
@@ -48,14 +54,24 @@ export function CampaignMetaPanel({ campaignId, status, simulated, isOwner, curr
   function resume() {
     setMessage(null);
     start(async () => {
-      const res = await resumeRealPublication(campaignId);
+      const res = await resumeRealPublication(campaignId).catch(() => null);
+      if (!res) {
+        setMessage({
+          tone: "warning",
+          text: "Não foi possível confirmar a publicação. Recarregue os detalhes antes de tentar novamente.",
+        });
+        return;
+      }
       if (!res.ok) {
         setMessage({ tone: "danger", text: res.error.message });
         return;
       }
       setMessage(
         res.data.completed
-          ? { tone: "success", text: "Publicação concluída. A campanha está pausada e em análise na Meta." }
+          ? {
+              tone: "success",
+              text: "Publicação concluída. A campanha está pausada. A revisão será consultada na Meta.",
+            }
           : { tone: "warning", text: res.data.warning ?? "A publicação ainda não terminou. Tente de novo." },
       );
       router.refresh();
@@ -65,7 +81,11 @@ export function CampaignMetaPanel({ campaignId, status, simulated, isOwner, curr
   function sync() {
     setMessage(null);
     start(async () => {
-      const res = await syncCampaignFromMeta(campaignId);
+      const res = await syncCampaignFromMeta(campaignId).catch(() => null);
+      if (!res) {
+        setMessage({ tone: "danger", text: "Não foi possível atualizar os dados. Tente novamente." });
+        return;
+      }
       if (!res.ok) {
         setMessage({ tone: "danger", text: res.error.message });
         return;
@@ -84,8 +104,8 @@ export function CampaignMetaPanel({ campaignId, status, simulated, isOwner, curr
       <Card className="p-5 sm:p-6">
         <h2 className="font-display text-lg font-bold">Publicação incompleta</h2>
         <p className="mt-2 text-sm text-ink-soft">
-          Parte da campanha ainda não foi criada na Meta. Nada está sendo gasto. Retomar continua de onde parou, sem
-          duplicar o que já foi criado.
+          Parte da campanha ainda não foi concluída. Retomar usa as etapas confirmadas. Se houver uma resposta incerta
+          da Meta, o suporte precisará conferir os objetos antes de continuar.
         </p>
         {isOwner ? (
           <Button className="mt-4" onClick={resume} disabled={pending}>

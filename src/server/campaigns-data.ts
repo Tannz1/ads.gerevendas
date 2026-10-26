@@ -1,4 +1,5 @@
 import "server-only";
+import { getAppContext } from "./context";
 import type { CampaignStatus, MetaConnectionStatus, MetaReviewStatus } from "@/contracts/campaigns";
 import type { Objective } from "@/contracts/onboarding";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -85,6 +86,8 @@ export async function loadCampaignsList(organizationId: string): Promise<Campaig
 }
 
 export async function loadCampaignDetail(campaignId: string): Promise<CampaignDetailView | null> {
+  const ctx = await getAppContext();
+  if (ctx.mode !== "supabase" || !ctx.organization) return null;
   const supabase = await createSupabaseServerClient();
   const [{ data: camp }, { data: links }, { data: ops }, { data: insights }] = await Promise.all([
     supabase
@@ -93,20 +96,24 @@ export async function loadCampaignDetail(campaignId: string): Promise<CampaignDe
         "id, strategy_id, name, objective, status, meta_review_status, simulated, daily_budget_cents, currency, duration_days, external_campaign_id, external_adset_id, spend_confirmed_at, activated_at, paused_at, created_at",
       )
       .eq("id", campaignId)
+      .eq("organization_id", ctx.organization.id)
       .maybeSingle(),
     supabase
       .from("campaign_creatives")
       .select("creative_id, external_ad_id, creatives(angle_key, content)")
-      .eq("campaign_id", campaignId),
+      .eq("campaign_id", campaignId)
+      .eq("organization_id", ctx.organization.id),
     supabase
       .from("publication_operations")
       .select("id, operation, simulated, created_at")
       .eq("campaign_id", campaignId)
+      .eq("organization_id", ctx.organization.id)
       .order("created_at", { ascending: false }),
     supabase
       .from("campaign_insights")
       .select("spend_cents, impressions, reach, clicks, conversations, fetched_at")
       .eq("campaign_id", campaignId)
+      .eq("organization_id", ctx.organization.id)
       .maybeSingle(),
   ]);
 

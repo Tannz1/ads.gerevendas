@@ -60,7 +60,7 @@ export function HomeStatus({ status, demo }: { status: OnboardingStatus; demo: b
         </Card>
 
         <Card className="p-6 sm:p-7">
-          <h2 className="font-display text-lg font-bold">Próximas fases do piloto</h2>
+          <h2 className="font-display text-lg font-bold">Acompanhe seus anúncios</h2>
           <ul className="mt-4 grid gap-3 text-[15px]">
             <li className="flex items-start justify-between gap-3">
               <span>Estratégia e peças editáveis</span>
@@ -68,13 +68,13 @@ export function HomeStatus({ status, demo }: { status: OnboardingStatus; demo: b
             </li>
             <li className="flex items-start justify-between gap-3">
               <span>Conexão com a Meta</span>
-              <Badge tone="demo">Simulação</Badge>
+              <Badge>Ver conexões</Badge>
             </li>
           </ul>
           <p className="mt-5 text-sm text-ink-faint">
-            Nenhum anúncio real é publicado nesta fase.{" "}
-            <Link href="/app/conta" className="font-medium text-brand underline-offset-2 hover:underline">
-              Ver status da conta
+            Consulte sua conta de anúncios e os resultados das campanhas.{" "}
+            <Link href="/app/painel" className="font-medium text-brand underline-offset-2 hover:underline">
+              Abrir painel de resultados
             </Link>
           </p>
         </Card>

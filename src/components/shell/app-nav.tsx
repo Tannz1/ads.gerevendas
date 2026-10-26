@@ -7,6 +7,7 @@ import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/cn";
 
 const items = [
+  { href: "/app/painel", label: "Resultados", icon: <path d="M4 20h16M7 16V9m5 7V4m5 12v-5" /> },
   {
     href: "/app",
     label: "Início",

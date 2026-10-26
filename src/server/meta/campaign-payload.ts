@@ -199,7 +199,7 @@ export function reviewFromAds(statuses: string[]): MetaReviewStatus {
   if (statuses.length === 0) return "pending_review";
   if (statuses.some((s) => REJECTED.has(s))) return "rejected";
   if (statuses.some((s) => PENDING.has(s))) return "pending_review";
-  return "approved";
+  return statuses.every((status) => status === "ACTIVE") ? "approved" : "pending_review";
 }
 
 type InsightsRow = {

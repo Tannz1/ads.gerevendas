@@ -32,7 +32,7 @@ export function CampaignDetailActions({
 }: Props) {
   const router = useRouter();
   const [confirmActivate, setConfirmActivate] = useState(false);
-  const [idempotencyKey] = useState(() => `act_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`);
+  const [idempotencyKey, setIdempotencyKey] = useState(() => `act_${crypto.randomUUID()}`);
   const [message, setMessage] = useState<{ tone: "success" | "danger" | "info"; text: string } | null>(null);
   const [pending, start] = useTransition();
 
@@ -47,7 +47,14 @@ export function CampaignDetailActions({
         confirmed_duration_days: durationDays,
         owner_activation_confirmed: confirmActivate,
         idempotency_key: idempotencyKey,
-      });
+      }).catch(() => null);
+      if (!res) {
+        setMessage({
+          tone: "danger",
+          text: "Não foi possível confirmar a ativação. Confira a campanha na Meta antes de tentar novamente.",
+        });
+        return;
+      }
       if (!res.ok) {
         setMessage({ tone: "danger", text: res.error.message });
         return;
@@ -64,12 +71,20 @@ export function CampaignDetailActions({
   function handlePause() {
     setMessage(null);
     start(async () => {
-      const res = await pauseActiveCampaign(campaignId);
+      const res = await pauseActiveCampaign(campaignId).catch(() => null);
+      if (!res) {
+        setMessage({
+          tone: "danger",
+          text: "Não foi possível confirmar a pausa. Se precisar interromper a veiculação agora, pause no Gerenciador de Anúncios da Meta.",
+        });
+        return;
+      }
       if (!res.ok) {
         setMessage({ tone: "danger", text: res.error.message });
         return;
       }
       setMessage({ tone: "info", text: "Campanha pausada com sucesso." });
+      setIdempotencyKey(`act_${crypto.randomUUID()}`);
       router.refresh();
     });
   }
