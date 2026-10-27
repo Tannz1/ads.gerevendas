@@ -25,6 +25,21 @@ export const serverEnvSchema = z.object({
   // Teto de tokens de IA de texto por empresa por mês (custo).
   AI_MONTHLY_TOKEN_CAP: z.coerce.number().int().positive().default(2_000_000),
   OPENAI_IMAGE_QUALITY: z.enum(["low", "medium", "high", "xhigh", "max", "auto"]).default("medium"),
+  // Voz e avatar em vídeo (ADR 0008). Vídeo pela API exige plano Pro.
+  ELEVENLABS_API_KEY: optional,
+  ELEVENLABS_TTS_MODEL: z.string().min(1).default("eleven_multilingual_v2"),
+  // voice_id das vozes pt-BR oferecidas, separados por vírgula.
+  ELEVENLABS_VOICE_IDS: z
+    .string()
+    .optional()
+    .transform((v) =>
+      v
+        ? v
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+    ),
   META_MODE: z.enum(["mock", "real"]).default("mock"),
   META_APP_ID: optional,
   META_APP_SECRET: optional,

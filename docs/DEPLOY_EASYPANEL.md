@@ -52,6 +52,19 @@ As variáveis `NEXT_PUBLIC_*` entram no build (o Dockerfile as recebe como build
 alterá-las, faça **Deploy** de novo. Use um Supabase **exclusivo do Ads**, não o banco do CRM nem de
 outro projeto. Não coloque service role key nem chaves da Meta/OpenAI nesta fase.
 
+### Vídeo com avatar (ADR 0008)
+
+Só no servidor (aba **Environment**, nunca `NEXT_PUBLIC_*`), depois de aplicar as migrations
+`20261027120000_video_enums.sql` e `20261027120100_video_avatar.sql`:
+
+```
+ELEVENLABS_API_KEY=<chave com Text to Speech, Flows e Assets>
+ELEVENLABS_VOICE_IDS=<voice_id 1>,<voice_id 2>
+```
+
+Vídeo pela API exige plano **Pro** na ElevenLabs. Sem a chave ou sem vozes, a seção de vídeo aparece
+desativada e a publicação continua só com imagem. O kill switch também desliga o vídeo.
+
 Para servir em outro lugar (ex.: subdomínio próprio na raiz), defina `NEXT_PUBLIC_BASE_PATH=` vazio e
 `NEXT_PUBLIC_APP_URL` com a nova origem.
 

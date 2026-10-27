@@ -149,6 +149,69 @@ describe("runPublication", () => {
     await expect(runPublication(base, deps(client).deps)).rejects.toMatchObject({ code: "city_not_found" });
   });
 
+  it("peça com vídeo sobe o vídeo, espera a Meta processar e cria video_data com a arte de capa", async () => {
+    const statuses: Array<"processing" | "ready"> = ["processing", "ready"];
+    const params: Record<string, string>[] = [];
+    class VideoClient extends CountingClient {
+      async uploadVideo(_a: string, url: string) {
+        this.calls.push(`uploadVideo:${url}`);
+        return "v1";
+      }
+      async getVideoStatus() {
+        this.calls.push("getVideoStatus");
+        return statuses.shift() ?? "ready";
+      }
+      async createAdCreative(_a?: string, p: Record<string, string> = {}) {
+        params.push(p);
+        return super.createAdCreative();
+      }
+    }
+    const client = new VideoClient();
+    const { records, deps: d } = deps(client);
+    await runPublication(
+      { ...base, creatives: [{ ...base.creatives[0], video_path: "org/k1.mp4" }] },
+      { ...d, videoUrl: async (path) => `https://storage/${path}`, sleep: async () => {} },
+    );
+    expect(client.calls).toEqual([
+      "createCampaign",
+      "searchCities",
+      "createAdSet:2",
+      "uploadImage",
+      "uploadVideo:https://storage/org/k1.mp4",
+      "getVideoStatus",
+      "getVideoStatus",
+      "createAdCreative",
+      "createAd",
+    ]);
+    expect(records).toContainEqual({ creatives: [{ creative_id: "k1", external_video_id: "v1" }] });
+    const spec = JSON.parse(params[0].object_story_spec);
+    expect(spec.link_data).toBeUndefined();
+    expect(spec.video_data).toMatchObject({ video_id: "v1", title: "Café", message: "Pão na chapa" });
+    expect(spec.video_data.image_hash).toMatch(/^sim_hash_/);
+  });
+
+  it("vídeo que a Meta recusa ou que não fica pronto para a publicação sem criar o criativo", async () => {
+    for (const [status, code] of [
+      ["error", "video_failed"],
+      ["processing", "video_processing"],
+    ] as const) {
+      class VideoClient extends CountingClient {
+        async getVideoStatus() {
+          return status;
+        }
+      }
+      const client = new VideoClient();
+      const { deps: d } = deps(client);
+      await expect(
+        runPublication(
+          { ...base, creatives: [{ ...base.creatives[0], video_path: "org/k1.mp4", external_video_id: "v1" }] },
+          { ...d, videoUrl: async () => "https://x", sleep: async () => {} },
+        ),
+      ).rejects.toMatchObject({ code });
+      expect(client.calls).not.toContain("createAdCreative");
+    }
+  });
+
   it("avisa quando o WhatsApp vai por link", async () => {
     const client = new CountingClient();
     const result = await runPublication(

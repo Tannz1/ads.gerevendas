@@ -26,6 +26,9 @@ export type PublicationInput = {
     headline: string;
     body: string;
     image_hash: string | null;
+    /** Vídeo da peça no Storage (ADR 0008); sem vídeo a peça vai como imagem. */
+    video_path?: string | null;
+    external_video_id?: string | null;
     external_creative_id: string | null;
     external_ad_id: string | null;
     render_view?: CreativeView;
@@ -49,6 +52,7 @@ export type PublicationRecord =
       creatives: Array<{
         creative_id: string;
         image_hash?: string;
+        external_video_id?: string;
         external_creative_id?: string;
         external_ad_id?: string;
       }>;
@@ -58,19 +62,43 @@ export type PublicationDeps = {
   client: MetaBusinessClient;
   record: (payload: PublicationRecord) => Promise<void>;
   renderPng: (creativeId: string) => Promise<Buffer>;
+  /** URL assinada e temporária do vídeo no Storage, para a Meta baixar. */
+  videoUrl?: (path: string) => Promise<string>;
+  sleep?: (ms: number) => Promise<void>;
   now: () => Date;
   /** Persiste a intenção ANTES de uma escrita externa. Intenção sem ID exige reconciliação. */
   beginStep: (key: string) => Promise<void>;
 };
 
 export type PublishErrorCode =
-  "missing_website" | "missing_whatsapp" | "missing_instagram" | "missing_destination" | "city_not_found";
+  | "missing_website"
+  | "missing_whatsapp"
+  | "missing_instagram"
+  | "missing_destination"
+  | "city_not_found"
+  | "video_processing"
+  | "video_failed";
 
 export class PublishError extends Error {
   constructor(readonly code: PublishErrorCode) {
     super(`publish_error:${code}`);
     this.name = "PublishError";
   }
+}
+
+const VIDEO_POLLS = 18;
+const VIDEO_POLL_MS = 10_000;
+
+/** A Meta processa o vídeo antes de aceitar o criativo. Sem ficar pronto em ~3 min, a publicação é retomada depois. */
+async function waitVideoReady(deps: PublicationDeps, videoId: string) {
+  const sleep = deps.sleep ?? ((ms) => new Promise((r) => setTimeout(r, ms)));
+  for (let i = 0; i < VIDEO_POLLS; i++) {
+    const status = await deps.client.getVideoStatus(videoId);
+    if (status === "ready") return;
+    if (status === "error") throw new PublishError("video_failed");
+    await sleep(VIDEO_POLL_MS);
+  }
+  throw new PublishError("video_processing");
 }
 
 /**
@@ -129,8 +157,17 @@ export async function runPublication(
       imageHash = await deps.client.uploadImage(account, png);
       await deps.record({ creatives: [{ creative_id: creative.creative_id, image_hash: imageHash }] });
     }
+    let videoId = creative.external_video_id ?? null;
+    if (creative.video_path && !videoId) {
+      if (!deps.videoUrl) throw new Error("video_url_missing");
+      const url = await deps.videoUrl(creative.video_path);
+      await deps.beginStep(`video:${creative.creative_id}`);
+      videoId = await deps.client.uploadVideo(account, url);
+      await deps.record({ creatives: [{ creative_id: creative.creative_id, external_video_id: videoId }] });
+    }
     let creativeId = creative.external_creative_id;
     if (!creativeId) {
+      if (videoId) await waitVideoReady(deps, videoId);
       await deps.beginStep(`creative:${creative.creative_id}`);
       creativeId = await deps.client.createAdCreative(
         account,
@@ -139,6 +176,7 @@ export async function runPublication(
           pageId: connection.page_id,
           instagramId: connection.instagram_actor_id,
           imageHash,
+          videoId,
           headline: creative.headline,
           body: creative.body,
           destination,

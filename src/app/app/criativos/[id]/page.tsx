@@ -3,13 +3,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 import { CreativeEditor } from "@/components/creatives/creative-editor";
+import { VideoSection } from "@/components/creatives/video-section";
 import { Badge } from "@/components/ui/badge";
 import { TEMPLATE_LABELS, type AngleKey } from "@/contracts/creatives";
 import { formatCents } from "@/lib/money";
 import { getAppContext } from "@/server/context";
 import { serverEnv } from "@/lib/env";
-import { selectImageProvider } from "@/server/ai/provider";
-import { loadCreative, loadImageJob } from "@/server/creatives-data";
+import { MAX_SCRIPT_CHARS } from "@/server/ai/elevenlabs";
+import { selectImageProvider, selectVoiceVideoProvider } from "@/server/ai/provider";
+import { loadCreative, loadImageJob, loadVideoJob, loadVideoUrl } from "@/server/creatives-data";
 
 export const metadata: Metadata = { title: "Editar peça" };
 
@@ -17,8 +19,10 @@ export default async function CreativeEditorPage({ params }: PageProps<"/app/cri
   const { id } = await params;
   const ctx = await getAppContext();
   if (ctx.mode !== "supabase" || !z.uuid().safeParse(id).success) notFound();
-  const [view, imageJob] = await Promise.all([loadCreative(id), loadImageJob(id)]);
+  const [view, imageJob, videoJob] = await Promise.all([loadCreative(id), loadImageJob(id), loadVideoJob(id)]);
   if (!view) notFound();
+  const env = serverEnv();
+  const videoSrc = view.video ? await loadVideoUrl(view.video.path) : null;
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -38,8 +42,17 @@ export default async function CreativeEditorPage({ params }: PageProps<"/app/cri
         businessName={view.business_name}
         priceLabel={view.price_cents === null ? null : formatCents(view.price_cents, view.currency)}
         imageSrc={view.image_url}
-        aiImagesEnabled={selectImageProvider(serverEnv()) !== null}
+        aiImagesEnabled={selectImageProvider(env) !== null}
         imageJob={imageJob}
+      />
+      <VideoSection
+        creativeId={view.id}
+        defaultScript={`${view.content.headline}. ${view.content.body}`}
+        maxScript={MAX_SCRIPT_CHARS}
+        voices={env.ELEVENLABS_VOICE_IDS}
+        enabled={selectVoiceVideoProvider(env) !== null && env.ELEVENLABS_VOICE_IDS.length > 0}
+        videoSrc={videoSrc}
+        job={videoJob}
       />
     </div>
   );

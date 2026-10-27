@@ -9,6 +9,7 @@ import type {
   MetaInvite,
   MetaCity,
   MetaInsightsRow,
+  MetaVideoStatus,
 } from "./client";
 import { MetaError, mapGraphError } from "./errors";
 import { appSecretProof, META_GRAPH_BASE } from "./graph";
@@ -52,6 +53,7 @@ const fundingRaw = z.object({ funding_source: z.string().nullish(), account_stat
 const createdRaw = z.object({ id: z.string() });
 const cityRaw = z.object({ key: z.string(), name: z.string(), region: z.string().nullish() });
 const imagesRaw = z.object({ images: z.record(z.string(), z.object({ hash: z.string() })) });
+const videoStatusRaw = z.object({ status: z.object({ video_status: z.string() }).optional() });
 const adStatusRaw = z.object({ effective_status: z.string().optional() });
 const insightsRaw = z.object({
   spend: z.string().optional(),
@@ -238,6 +240,16 @@ export class RealMetaBusinessClient implements MetaBusinessClient {
     const first = Object.values(raw.images)[0];
     if (!first) throw new MetaError("unknown");
     return first.hash;
+  }
+
+  async uploadVideo(adAccountId: string, fileUrl: string): Promise<string> {
+    return this.parse(createdRaw, await this.call("POST", `${adAccountId}/advideos`, { file_url: fileUrl })).id;
+  }
+
+  async getVideoStatus(videoId: string): Promise<MetaVideoStatus> {
+    const raw = this.parse(videoStatusRaw, await this.call("GET", videoId, { fields: "status" }));
+    const status = raw.status?.video_status;
+    return status === "ready" ? "ready" : status === "error" ? "error" : "processing";
   }
 
   private async create(adAccountId: string, edge: string, params: Record<string, string>): Promise<string> {

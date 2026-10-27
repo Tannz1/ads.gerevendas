@@ -59,6 +59,8 @@ describe.skipIf(!enabled)("Contrato de publicação real pausada", () => {
             headline: "Teste de integração",
             body: "Validação técnica autorizada. Campanha pausada.",
             image_hash: null,
+            // Opcional (ADR 0008): URL pública de um MP4 curto prova advideos + video_data.
+            video_path: env.META_CONTRACT_VIDEO_URL || null,
             external_creative_id: null,
             external_ad_id: null,
           },
@@ -68,6 +70,7 @@ describe.skipIf(!enabled)("Contrato de publicação real pausada", () => {
         client,
         now: () => new Date(),
         renderPng: () => readFile(env.META_CONTRACT_PNG_PATH!),
+        videoUrl: async (url) => url,
         beginStep: async () => {},
         record: async (record) => {
           records.push(record);
@@ -85,5 +88,5 @@ describe.skipIf(!enabled)("Contrato de publicação real pausada", () => {
     expect(effective).toHaveLength(1);
     expect(effective).not.toContain("ACTIVE");
     await client.getCampaignInsights(campaign!.external_campaign_id);
-  }, 180_000);
+  }, 420_000);
 });

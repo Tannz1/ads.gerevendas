@@ -9,6 +9,7 @@ import type {
   MetaInvite,
   MetaCity,
   MetaInsightsRow,
+  MetaVideoStatus,
 } from "./client";
 
 const digest = (value: string) => createHash("sha256").update(value).digest("hex").slice(0, 12);
@@ -69,6 +70,14 @@ export class MockMetaBusinessClient implements MetaBusinessClient {
 
   async uploadImage(_adAccountId: string, png: Buffer): Promise<string> {
     return `sim_hash_${createHash("sha256").update(png).digest("hex").slice(0, 12)}`;
+  }
+
+  async uploadVideo(_adAccountId: string, _fileUrl: string): Promise<string> {
+    return `sim_video_${randomBytes(4).toString("hex")}`;
+  }
+
+  async getVideoStatus(_videoId: string): Promise<MetaVideoStatus> {
+    return "ready";
   }
 
   async createCampaign(): Promise<string> {

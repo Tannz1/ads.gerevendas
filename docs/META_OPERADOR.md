@@ -68,6 +68,9 @@ META_CONTRACT_WRITE=1 ...as mesmas variáveis... npm run test:meta-contract
 - `META_CONTRACT_CREATE_ACCOUNT=1` cria uma conta pela API e **gasta 1 da cota de 5** da BM.
 - `META_CONTRACT_BUSINESS_USER_ID=...` (o ID que aparece no teste de convite depois de aceito)
   testa a atribuição de administrador na conta.
+- `META_CONTRACT_VIDEO_URL=https://...mp4` (com `META_CONTRACT_PUBLISH=1`) publica a peça de teste
+  como vídeo: prova `advideos`, o processamento e o criativo com `video_data` (ADR 0008). Use um MP4
+  curto em URL pública. As permissões são as mesmas da imagem (`ads_management`).
 
 Confira também, abrindo no navegador:
 

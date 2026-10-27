@@ -42,6 +42,8 @@ const PUBLISH_ERROR_MESSAGES: Record<PublishErrorCode, string> = {
   missing_instagram: "Este objetivo leva ao seu Instagram, mas o cadastro não tem o @. Adicione em Meu negócio.",
   missing_destination: "Adicione site, WhatsApp ou Instagram em Meu negócio para o anúncio ter para onde levar.",
   city_not_found: "A Meta não encontrou a cidade do seu cadastro. Confira a cidade e o estado em Meu negócio.",
+  video_processing: "A Meta ainda está processando o vídeo. Aguarde alguns minutos e retome a publicação.",
+  video_failed: "A Meta não aceitou o vídeo de uma das peças. Fale com o suporte para revisar a publicação.",
 };
 
 /** Mensagem para o cliente quando a publicação na Meta parou no meio (a campanha fica salva para retomar). */
