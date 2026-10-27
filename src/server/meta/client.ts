@@ -25,6 +25,9 @@ export interface MetaBusinessClient {
   // Publicação (ADR 0006): objetos sempre criados PAUSED na conta do cliente.
   searchCities(query: string): Promise<MetaCity[]>;
   uploadImage(adAccountId: string, png: Buffer): Promise<string>;
+  /** A Meta baixa o vídeo de `fileUrl` (URL assinada e temporária do Storage). */
+  uploadVideo(adAccountId: string, fileUrl: string): Promise<string>;
+  getVideoStatus(videoId: string): Promise<MetaVideoStatus>;
   createCampaign(adAccountId: string, params: Record<string, string>): Promise<string>;
   createAdSet(adAccountId: string, params: Record<string, string>): Promise<string>;
   createAdCreative(adAccountId: string, params: Record<string, string>): Promise<string>;
@@ -34,6 +37,7 @@ export interface MetaBusinessClient {
   getCampaignInsights(campaignId: string): Promise<MetaInsightsRow | null>;
 }
 
+export type MetaVideoStatus = "ready" | "processing" | "error";
 export type MetaCity = { key: string; name: string; region: string | null };
 export type MetaInsightsRow = {
   spend?: string;

@@ -10,12 +10,15 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 /** Leituras das telas de criativos. Isolamento garantido pelo RLS (sessão do usuário). */
 
 export const ASSETS_BUCKET = "creative-assets";
+export const VIDEOS_BUCKET = "creative-videos";
 
 export type CreativeView = {
   id: string;
   /** Caminho no Storage privado; `image_url` é uma URL assinada temporária para a prévia. */
   image: { path: string; mime: string } | null;
   image_url: string | null;
+  /** Vídeo com avatar (ADR 0008). Com vídeo, a peça é publicada como vídeo. */
+  video: { path: string } | null;
   angle_key: string;
   status: "draft" | "approved";
   content: CreativeContent;
@@ -31,9 +34,10 @@ type CreativeRow = {
   status: "draft" | "approved";
   content: unknown;
   assets: { storage_path: string; mime: string } | null;
+  videos: { storage_path: string } | null;
 };
 
-const CREATIVE_COLUMNS = "id, angle_key, status, content, assets(storage_path, mime)";
+const CREATIVE_COLUMNS = "id, angle_key, status, content, assets(storage_path, mime), videos(storage_path)";
 
 type Supabase = Awaited<ReturnType<typeof createSupabaseServerClient>>;
 
@@ -74,6 +78,7 @@ export async function loadCreative(id: string): Promise<CreativeView | null> {
     id: row.id,
     image,
     image_url: image ? (urls.get(image.path) ?? null) : null,
+    video: row.videos ? { path: row.videos.storage_path } : null,
     angle_key: row.angle_key,
     status: row.status,
     content: content.data,
@@ -159,6 +164,7 @@ export async function loadCreativesOverview(organizationId: string): Promise<Cre
             id: c.id,
             image: c.assets ? { path: c.assets.storage_path, mime: c.assets.mime } : null,
             image_url: c.assets ? (urls.get(c.assets.storage_path) ?? null) : null,
+            video: c.videos ? { path: c.videos.storage_path } : null,
             angle_key: c.angle_key,
             status: c.status,
             content: content.data,
@@ -219,6 +225,7 @@ export type CreditSummary = {
   period: string;
   strategy: { used: number; limit: number };
   image: { used: number; limit: number };
+  video?: { used: number; limit: number };
   tokens: number;
 };
 
@@ -228,4 +235,34 @@ export async function loadCreditSummary(organizationId: string): Promise<CreditS
   const { data, error } = await supabase.rpc("credit_summary", { p_org: organizationId });
   if (error || !data) return null;
   return data as CreditSummary;
+}
+
+/** Último job de vídeo da peça. Com a geração já pedida na ElevenLabs, não expira por tempo. */
+export async function loadVideoJob(creativeId: string) {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("generation_jobs")
+    .select("id, status, error_code, started_at, external_generation_id")
+    .eq("creative_id", creativeId)
+    .eq("kind", "video")
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!data) return null;
+  const stale =
+    data.status === "running" &&
+    !data.external_generation_id &&
+    Date.now() - new Date(data.started_at).getTime() > 5 * 60_000;
+  return {
+    id: data.id as string,
+    status: stale ? "failed" : (data.status as string),
+    error_code: stale ? "timeout" : (data.error_code as string | null),
+  };
+}
+
+/** URL assinada (1 h) do vídeo para a prévia. */
+export async function loadVideoUrl(path: string): Promise<string | null> {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.storage.from(VIDEOS_BUCKET).createSignedUrl(path, 3600);
+  return data?.signedUrl ?? null;
 }

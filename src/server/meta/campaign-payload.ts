@@ -110,22 +110,37 @@ export function creativeParams(input: {
   pageId: string;
   instagramId: string | null;
   imageHash: string;
+  /** Com vídeo, a peça vai como `video_data` e a imagem vira a capa (thumbnail). */
+  videoId?: string | null;
   headline: string;
   body: string;
   destination: { link: string; cta: CallToAction };
 }): Record<string, string> {
+  const callToAction = { type: input.destination.cta, value: { link: input.destination.link } };
   return {
     name: input.name,
     object_story_spec: JSON.stringify({
       page_id: input.pageId,
       ...(input.instagramId ? { instagram_user_id: input.instagramId } : {}),
-      link_data: {
-        image_hash: input.imageHash,
-        link: input.destination.link,
-        message: input.body,
-        name: input.headline,
-        call_to_action: { type: input.destination.cta, value: { link: input.destination.link } },
-      },
+      ...(input.videoId
+        ? {
+            video_data: {
+              video_id: input.videoId,
+              image_hash: input.imageHash,
+              message: input.body,
+              title: input.headline,
+              call_to_action: callToAction,
+            },
+          }
+        : {
+            link_data: {
+              image_hash: input.imageHash,
+              link: input.destination.link,
+              message: input.body,
+              name: input.headline,
+              call_to_action: callToAction,
+            },
+          }),
     }),
   };
 }

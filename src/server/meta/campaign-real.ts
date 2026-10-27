@@ -6,7 +6,7 @@ import type { Objective } from "@/contracts/onboarding";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { renderCreativePng } from "../creative-png";
-import { loadCreative } from "../creatives-data";
+import { loadCreative, VIDEOS_BUCKET } from "../creatives-data";
 import { insightsFromMeta, reviewFromAds } from "./campaign-payload";
 import type { MetaBusinessClient } from "./client";
 import { runPublication, type PublicationInput } from "./publish";
@@ -86,7 +86,9 @@ async function loadPublicationInput(campaignId: string): Promise<PublicationInpu
   ] = await Promise.all([
     supabase
       .from("campaign_creatives")
-      .select("creative_id, image_hash, external_creative_id, external_ad_id, creatives(angle_key, content)")
+      .select(
+        "creative_id, image_hash, external_video_id, external_creative_id, external_ad_id, creatives(angle_key, content)",
+      )
       .eq("campaign_id", campaignId)
       .eq("organization_id", c.organization_id),
     supabase
@@ -117,6 +119,7 @@ async function loadPublicationInput(campaignId: string): Promise<PublicationInpu
     (links ?? []) as unknown as Array<{
       creative_id: string;
       image_hash: string | null;
+      external_video_id: string | null;
       external_creative_id: string | null;
       external_ad_id: string | null;
       creatives: { angle_key: string; content: { headline?: string; body?: string } } | null;
@@ -127,6 +130,7 @@ async function loadPublicationInput(campaignId: string): Promise<PublicationInpu
     headline: l.creatives?.content?.headline ?? "",
     body: l.creatives?.content?.body ?? "",
     image_hash: l.image_hash,
+    external_video_id: l.external_video_id,
     external_creative_id: l.external_creative_id,
     external_ad_id: l.external_ad_id,
   }));
@@ -139,6 +143,7 @@ async function loadPublicationInput(campaignId: string): Promise<PublicationInpu
         ...creative,
         headline: view.content.headline,
         body: view.content.body,
+        video_path: view.video?.path ?? null,
         render_view: { ...view, image_url: null },
       };
     }),
@@ -192,6 +197,7 @@ export async function publishRealCampaign(
       return {
         ...creative,
         image_hash: current?.image_hash ?? null,
+        external_video_id: current?.external_video_id ?? null,
         external_creative_id: current?.external_creative_id ?? null,
         external_ad_id: current?.external_ad_id ?? null,
       };
@@ -206,6 +212,11 @@ export async function publishRealCampaign(
       const view = stable.creatives.find((creative) => creative.creative_id === creativeId)?.render_view;
       if (!view) throw new Error("creative_not_found");
       return Buffer.from(await (await renderCreativePng(view, "feed")).arrayBuffer());
+    },
+    videoUrl: async (path) => {
+      const { data, error } = await admin.storage.from(VIDEOS_BUCKET).createSignedUrl(path, 3600);
+      if (error || !data) throw new Error("video_url_failed");
+      return data.signedUrl;
     },
     now: () => new Date(),
   });

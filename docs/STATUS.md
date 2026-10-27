@@ -55,3 +55,6 @@ Next.js único (ADR 0001): `apps/web` corresponde a `src/app`, `packages/contrac
 - Coleta de avaliação rápida do piloto (`pilot_feedback` + `PilotFeedbackBox` em Criativos): **REAL** no banco.
 - Healthcheck `/api/health`, testes unitários, RLS e E2E: **REAL**.
 
+
+### Vídeo com avatar (ADR 0008)
+- Job de vídeo com avatar (TTS + `creatify-aurora`), créditos (20/mês), consentimento de rosto, tela no editor da peça e publicação como vídeo na Meta (`advideos` + `video_data`, sempre PAUSED): **REAL** no banco local e nos testes com mocks. **BLOQUEADO** até a chamada real à ElevenLabs (plano Pro) e o contrato de vídeo na Meta (`META_CONTRACT_VIDEO_URL`).

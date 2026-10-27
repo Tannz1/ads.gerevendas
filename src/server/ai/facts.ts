@@ -25,10 +25,14 @@ const norm = (s: string) => s.toLocaleLowerCase("pt-BR");
 
 /** Devolve as violações encontradas (vazio = plano pode ser gravado). Função pura. */
 export function checkFacts(plan: StrategyPlan, facts: ConfirmedFacts): string[] {
-  const texts = [
-    plan.business_summary,
-    ...plan.angles.flatMap((a) => [a.label, a.rationale, a.headline, a.body, a.cta]),
-  ];
+  return checkTexts(
+    [plan.business_summary, ...plan.angles.flatMap((a) => [a.label, a.rationale, a.headline, a.body, a.cta])],
+    facts,
+  );
+}
+
+/** Mesma checagem para textos soltos (ex.: roteiro do vídeo). */
+export function checkTexts(texts: string[], facts: ConfirmedFacts): string[] {
   const confirmed = norm(facts.confirmed_text);
   const violations: string[] = [];
 
