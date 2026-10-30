@@ -17,7 +17,7 @@ const steps = [
   },
   {
     title: "Publique quando aprovar",
-    text: "A campanha é criada pausada na sua conta da Meta e só vai ao ar quando você confirmar o valor por dia.",
+    text: "A campanha é criada pausada no Facebook e no Instagram e só vai ao ar quando você confirmar o valor por dia.",
   },
 ];
 
@@ -25,7 +25,7 @@ const included = [
   "Estratégia e cinco peças por rodada, para feed e stories",
   "Editor para ajustar texto, preço, cor e foto",
   "Imagem gerada por IA ou foto do seu negócio",
-  "Campanha montada na sua conta de anúncios da Meta",
+  "Campanha montada no Facebook e no Instagram",
 ];
 
 export default function Home() {
@@ -119,7 +119,7 @@ export default function Home() {
               <div className="mt-6 rounded-xl border-2 border-ink p-5">
                 <p className="font-semibold">Ativar campanha com R$ 20 por dia?</p>
                 <p className="mt-1 text-sm text-ink-soft">
-                  O valor é cobrado pela Meta, na sua conta de anúncios. Dá para pausar quando quiser.
+                  A verba é cobrada à parte da mensalidade. Dá para pausar quando quiser.
                 </p>
                 <div className="mt-5 flex gap-3">
                   <span className="rounded-lg border border-line-strong px-4 py-2 text-sm font-semibold">Cancelar</span>
@@ -154,8 +154,7 @@ export default function Home() {
                 ))}
               </ul>
               <p className="mt-6 max-w-xl text-[15px] leading-relaxed text-ink-soft">
-                A verba dos anúncios não está incluída: ela é paga diretamente à Meta, na sua conta de anúncios, no
-                valor que você definir.
+                A verba dos anúncios não está incluída: você define o valor por dia de cada campanha e paga à parte.
               </p>
               <ButtonLink href="/entrar" size="lg" className="mt-8">
                 Criar meus anúncios

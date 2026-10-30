@@ -3,10 +3,11 @@ import { p } from "./paths";
 
 test("painel em demonstração não inventa conta nem métricas", async ({ page }) => {
   await page.goto(p("/app/painel"));
-  await expect(page.getByRole("heading", { name: "Painel de resultados" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Sua conta de anúncios" })).toBeVisible();
-  await expect(page.getByText("Ainda não há métricas disponíveis")).toBeVisible();
-  await expect(page.getByText("A demonstração não apresenta resultados inventados.", { exact: false })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Resultados", exact: true })).toBeVisible();
+  // Sem campanhas reais, nenhum número: todos os indicadores mostram "—".
+  await expect(page.getByText("R$", { exact: false })).toHaveCount(0);
+  await expect(page.getByText("—")).toHaveCount(5);
+  await expect(page.getByText("Nenhuma campanha ainda.")).toBeVisible();
   await expect(page.getByRole("button", { name: "Atualizar métricas da Meta" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Nova campanha", exact: true })).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);

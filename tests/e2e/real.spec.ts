@@ -94,7 +94,7 @@ test("login, empresa e onboarding persistidos; outra empresa não vê os dados",
   // Criativos: estratégia + 5 peças (provedor simulado sem chave de IA), editar, aprovar, baixar.
   await page.getByRole("link", { name: "Criar meus anúncios" }).click();
   await page.getByRole("button", { name: "Gerar estratégia e anúncios" }).click();
-  await expect(page.getByRole("heading", { name: "Sua estratégia" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "Seus anúncios" })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("Simulação").first()).toBeVisible();
   await expect(page.getByRole("link", { name: "Editar" })).toHaveCount(5);
   // Simulação não consome crédito.
