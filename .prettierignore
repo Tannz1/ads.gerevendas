@@ -5,3 +5,5 @@ test-results
 playwright-report
 supabase/.temp
 *.md
+# HTML de e-mail ajustado à mão: reformatar muda espaços que os clientes de e-mail renderizam.
+infra/supabase/email-templates

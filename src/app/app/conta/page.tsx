@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AccountManagement } from "@/components/account/account-management";
 import { Badge } from "@/components/ui/badge";
+import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { serverEnv } from "@/lib/env";
 import { resolveFlags } from "@/lib/flags";
@@ -54,7 +55,14 @@ export default async function AccountPage() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="font-display text-3xl font-bold tracking-tight">Conta</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-3xl font-bold tracking-tight">Conta</h1>
+        {ctx.mode === "supabase" && (
+          <ButtonLink href="/app/senha" variant="secondary" size="sm">
+            Definir ou trocar senha
+          </ButtonLink>
+        )}
+      </div>
       <Card className="mt-8 divide-y divide-line">
         {[...rows, ...integrations].map((r) => (
           <div key={r.label} className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6">

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useActionState } from "react";
 import { Alert } from "@/components/ui/alert";
@@ -69,6 +70,9 @@ export function SignInForm({ demo }: { demo: boolean }) {
       <Button type="submit" size="lg" disabled={pending}>
         {pending ? "Entrando…" : "Entrar"}
       </Button>
+      <Link href="/entrar/senha" className="text-center text-sm font-medium text-brand hover:underline">
+        Esqueci a senha ou quero criar uma
+      </Link>
     </form>
   );
 }
