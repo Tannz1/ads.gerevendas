@@ -66,6 +66,9 @@ export function campaignParams(objective: Objective, name: string): Record<strin
     // Crédito, emprego, moradia, política e temas sociais são bloqueados no app (o dono confirma).
     special_ad_categories: "[]",
     buying_type: "AUCTION",
+    // Sem orçamento de campanha a Meta exige o campo (erro 100/4834011, v25.0). `false`: cada conjunto
+    // gasta só o próprio orçamento total, sem emprestar 20% entre conjuntos.
+    is_adset_budget_sharing_enabled: "false",
   };
 }
 
@@ -83,9 +86,10 @@ export function adSetScheduleParams(now: Date, durationDays: number): { start_ti
     end_time: new Date(now.getTime() + durationDays * DAY_MS).toISOString(),
   };
 }
-const MIN_RADIUS_KM = 10;
+// Raio de cidade na Meta: 10 a 50 milhas (contrato v25.0 recusou 15 km e aceitou 16 a 80 km).
+const MIN_RADIUS_KM = 17;
 const MAX_RADIUS_KM = 80;
-const DEFAULT_RADIUS_KM = 15;
+const DEFAULT_RADIUS_KM = 17;
 
 export function adSetParams(input: {
   name: string;
@@ -113,6 +117,8 @@ export function adSetParams(input: {
       geo_locations: { cities: [{ key: input.cityKey, radius, distance_unit: "kilometer" }] },
       age_min: input.ageMin,
       age_max: input.ageMax,
+      // Obrigatório na v25.0. 0 = a Meta respeita a idade e a região do dono, sem expandir o público.
+      targeting_automation: { advantage_audience: 0 },
     }),
     status: "PAUSED",
   };

@@ -76,6 +76,7 @@ describe("parâmetros dos objetos da Meta", () => {
       status: "PAUSED",
       special_ad_categories: "[]",
       buying_type: "AUCTION",
+      is_adset_budget_sharing_enabled: "false",
     });
     expect(campaignParams("reconhecimento_local", "C").objective).toBe("OUTCOME_AWARENESS");
   });
@@ -108,6 +109,7 @@ describe("parâmetros dos objetos da Meta", () => {
       geo_locations: { cities: [{ key: "269969", radius: 80, distance_unit: "kilometer" }] },
       age_min: 25,
       age_max: 55,
+      targeting_automation: { advantage_audience: 0 },
     });
     const awareness = adSetParams({
       name: "C",
@@ -122,7 +124,7 @@ describe("parâmetros dos objetos da Meta", () => {
       radiusKm: null,
     });
     expect(awareness.optimization_goal).toBe("REACH");
-    expect(JSON.parse(awareness.targeting).geo_locations.cities[0].radius).toBe(15);
+    expect(JSON.parse(awareness.targeting).geo_locations.cities[0].radius).toBe(17);
   });
 
   it("criativo com imagem, textos, botão e Instagram quando existir", () => {

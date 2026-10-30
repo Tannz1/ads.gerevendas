@@ -156,10 +156,8 @@ describe("RealMetaBusinessClient — publicação", () => {
   it("muda status, lê revisão dos anúncios e métricas da campanha", async () => {
     const f = fakeFetch([
       { status: 200, body: { success: true } },
-      {
-        status: 200,
-        body: { a1: { id: "a1", effective_status: "PENDING_REVIEW" }, a2: { id: "a2", effective_status: "ACTIVE" } },
-      },
+      { status: 200, body: { id: "a1", effective_status: "PENDING_REVIEW" } },
+      { status: 200, body: { id: "a2", effective_status: "ACTIVE" } },
       { status: 200, body: { data: [{ spend: "1.50", impressions: "10" }] } },
       { status: 200, body: { data: [] } },
     ]);
@@ -167,10 +165,14 @@ describe("RealMetaBusinessClient — publicação", () => {
     await client.setStatus("c1", "ACTIVE");
     expect(new URLSearchParams(String(f.calls[0].init.body)).get("status")).toBe("ACTIVE");
     expect(await client.getAdsEffectiveStatus(["a1", "a2"])).toEqual(["PENDING_REVIEW", "ACTIVE"]);
-    expect(f.calls[1].url.searchParams.get("ids")).toBe("a1,a2");
+    // Um GET por anúncio: a Meta recusa `?ids=`.
+    expect(f.calls.slice(1, 3).map((c) => c.url.pathname)).toEqual([
+      `/${META_GRAPH_VERSION}/a1`,
+      `/${META_GRAPH_VERSION}/a2`,
+    ]);
     expect(await client.getCampaignInsights("c1")).toEqual({ spend: "1.50", impressions: "10" });
-    expect(f.calls[2].url.pathname).toBe(`/${META_GRAPH_VERSION}/c1/insights`);
-    expect(f.calls[2].url.searchParams.get("date_preset")).toBe("maximum");
+    expect(f.calls[3].url.pathname).toBe(`/${META_GRAPH_VERSION}/c1/insights`);
+    expect(f.calls[3].url.searchParams.get("date_preset")).toBe("maximum");
     expect(await client.getCampaignInsights("c1")).toBeNull();
   });
 });
