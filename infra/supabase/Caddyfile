@@ -14,5 +14,10 @@
 	handle_path /storage/v1/* {
 		reverse_proxy ads-storage:5000
 	}
+	# Modelos de e-mail em pt-BR que o Auth busca ao enviar (GOTRUE_MAILER_TEMPLATES_*).
+	handle_path /email-templates/* {
+		root * /srv/email-templates
+		file_server
+	}
 	respond 404
 }

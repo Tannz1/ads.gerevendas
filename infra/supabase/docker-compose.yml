@@ -68,6 +68,17 @@ services:
       GOTRUE_MAILER_URLPATHS_CONFIRMATION: /auth/v1/verify
       GOTRUE_MAILER_URLPATHS_RECOVERY: /auth/v1/verify
       GOTRUE_MAILER_URLPATHS_EMAIL_CHANGE: /auth/v1/verify
+      # Links valem 1 hora (o texto dos e-mails diz isso).
+      GOTRUE_MAILER_OTP_EXP: 3600
+      # Modelos em pt-BR servidos pelo gateway (infra/supabase/email-templates).
+      GOTRUE_MAILER_SUBJECTS_MAGIC_LINK: "Seu link de acesso ao GereVendas Ads"
+      GOTRUE_MAILER_SUBJECTS_CONFIRMATION: "Confirme seu e-mail no GereVendas Ads"
+      GOTRUE_MAILER_SUBJECTS_RECOVERY: "Crie uma nova senha no GereVendas Ads"
+      GOTRUE_MAILER_SUBJECTS_EMAIL_CHANGE: "Confirme seu novo e-mail no GereVendas Ads"
+      GOTRUE_MAILER_TEMPLATES_MAGIC_LINK: http://ads-gateway:8000/email-templates/magic-link.html
+      GOTRUE_MAILER_TEMPLATES_CONFIRMATION: http://ads-gateway:8000/email-templates/confirmation.html
+      GOTRUE_MAILER_TEMPLATES_RECOVERY: http://ads-gateway:8000/email-templates/recovery.html
+      GOTRUE_MAILER_TEMPLATES_EMAIL_CHANGE: http://ads-gateway:8000/email-templates/email-change.html
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9999/health"]
       interval: 5s
@@ -143,6 +154,7 @@ services:
       - ads-storage
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./email-templates:/srv/email-templates:ro
     deploy:
       resources:
         limits:
