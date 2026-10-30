@@ -48,7 +48,7 @@ const TITLE: Record<StepKey, string> = {
   billing: "4. Forma de pagamento",
 };
 
-const INSTAGRAM_MESSAGE = {
+export const INSTAGRAM_MESSAGE = {
   linked: "Instagram conectado.",
   not_found: "Não encontramos o Instagram com esse @ compartilhado com a GereVendas. Compartilhe e tente de novo.",
   taken: "Esse Instagram já está ligado a outra empresa no GereVendas Ads. Fale com o suporte.",
