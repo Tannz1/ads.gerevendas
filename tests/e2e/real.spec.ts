@@ -55,7 +55,7 @@ test("login, empresa e onboarding persistidos; outra empresa não vê os dados",
   await createOrganization(page, nameA);
 
   await page.getByLabel("Nome do negócio").fill(nameA);
-  await page.getByLabel("Segmento").fill("Alimentação");
+  await page.getByRole("button", { name: "Alimentação" }).click();
   await page.getByLabel("Cidade").fill("Campinas");
   await page.getByLabel("Estado").selectOption("SP");
   await page.getByLabel(/WhatsApp/).fill("19999990000");
