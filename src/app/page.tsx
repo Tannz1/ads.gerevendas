@@ -1,4 +1,5 @@
 import { LiveDemo } from "@/components/marketing/live-demo";
+import { LegalLinks } from "@/components/marketing/legal-page";
 import { ButtonLink } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 
@@ -169,6 +170,7 @@ export default function Home() {
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-8 text-sm text-ink-faint sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p>© 2026 GereVendas Ads</p>
           <p>Publicação na Meta sujeita à revisão e às políticas da plataforma.</p>
+          <LegalLinks className="flex gap-4" />
         </div>
       </footer>
     </div>
