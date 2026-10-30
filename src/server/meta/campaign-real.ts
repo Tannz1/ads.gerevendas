@@ -249,9 +249,12 @@ export async function activateRealCampaign(
   if (!isAdAccountUsable(funding.account_status) || !funding.has_funding_source) {
     return { error: { message: "meta_not_connected" } };
   }
-  // O orçamento é total: o período conta a partir da ativação, senão a Meta gastaria o total em menos
-  // dias (mais por dia do que o dono confirmou). Ainda PAUSADO, então falhar aqui não gasta nada.
-  await client.updateAdSet(campaign.external_adset_id, adSetScheduleParams(new Date(), input.confirmed_duration_days));
+  // O orçamento é total: o fim passa a contar da ativação, senão a Meta gastaria o total em menos dias
+  // (mais por dia do que o dono confirmou). A Meta só deixa editar o fim de um conjunto já criado (o
+  // início dá erro 1487057). Ainda PAUSADO, então falhar aqui não gasta nada.
+  await client.updateAdSet(campaign.external_adset_id, {
+    end_time: adSetScheduleParams(new Date(), input.confirmed_duration_days).end_time,
+  });
   return activateWithCompensation(
     client,
     {

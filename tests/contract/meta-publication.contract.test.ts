@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { RealMetaBusinessClient } from "@/server/meta/real-client";
+import { adSetScheduleParams, metaCampaignName } from "@/server/meta/campaign-payload";
 import { runPublication, type PublicationRecord } from "@/server/meta/publish";
 
 const env = process.env;
@@ -32,7 +33,7 @@ describe.skipIf(!enabled)("Contrato de publicação real pausada", () => {
       {
         campaign: {
           id: "contract",
-          name: "GereVendas — contrato pausado",
+          name: metaCampaignName("GereVendas Teste", "contrato pausado"),
           objective: "trafego_site",
           daily_budget_cents: 3000,
           duration_days: 1,
@@ -83,6 +84,10 @@ describe.skipIf(!enabled)("Contrato de publicação real pausada", () => {
       "creatives" in r ? r.creatives.map((c) => c.external_ad_id).filter((id): id is string => Boolean(id)) : [],
     );
     expect(campaign).toBeDefined();
+    // ADR 0009: a ativação move o fim do conjunto (orçamento total); aqui só o fim, sem ativar.
+    const adset = records.find((r): r is { external_adset_id: string } => "external_adset_id" in r);
+    expect(adset).toBeDefined();
+    await client.updateAdSet(adset!.external_adset_id, { end_time: adSetScheduleParams(new Date(), 1).end_time });
     expect(ad).toHaveLength(1);
     const effective = await client.getAdsEffectiveStatus(ad);
     expect(effective).toHaveLength(1);

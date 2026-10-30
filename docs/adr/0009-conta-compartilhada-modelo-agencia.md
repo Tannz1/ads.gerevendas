@@ -1,6 +1,6 @@
 # ADR 0009 — Conta de anúncios compartilhada (modelo agência)
 
-- **Status:** aceito; publicação real depende do teste de contrato e da cobrança da verba
+- **Status:** aceito; contrato de publicação pausada aprovado em 30/10/2026; ativação depende da cobrança da verba
 - **Data:** 30/10/2026
 - **Substitui em parte:** ADR 0005, itens 1 e 3 (estoque de contas por cliente, convite para a BM e
   pagamento da mídia pelo cliente direto na Meta), quando `META_SHARED_AD_ACCOUNT_ID` está configurada.
@@ -40,5 +40,25 @@ campanha leva o nome da empresa, e o painel de cada cliente mostra só as própr
 - **Fiscal e contrato:** repasse de mídia exige ajuste de contrato e nota fiscal (modelo agência).
 - **Operador como owner:** hoje o operador precisa ser owner da empresa para ativar. Ativar
   campanhas de clientes pelo painel do operador entra com a cobrança da verba.
-- **Payload novo:** `lifetime_budget` e a atualização do período na ativação precisam do teste de
-  contrato real (publicação pausada) antes de ligar `FEATURE_FLAG_REAL_PUBLISHING`.
+- **Ativação real ainda não exercitada:** o contrato prova criação pausada e a mudança do fim; ativar
+  de verdade gasta verba e fica para um teste autorizado com valor mínimo.
+
+## Resultados do teste de contrato real (30/10/2026, Graph v25.0)
+
+Conta `act_695554463402399` (BM 001), Página NBassistec, `npm run test:meta-contract` com
+`META_CONTRACT_PUBLISH=1`. Imagem, campanha, conjunto (`lifetime_budget`), criativo e anúncio criados
+**pausados**; o anúncio nunca ficou `ACTIVE`; leitura de revisão e métricas ok. Regras descobertas e
+já no código:
+
+| Regra da Meta | Erro | Ajuste |
+| --- | --- | --- |
+| Campanha sem orçamento de campanha exige `is_adset_budget_sharing_enabled` | 100 / 4834011 | `false` (sem dividir verba entre conjuntos) |
+| Raio de cidade de 10 a 50 milhas | 100 / 1487110 (15 km recusado, 16–80 km aceitos) | mínimo e padrão 17 km |
+| `targeting_automation.advantage_audience` obrigatório | exigido na validação | `0` (respeita idade e região) |
+| Início de conjunto já criado não pode ser editado | 100 / 1487057 | na ativação só o `end_time` muda |
+| Parâmetro `?ids=` recusado | 100 "deprecated in v26.0+" | status de revisão lido por anúncio |
+
+A Página precisa de tarefa ADVERTISE para o usuário do token (a Página "Nathan Bruno" do mesmo
+portfólio foi recusada com 100 / 1815813). Clientes compartilham a Página como parceiro com
+permissão de anúncios (ADR 0005).
+

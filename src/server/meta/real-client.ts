@@ -282,11 +282,11 @@ export class RealMetaBusinessClient implements MetaBusinessClient {
 
   async getAdsEffectiveStatus(adIds: string[]): Promise<string[]> {
     if (adIds.length === 0) return [];
-    const raw = this.parse(
-      z.record(z.string(), adStatusRaw),
-      await this.call("GET", "", { ids: adIds.join(","), fields: "effective_status" }),
+    // Um GET por anúncio (até 5): a Meta recusa `?ids=` ("deprecated in v26.0+") mesmo na v25.0.
+    const rows = await Promise.all(
+      adIds.map(async (id) => this.parse(adStatusRaw, await this.call("GET", id, { fields: "effective_status" }))),
     );
-    return adIds.map((id) => raw[id]?.effective_status ?? "UNKNOWN");
+    return rows.map((raw) => raw.effective_status ?? "UNKNOWN");
   }
 
   async getCampaignInsights(campaignId: string): Promise<MetaInsightsRow | null> {
