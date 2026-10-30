@@ -19,6 +19,7 @@ import { computeSteps, isAdAccountUsable } from "./steps";
 
 type OwnerContext = {
   orgId: string;
+  userId: string;
   orgName: string;
   correlationId: string;
   mode: ActiveMetaBusinessMode;
@@ -49,7 +50,7 @@ async function ownerContext(): Promise<OwnerContext | ApiError> {
     }
     return apiError("feature_disabled", "Integração com a Meta suspensa temporariamente.", correlationId);
   }
-  return { orgId: ctx.organization.id, orgName: ctx.organization.name, correlationId, mode };
+  return { orgId: ctx.organization.id, userId: ctx.user.id, orgName: ctx.organization.name, correlationId, mode };
 }
 
 function metaFailure(e: unknown, correlationId: string, event: string): ApiError {
@@ -100,6 +101,23 @@ export async function requestAdAccount(): Promise<ApiResult<{ pool_empty: boolea
         "Sua conta precisa de atenção na Meta. Use Verificar agora após resolver a pendência.",
         c.correlationId,
       );
+    }
+    return done({ pool_empty: false }, c.correlationId);
+  }
+
+  const shared = serverEnv().META_SHARED_AD_ACCOUNT_ID;
+  if (shared) {
+    const { error } = await createSupabaseAdminClient().rpc("meta_assign_shared_account", {
+      p_org: c.orgId,
+      p_ad_account_id: shared,
+      p_name: "GereVendas Ads",
+      p_simulated: c.mode.kind === "mock",
+      p_actor: c.userId,
+      p_correlation_id: c.correlationId,
+    });
+    if (error) {
+      log("error", "meta.shared_assign_failed", { correlation_id: c.correlationId, code: error.code });
+      return apiError("internal", "Não foi possível ativar sua conta agora.", c.correlationId);
     }
     return done({ pool_empty: false }, c.correlationId);
   }
@@ -327,7 +345,8 @@ export async function refreshMetaStatus(): Promise<ApiResult<{ checked: boolean;
       );
       changed = true;
     }
-    if (!usable) return done({ checked: true, changed }, c.correlationId);
+    // Conta compartilhada: sem convite nem pagamento do cliente na Meta (ADR 0009).
+    if (!usable || row.shared_account) return done({ checked: true, changed }, c.correlationId);
     if (row.client_invite_status === "pending" && row.client_invite_email) {
       const inv = await client.getBusinessUserInvite(row.client_invite_email);
       if (inv.status === "accepted" && inv.business_user_id) {

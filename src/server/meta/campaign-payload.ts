@@ -69,7 +69,20 @@ export function campaignParams(objective: Objective, name: string): Record<strin
   };
 }
 
+/** Na conta compartilhada (ADR 0009) o nome da empresa identifica a campanha no Gerenciador. */
+export function metaCampaignName(orgName: string, name: string): string {
+  return (name.startsWith(orgName) ? name : `${orgName} — ${name}`).slice(0, 255);
+}
+
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** Período da veiculação: começa agora e dura `durationDays` (refeito na ativação). */
+export function adSetScheduleParams(now: Date, durationDays: number): { start_time: string; end_time: string } {
+  return {
+    start_time: now.toISOString(),
+    end_time: new Date(now.getTime() + durationDays * DAY_MS).toISOString(),
+  };
+}
 const MIN_RADIUS_KM = 10;
 const MAX_RADIUS_KM = 80;
 const DEFAULT_RADIUS_KM = 15;
@@ -90,12 +103,12 @@ export function adSetParams(input: {
   return {
     name: input.name,
     campaign_id: input.campaignId,
-    daily_budget: String(input.dailyBudgetCents),
+    // Orçamento total = diário × dias: a Meta nunca passa desse valor (teto por cliente, ADR 0009).
+    lifetime_budget: String(input.dailyBudgetCents * input.durationDays),
     billing_event: "IMPRESSIONS",
     optimization_goal: META_OBJECTIVE[input.objective] === "OUTCOME_AWARENESS" ? "REACH" : "LINK_CLICKS",
     bid_strategy: "LOWEST_COST_WITHOUT_CAP",
-    start_time: input.now.toISOString(),
-    end_time: new Date(input.now.getTime() + input.durationDays * DAY_MS).toISOString(),
+    ...adSetScheduleParams(input.now, input.durationDays),
     targeting: JSON.stringify({
       geo_locations: { cities: [{ key: input.cityKey, radius, distance_unit: "kilometer" }] },
       age_min: input.ageMin,

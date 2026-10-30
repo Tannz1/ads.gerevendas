@@ -7,7 +7,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { renderCreativePng } from "../creative-png";
 import { loadCreative, VIDEOS_BUCKET } from "../creatives-data";
-import { insightsFromMeta, reviewFromAds } from "./campaign-payload";
+import { adSetScheduleParams, insightsFromMeta, metaCampaignName, reviewFromAds } from "./campaign-payload";
 import type { MetaBusinessClient } from "./client";
 import { runPublication, type PublicationInput } from "./publish";
 import { isAdAccountUsable } from "./steps";
@@ -152,7 +152,7 @@ async function loadPublicationInput(campaignId: string): Promise<PublicationInpu
   return {
     campaign: {
       id: c.id,
-      name: c.name,
+      name: metaCampaignName(ctx.organization.name, c.name),
       objective: c.objective,
       daily_budget_cents: c.daily_budget_cents,
       duration_days: c.duration_days,
@@ -249,6 +249,9 @@ export async function activateRealCampaign(
   if (!isAdAccountUsable(funding.account_status) || !funding.has_funding_source) {
     return { error: { message: "meta_not_connected" } };
   }
+  // O orçamento é total: o período conta a partir da ativação, senão a Meta gastaria o total em menos
+  // dias (mais por dia do que o dono confirmou). Ainda PAUSADO, então falhar aqui não gasta nada.
+  await client.updateAdSet(campaign.external_adset_id, adSetScheduleParams(new Date(), input.confirmed_duration_days));
   return activateWithCompensation(
     client,
     {

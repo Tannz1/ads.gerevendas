@@ -52,6 +52,14 @@ export const serverEnvSchema = z.object({
     .transform((v) => (v ? Number(v) : undefined))
     .pipe(z.number().int().positive().optional()),
   META_POOL_MIN_AVAILABLE: z.coerce.number().int().min(0).default(2),
+  // Conta compartilhada (ADR 0009): com valor, todas as empresas anunciam nesta conta da BM e o
+  // estoque, o convite e o pagamento na Meta deixam de ser usados.
+  META_SHARED_AD_ACCOUNT_ID: optional.pipe(
+    z
+      .string()
+      .regex(/^act_[0-9A-Za-z_]{3,60}$/)
+      .optional(),
+  ),
   BILLING_PROVIDER: z.enum(["mock"]).default("mock"),
   BILLING_WEBHOOK_SECRET: optional,
   FEATURE_FLAG_WHATSAPP_ADS: flag,

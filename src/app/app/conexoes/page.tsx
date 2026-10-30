@@ -23,7 +23,8 @@ export default async function ConnectionsPage() {
         <div>
           <h1 className="font-display text-3xl font-bold tracking-tight">Conexões Meta</h1>
           <p className="mt-1 text-[15px] text-ink-soft">
-            Quatro passos para seus anúncios rodarem no Facebook e no Instagram.
+            {env.META_SHARED_AD_ACCOUNT_ID ? "Dois passos" : "Quatro passos"} para seus anúncios rodarem no Facebook e
+            no Instagram.
           </p>
         </div>
         {demo ? (
@@ -41,6 +42,7 @@ export default async function ConnectionsPage() {
         disabledReason={mode.kind === "disabled" ? mode.reason : null}
         businessId={mode.kind === "real" ? mode.businessId : null}
         defaultInviteEmail={ctx.mode === "supabase" ? (ctx.user.email ?? "") : ""}
+        shared={Boolean(env.META_SHARED_AD_ACCOUNT_ID)}
       />
     </div>
   );

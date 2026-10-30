@@ -276,6 +276,10 @@ export class RealMetaBusinessClient implements MetaBusinessClient {
     await this.call("POST", objectId, { status });
   }
 
+  async updateAdSet(adSetId: string, params: Record<string, string>): Promise<void> {
+    await this.call("POST", adSetId, params);
+  }
+
   async getAdsEffectiveStatus(adIds: string[]): Promise<string[]> {
     if (adIds.length === 0) return [];
     const raw = this.parse(

@@ -15,7 +15,7 @@ Construir GereVendas Ads, produto multi-tenant e production-ready, priorizando s
 - Nunca criar/ativar anúncios reais, alterar orçamento, conceder permissão ou disparar cobrança sem confirmação explícita do operador humano autorizado. Todas as campanhas surgem `PAUSED`.
 - Nunca colocar tokens Meta, OpenAI, gateway ou service-role Supabase no frontend, logs, testes ou commits.
 - Não simular sucesso da API externa como se fosse operação real. Em modo mock, rotular visualmente `Simulação`.
-- Não criar forma própria de recolher Pix e automaticamente recarregar saldo Meta: pagamento de mídia no ambiente oficial Meta.
+- Não recarregar saldo Meta automaticamente. Na conta compartilhada (ADR 0009) o cliente paga a verba à GereVendas e a veiculação só é ativada por um operador depois do pagamento confirmado; fora dela, o pagamento de mídia fica no ambiente oficial Meta.
 - Não presumir autorização de uso de marca Sebrae nem transferência dos dados de empresas participantes.
 - Não incluir resultados, depoimentos, preços ou garantias que o cliente não confirmou. A IA gera propostas, não fatos.
 - Não permitir alteração de gasto por IA sem autorização explícita do cliente e limites verificáveis.
