@@ -11,7 +11,7 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { FUNNEL_LABELS, TEMPLATE_LABELS, type AngleKey } from "@/contracts/creatives";
+import { TEMPLATE_LABELS, type AngleKey } from "@/contracts/creatives";
 import { serverEnv } from "@/lib/env";
 import { formatCents } from "@/lib/money";
 import { selectImageProvider } from "@/server/ai/provider";
@@ -124,56 +124,21 @@ export default async function CreativesPage() {
     <div className="mx-auto max-w-6xl">
       <Header simulated={simulated} credits={credits} />
 
-      <Card className="mt-8 p-6 sm:p-7">
-        <h2 className="font-display text-xl font-bold">Sua estratégia</h2>
-        <p className="mt-2 text-[15px] text-ink-soft">{plan.business_summary}</p>
-        <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
-          <div>
-            <dt className="font-semibold">Onde anunciar</dt>
-            <dd className="text-ink-soft">{plan.targeting_proposal.locations.join(" · ")}</dd>
-          </div>
-          <div>
-            <dt className="font-semibold">Idade</dt>
-            <dd className="text-ink-soft">{plan.targeting_proposal.age_range}</dd>
-          </div>
-        </dl>
-        {plan.test_plan && plan.test_plan.length > 0 && (
-          <div className="mt-5">
-            <p className="text-sm font-semibold">Como testar estas peças na Meta</p>
-            <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-ink-soft">
-              {plan.test_plan.map((step) => (
-                <li key={step}>{step}</li>
-              ))}
-            </ol>
-          </div>
-        )}
-        {plan.research && <ResearchSection research={plan.research} />}
-        {plan.fields_requiring_confirmation.length > 0 && (
-          <div className="mt-5">
-            <p className="text-sm font-semibold">Precisa confirmar</p>
-            <ul className="mt-2 flex flex-wrap gap-2">
-              {plan.fields_requiring_confirmation.map((f) => (
-                <li key={f}>
-                  <Badge tone="warning">{f}</Badge>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-        <div className="mt-6 flex flex-col gap-3 border-t border-line pt-5">
-          {jobError}
-          {running && data.job ? (
-            <JobProgress jobId={data.job.id} />
-          ) : (
-            <div className="flex flex-wrap items-center gap-3">
-              <GenerateButton briefId={data.brief_id} label="Gerar nova versão" />
-              <span className="text-sm text-ink-faint">A versão atual continua salva.</span>
-            </div>
-          )}
+      <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-display text-xl font-bold">Seus anúncios</h2>
+        {running && data.job ? null : <GenerateButton briefId={data.brief_id} label="Gerar nova versão" />}
+      </div>
+      {jobError && <div className="mt-3">{jobError}</div>}
+      {running && data.job && (
+        <div className="mt-3">
+          <JobProgress jobId={data.job.id} />
         </div>
-      </Card>
-
-      <h2 className="mt-10 font-display text-xl font-bold">Peças de Anúncio</h2>
+      )}
+      {plan.fields_requiring_confirmation.length > 0 && (
+        <Alert tone="warning" className="mt-3" title="Confira antes de publicar">
+          {plan.fields_requiring_confirmation.join(" · ")}
+        </Alert>
+      )}
       {data.image_jobs.length > 0 ? (
         <div className="mt-3">
           <JobProgress
@@ -218,27 +183,15 @@ export default async function CreativesPage() {
                     />
                   </div>
                   {angle && (
-                    <div className="flex flex-col gap-1.5 rounded-xl bg-surface-muted/60 p-3 text-xs leading-relaxed text-ink-soft">
-                      {angle.funnel_stage && (
-                        <p className="font-semibold text-ink">{FUNNEL_LABELS[angle.funnel_stage]}</p>
-                      )}
-                      {angle.persona && (
-                        <p>
-                          <span className="font-semibold text-ink">Fala com: </span>
-                          {angle.persona}
-                        </p>
-                      )}
-                      <p>
-                        <span className="font-semibold text-ink">Por que: </span>
-                        {angle.rationale}
-                      </p>
-                      {angle.test_hypothesis && (
-                        <p>
-                          <span className="font-semibold text-ink">O que testa: </span>
-                          {angle.test_hypothesis}
-                        </p>
-                      )}
-                    </div>
+                    <details className="group text-xs leading-relaxed text-ink-soft">
+                      <summary className="cursor-pointer font-semibold text-ink-soft hover:text-ink">
+                        Por que esta peça
+                      </summary>
+                      <div className="mt-2 flex flex-col gap-1.5 rounded-xl bg-surface-muted/60 p-3">
+                        {angle.persona && <p>Fala com: {angle.persona}</p>}
+                        <p>{angle.rationale}</p>
+                      </div>
+                    </details>
                   )}
                 </div>
                 <div className="mt-4 flex items-center justify-between border-t border-line pt-3.5 text-sm font-medium">
@@ -272,6 +225,34 @@ export default async function CreativesPage() {
           Próximo passo: Preparar Campanha →
         </ButtonLink>
       </div>
+
+      <details className="mt-10 rounded-2xl border border-line bg-surface p-5 sm:p-6">
+        <summary className="cursor-pointer font-display text-lg font-bold">
+          Ver a estratégia por trás dos anúncios
+        </summary>
+        <p className="mt-4 text-[15px] text-ink-soft">{plan.business_summary}</p>
+        <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="font-semibold">Região</dt>
+            <dd className="text-ink-soft">{plan.targeting_proposal.locations.join(" · ")}</dd>
+          </div>
+          <div>
+            <dt className="font-semibold">Idade</dt>
+            <dd className="text-ink-soft">{plan.targeting_proposal.age_range}</dd>
+          </div>
+        </dl>
+        {plan.test_plan && plan.test_plan.length > 0 && (
+          <div className="mt-5">
+            <p className="text-sm font-semibold">Como testar</p>
+            <ol className="mt-2 list-decimal space-y-1 pl-5 text-sm text-ink-soft">
+              {plan.test_plan.map((step) => (
+                <li key={step}>{step}</li>
+              ))}
+            </ol>
+          </div>
+        )}
+        {plan.research && <ResearchSection research={plan.research} />}
+      </details>
     </div>
   );
 }

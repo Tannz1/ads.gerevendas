@@ -33,6 +33,7 @@ export interface MetaBusinessClient {
   createAdCreative(adAccountId: string, params: Record<string, string>): Promise<string>;
   createAd(adAccountId: string, params: Record<string, string>): Promise<string>;
   setStatus(objectId: string, status: "ACTIVE" | "PAUSED"): Promise<void>;
+  updateAdSet(adSetId: string, params: Record<string, string>): Promise<void>;
   getAdsEffectiveStatus(adIds: string[]): Promise<string[]>;
   getCampaignInsights(campaignId: string): Promise<MetaInsightsRow | null>;
 }

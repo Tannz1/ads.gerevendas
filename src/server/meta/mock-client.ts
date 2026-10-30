@@ -98,6 +98,8 @@ export class MockMetaBusinessClient implements MetaBusinessClient {
 
   async setStatus(): Promise<void> {}
 
+  async updateAdSet(): Promise<void> {}
+
   async getAdsEffectiveStatus(adIds: string[]): Promise<string[]> {
     return adIds.map(() => "PAUSED");
   }

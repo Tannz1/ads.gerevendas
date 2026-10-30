@@ -16,11 +16,19 @@ const base: MetaOnboardingView = {
   client_invite_status: "not_sent",
   client_invite_email: null,
   billing_status: "unverified",
+  shared_account: false,
 };
 
 const states = (row: MetaOnboardingView | null) => computeSteps(row).map((s) => s.state);
 
 describe("computeSteps", () => {
+  it("conta compartilhada: só conta e Página, sem convite nem pagamento", () => {
+    const shared = { ...base, shared_account: true, ad_account_id: "act_1", ad_account_status: "done" as const };
+    expect(states(shared)).toEqual(["done", "todo"]);
+    expect(states({ ...shared, page_id: "p", page_access_status: "done" })).toEqual(["done", "done"]);
+    expect(computeSteps(null, true).map((s) => s.key)).toEqual(["ad_account", "page"]);
+  });
+
   it("sem conexão: só o primeiro passo está liberado", () => {
     expect(states(null)).toEqual(["todo", "locked", "locked", "locked"]);
   });

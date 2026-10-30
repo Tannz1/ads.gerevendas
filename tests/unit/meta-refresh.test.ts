@@ -39,6 +39,7 @@ const row: MetaOnboardingView = {
   client_invite_status: "accepted",
   client_invite_email: null,
   billing_status: "verified",
+  shared_account: false,
 };
 
 describe("verificação da conta atribuída", () => {

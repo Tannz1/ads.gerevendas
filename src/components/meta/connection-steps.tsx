@@ -27,6 +27,8 @@ type Props = {
   disabledReason: "kill_switch" | "config_missing" | null;
   businessId: string | null;
   defaultInviteEmail: string;
+  /** Conta compartilhada da GereVendas (ADR 0009): só conta e Página. */
+  shared: boolean;
 };
 
 type Message = { tone: "info" | "success" | "warning" | "danger"; text: string };
@@ -61,9 +63,10 @@ export function ConnectionSteps({
   disabledReason,
   businessId,
   defaultInviteEmail,
+  shared,
 }: Props) {
   const router = useRouter();
-  const steps = computeSteps(connection);
+  const steps = computeSteps(connection, shared);
   const stateOf = (key: StepKey) => steps.find((s) => s.key === key)?.state ?? "locked";
   const interactive = !demo && canManage && disabledReason === null;
   const anyWaiting = steps.some((s) => s.state === "waiting");
@@ -114,7 +117,7 @@ export function ConnectionSteps({
     <div className="mt-8 space-y-5">
       {demo && (
         <Alert tone="info" title="Só para conhecer">
-          No piloto com conta, estes 4 passos ligam sua empresa à Meta. Aqui você só vê como funciona.
+          No piloto com conta, estes passos ligam sua empresa à Meta. Aqui você só vê como funciona.
         </Alert>
       )}
       {disabledReason === "kill_switch" && (
@@ -130,16 +133,26 @@ export function ConnectionSteps({
       {!demo && !canManage && (
         <Alert tone="info">Apenas o proprietário da empresa pode fazer a conexão com a Meta.</Alert>
       )}
-      <Alert tone="info" title="Cobrança de mídia separada">
-        Os anúncios são pagos direto à Meta, com o cartão ou Pix que você cadastrar lá. O GereVendas Ads nunca recebe
-        dados de pagamento da mídia.
-      </Alert>
+      {shared ? (
+        <Alert tone="info" title="Verba de mídia">
+          Seus anúncios rodam na conta da GereVendas na Meta. A verba de cada campanha é paga à GereVendas, separada da
+          assinatura.
+        </Alert>
+      ) : (
+        <Alert tone="info" title="Cobrança de mídia separada">
+          Os anúncios são pagos direto à Meta, com o cartão ou Pix que você cadastrar lá. O GereVendas Ads nunca recebe
+          dados de pagamento da mídia.
+        </Alert>
+      )}
 
       {message && <Alert tone={message.tone}>{message.text}</Alert>}
 
       {/* Passo 1 */}
       <StepCard title={TITLE.ad_account} state={stateOf("ad_account")} simulated={simulated}>
-        {stateOf("ad_account") === "done" && connection && (
+        {stateOf("ad_account") === "done" && connection && shared && (
+          <p>Seus anúncios vão rodar na conta da GereVendas. Cada campanha leva o nome da sua empresa.</p>
+        )}
+        {stateOf("ad_account") === "done" && connection && !shared && (
           <p>
             Sua conta <strong>{connection.ad_account_name}</strong> ({connection.ad_account_id}) está reservada na BM da
             GereVendas.
@@ -150,7 +163,11 @@ export function ConnectionSteps({
         )}
         {stateOf("ad_account") === "todo" && (
           <>
-            <p>Reservamos uma conta de anúncios só sua, dentro da BM da GereVendas. Leva um clique.</p>
+            <p>
+              {shared
+                ? "Seus anúncios rodam na conta de anúncios da GereVendas. Leva um clique."
+                : "Reservamos uma conta de anúncios só sua, dentro da BM da GereVendas. Leva um clique."}
+            </p>
             {interactive && (
               <Button
                 className="mt-3"
@@ -163,7 +180,7 @@ export function ConnectionSteps({
                   )
                 }
               >
-                {pending ? "Reservando…" : "Reservar minha conta de anúncios"}
+                {pending ? "Ativando…" : shared ? "Ativar minha conta" : "Reservar minha conta de anúncios"}
               </Button>
             )}
           </>
@@ -294,102 +311,106 @@ export function ConnectionSteps({
         )}
       </StepCard>
 
-      {/* Passo 3 */}
-      <StepCard title={TITLE.invite} state={stateOf("invite")} simulated={simulated}>
-        {stateOf("invite") === "locked" && <p>Disponível depois de conectar a Página.</p>}
-        {stateOf("invite") === "done" && <p>Você é administrador da sua conta de anúncios.</p>}
-        {stateOf("invite") === "waiting" && (
-          <>
-            <p>
-              A Meta enviou um convite para <strong>{connection?.client_invite_email}</strong>. Abra o e-mail, aceite o
-              convite da GereVendas e volte aqui.
-            </p>
-            {interactive && (
-              <Button
-                className="mt-3"
-                variant="secondary"
-                disabled={pending}
-                onClick={() =>
-                  run(refreshMetaStatus, (d) =>
-                    d.changed
-                      ? { tone: "success", text: "Convite aceito." }
-                      : { tone: "info", text: "Ainda não aparece como aceito. Tente de novo em 1 minuto." },
-                  )
-                }
-              >
-                Verificar agora
-              </Button>
+      {!shared && (
+        <>
+          {/* Passo 3 */}
+          <StepCard title={TITLE.invite} state={stateOf("invite")} simulated={simulated}>
+            {stateOf("invite") === "locked" && <p>Disponível depois de conectar a Página.</p>}
+            {stateOf("invite") === "done" && <p>Você é administrador da sua conta de anúncios.</p>}
+            {stateOf("invite") === "waiting" && (
+              <>
+                <p>
+                  A Meta enviou um convite para <strong>{connection?.client_invite_email}</strong>. Abra o e-mail,
+                  aceite o convite da GereVendas e volte aqui.
+                </p>
+                {interactive && (
+                  <Button
+                    className="mt-3"
+                    variant="secondary"
+                    disabled={pending}
+                    onClick={() =>
+                      run(refreshMetaStatus, (d) =>
+                        d.changed
+                          ? { tone: "success", text: "Convite aceito." }
+                          : { tone: "info", text: "Ainda não aparece como aceito. Tente de novo em 1 minuto." },
+                      )
+                    }
+                  >
+                    Verificar agora
+                  </Button>
+                )}
+              </>
             )}
-          </>
-        )}
-        {(stateOf("invite") === "todo" || stateOf("invite") === "error") && (
-          <>
-            <p>
-              {stateOf("invite") === "error"
-                ? "O convite expirou. Envie de novo."
-                : "Para você cadastrar o pagamento, a Meta precisa te colocar como administrador da sua conta. Enviamos um convite por e-mail."}
-            </p>
-            {interactive && (
-              <form
-                className="mt-3 flex flex-wrap items-end gap-3"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  run(
-                    () => sendMetaInvite({ email }),
-                    () => ({ tone: "success", text: "Convite enviado. Confira seu e-mail." }),
-                  );
-                }}
-              >
-                <Field id="invite_email" label="Seu e-mail">
-                  <Input id="invite_email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                </Field>
-                <Button type="submit" disabled={pending || !email.trim()}>
-                  {pending ? "Enviando…" : "Enviar convite"}
-                </Button>
-              </form>
+            {(stateOf("invite") === "todo" || stateOf("invite") === "error") && (
+              <>
+                <p>
+                  {stateOf("invite") === "error"
+                    ? "O convite expirou. Envie de novo."
+                    : "Para você cadastrar o pagamento, a Meta precisa te colocar como administrador da sua conta. Enviamos um convite por e-mail."}
+                </p>
+                {interactive && (
+                  <form
+                    className="mt-3 flex flex-wrap items-end gap-3"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      run(
+                        () => sendMetaInvite({ email }),
+                        () => ({ tone: "success", text: "Convite enviado. Confira seu e-mail." }),
+                      );
+                    }}
+                  >
+                    <Field id="invite_email" label="Seu e-mail">
+                      <Input id="invite_email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    </Field>
+                    <Button type="submit" disabled={pending || !email.trim()}>
+                      {pending ? "Enviando…" : "Enviar convite"}
+                    </Button>
+                  </form>
+                )}
+              </>
             )}
-          </>
-        )}
-      </StepCard>
+          </StepCard>
 
-      {/* Passo 4 */}
-      <StepCard title={TITLE.billing} state={stateOf("billing")} simulated={simulated}>
-        {stateOf("billing") === "locked" && <p>Disponível depois de aceitar o convite.</p>}
-        {stateOf("billing") === "done" && <p>A Meta confirmou uma forma de pagamento na sua conta.</p>}
-        {stateOf("billing") === "todo" && connection?.ad_account_id && (
-          <>
-            <p>Cadastre cartão ou Pix na tela oficial da Meta. Depois volte e clique em verificar.</p>
-            {interactive && (
-              <div className="mt-3 flex flex-wrap gap-3">
-                <a
-                  href={metaBillingUrl(connection.ad_account_id)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={buttonClasses("primary")}
-                >
-                  Cadastrar pagamento na Meta
-                </a>
-                <Button
-                  variant="secondary"
-                  disabled={pending}
-                  onClick={() =>
-                    run(refreshMetaStatus, (d) =>
-                      d.changed
-                        ? { tone: "success", text: "Forma de pagamento confirmada." }
-                        : {
-                            tone: "info",
-                            text: "A Meta ainda não mostra forma de pagamento. Tente de novo em 1 minuto.",
-                          },
-                    )
-                  }
-                >
-                  Já cadastrei, verificar
-                </Button>
-              </div>
+          {/* Passo 4 */}
+          <StepCard title={TITLE.billing} state={stateOf("billing")} simulated={simulated}>
+            {stateOf("billing") === "locked" && <p>Disponível depois de aceitar o convite.</p>}
+            {stateOf("billing") === "done" && <p>A Meta confirmou uma forma de pagamento na sua conta.</p>}
+            {stateOf("billing") === "todo" && connection?.ad_account_id && (
+              <>
+                <p>Cadastre cartão ou Pix na tela oficial da Meta. Depois volte e clique em verificar.</p>
+                {interactive && (
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    <a
+                      href={metaBillingUrl(connection.ad_account_id)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className={buttonClasses("primary")}
+                    >
+                      Cadastrar pagamento na Meta
+                    </a>
+                    <Button
+                      variant="secondary"
+                      disabled={pending}
+                      onClick={() =>
+                        run(refreshMetaStatus, (d) =>
+                          d.changed
+                            ? { tone: "success", text: "Forma de pagamento confirmada." }
+                            : {
+                                tone: "info",
+                                text: "A Meta ainda não mostra forma de pagamento. Tente de novo em 1 minuto.",
+                              },
+                        )
+                      }
+                    >
+                      Já cadastrei, verificar
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
-      </StepCard>
+          </StepCard>
+        </>
+      )}
 
       {allDone && (
         <Alert tone="success" title="Tudo pronto">

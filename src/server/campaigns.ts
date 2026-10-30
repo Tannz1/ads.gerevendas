@@ -21,6 +21,7 @@ import {
 } from "./meta/campaign-real";
 import { loadMetaConnection } from "./campaigns-data";
 import { MetaError } from "./meta/errors";
+import { isPlatformOperator } from "./meta/data";
 import { metaBusinessClient } from "./meta/index";
 import { resolveMetaBusinessMode, resolveMetaStopMode } from "./meta/mode";
 import { PublishError, type PublishErrorCode } from "./meta/publish";
@@ -299,6 +300,16 @@ export async function activatePausedCampaign(input: unknown): Promise<ApiResult<
     const mode = resolveMetaBusinessMode(env, flags);
     if (!flags.realPublishing || mode.kind !== "real") {
       return apiError("feature_disabled", "Publicação real suspensa no momento.", correlationId);
+    }
+    // Conta compartilhada (ADR 0009): a verba sai do cartão da GereVendas, então só a equipe ativa,
+    // depois de confirmar o pagamento da verba pelo cliente.
+    // ponytail: equipe precisa ser owner da empresa; ativar empresas de clientes vem com a cobrança da verba.
+    if (env.META_SHARED_AD_ACCOUNT_ID && !(await isPlatformOperator())) {
+      return apiError(
+        "forbidden",
+        "A GereVendas ativa a campanha assim que confirmar o pagamento da verba de mídia.",
+        correlationId,
+      );
     }
     // Confere antes de mexer na Meta; o banco confere de novo dentro da transação.
     if (campaign.status !== "paused") {

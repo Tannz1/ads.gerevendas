@@ -3,6 +3,7 @@ import {
   adParams,
   adSetParams,
   campaignParams,
+  metaCampaignName,
   creativeParams,
   insightsFromMeta,
   pickCity,
@@ -95,7 +96,7 @@ describe("parâmetros dos objetos da Meta", () => {
     });
     expect(p).toMatchObject({
       campaign_id: "120001",
-      daily_budget: "2500",
+      lifetime_budget: "17500",
       billing_event: "IMPRESSIONS",
       optimization_goal: "LINK_CLICKS",
       bid_strategy: "LOWEST_COST_WITHOUT_CAP",
@@ -216,5 +217,12 @@ describe("retorno da Meta", () => {
       }),
     ).toEqual({ spend_cents: 1234, impressions: 5000, reach: 3000, clicks: 120, conversations: 7 });
     expect(insightsFromMeta(null)).toEqual({ spend_cents: 0, impressions: 0, reach: 0, clicks: 0, conversations: 0 });
+  });
+});
+
+describe("metaCampaignName", () => {
+  it("prefixa o nome da empresa uma vez só", () => {
+    expect(metaCampaignName("Padaria Sol", "Tráfego outubro")).toBe("Padaria Sol — Tráfego outubro");
+    expect(metaCampaignName("Padaria Sol", "Padaria Sol — Tráfego")).toBe("Padaria Sol — Tráfego");
   });
 });

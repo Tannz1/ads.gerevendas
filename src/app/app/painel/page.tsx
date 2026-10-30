@@ -10,10 +10,12 @@ import { formatCents } from "@/lib/money";
 import { getAppContext } from "@/server/context";
 import { loadDashboard } from "@/server/dashboard-data";
 
-export const metadata: Metadata = { title: "Painel de resultados" };
+export const metadata: Metadata = { title: "Resultados" };
+const compact = new Intl.NumberFormat("pt-BR", { notation: "compact", maximumFractionDigits: 1 });
 const numbers = new Intl.NumberFormat("pt-BR");
-const statuses = { draft: "Publicação incompleta", paused: "Pausada", active: "Ativa", ended: "Encerrada" };
-const date = (value: string) => new Date(value).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" });
+const statuses = { draft: "Incompleta", paused: "Pausada", active: "Ativa", ended: "Encerrada" };
+const date = (value: string) =>
+  new Date(value).toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo", dateStyle: "short", timeStyle: "short" });
 
 export default async function DashboardPage() {
   const ctx = await getAppContext();
@@ -31,143 +33,131 @@ export default async function DashboardPage() {
   const measured = real.filter((c) => c.campaign_insights !== null && c.currency === "BRL");
   const totals = summarizeMetrics(measured.map((c) => c.campaign_insights!));
   const oldest = measured.map((c) => c.campaign_insights!.fetched_at).sort()[0];
-  const currency = data.account?.currency ?? "BRL";
+  const maxSpend = Math.max(1, ...measured.map((c) => c.campaign_insights!.spend_cents));
+  const dash = "—";
+
+  const tiles: Array<[string, string]> = [
+    ["Exibições", totals ? compact.format(totals.impressions) : dash],
+    ["Cliques", totals ? compact.format(totals.clicks) : dash],
+    ["Conversas", totals ? compact.format(totals.conversations) : dash],
+    ["Custo por clique", totals?.cpc_cents != null ? formatCents(totals.cpc_cents, "BRL") : dash],
+  ];
+
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <h1 className="font-display text-3xl font-bold tracking-tight">Painel de resultados</h1>
-          <p className="mt-2 text-ink-soft">Acompanhe a conta e as campanhas da sua empresa.</p>
-        </div>
-        {demo ? (
-          <Badge tone="demo">Demonstração</Badge>
-        ) : (
-          <ButtonLink href="/app/campanhas/nova">Nova campanha</ButtonLink>
-        )}
-      </div>
-      {failed && (
-        <Alert tone="danger">Não foi possível carregar os dados. Recarregue a página para tentar novamente.</Alert>
-      )}
-      <Card className="border-brand/20 p-5 sm:p-7">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h2 className="font-display text-lg font-bold">Sua conta de anúncios</h2>
-            {data.account ? (
-              <>
-                <p className="mt-3 text-xl font-semibold break-words">{data.account.name}</p>
-                <p className="mt-1 text-sm break-all text-ink-soft">Identificador: {data.account.ad_account_id}</p>
-                <p className="mt-1 text-sm text-ink-soft">
-                  Moeda: {currency}
-                  {data.account.assigned_at ? ` · Atribuída em ${date(data.account.assigned_at)}` : ""}
-                </p>
-              </>
-            ) : (
-              <p className="mt-3 text-sm text-ink-soft">
-                {demo
-                  ? "Entre com sua conta para ver a conta atribuída à sua empresa."
-                  : failed
-                    ? "Conta indisponível no momento."
-                    : "Sua empresa ainda não recebeu uma conta de anúncios. Acompanhe a preparação em Conexões."}
-              </p>
-            )}
-          </div>
-          {data.account?.simulated && <Badge tone="demo">Simulação</Badge>}
-          <ButtonLink href="/app/conexoes" variant="secondary">
-            Ver conexões
-          </ButtonLink>
-        </div>
-        <p className="mt-5 border-t border-line pt-4 text-sm text-ink-soft">
-          Os membros da sua empresa veem esta conta. Somente o proprietário pode autorizar a publicação e a ativação de
-          campanhas.
-        </p>
-      </Card>
-      <section aria-labelledby="metrics-title" className="space-y-4">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h2 id="metrics-title" className="font-display text-xl font-bold">
-              Resultados das campanhas
-            </h2>
-            <p className="mt-1 text-sm text-ink-soft">
-              Acumulado de toda a veiculação, conforme os últimos dados recebidos da Meta.
-            </p>
-          </div>
+    <div className="mx-auto max-w-6xl space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="font-display text-3xl font-bold tracking-tight">Resultados</h1>
+        <div className="flex items-center gap-3">
+          {demo && <Badge tone="demo">Demonstração</Badge>}
           {!demo && real.some((c) => c.status !== "draft") && <DashboardRefresh />}
+          {!demo && <ButtonLink href="/app/campanhas/nova">Nova campanha</ButtonLink>}
         </div>
-        {totals ? (
-          <>
-            <dl className="grid grid-cols-2 gap-x-6 gap-y-5 rounded-2xl border border-line bg-surface p-5 sm:grid-cols-3 sm:p-7">
-              {[
-                ["Investido", formatCents(totals.spend_cents, "BRL")],
-                ["Exibições", numbers.format(totals.impressions)],
-                ["Cliques", numbers.format(totals.clicks)],
-                ["Conversas informadas pela Meta", numbers.format(totals.conversations)],
-                ["Taxa de cliques", totals.ctr === null ? "—" : `${numbers.format(totals.ctr)}%`],
-                ["Custo por clique", totals.cpc_cents === null ? "—" : formatCents(totals.cpc_cents, "BRL")],
-              ].map(([label, value]) => (
-                <div key={label}>
-                  <dt className="text-sm text-ink-soft">{label}</dt>
-                  <dd className="mt-2 font-display text-2xl font-bold tabular-nums sm:text-3xl">{value}</dd>
-                </div>
-              ))}
-            </dl>
-            <p className="text-sm text-ink-soft">
-              {measured.length} de {real.length} campanhas reais com métricas. Atualização mais antiga: {date(oldest)}.
-              Os totais estão em reais; outras moedas aparecem por campanha. Campanhas em Simulação ficam fora dos
-              totais. O alcance aparece por campanha para evitar contar a mesma pessoa duas vezes.
-            </p>
-          </>
-        ) : (
-          <Card className="p-7">
-            <h3 className="font-semibold">Ainda não há métricas disponíveis</h3>
-            <p className="mt-2 max-w-2xl text-sm text-ink-soft">
-              {demo
-                ? "A demonstração não apresenta resultados inventados. Os dados aparecem após a conexão e a sincronização de campanhas reais."
-                : "Depois de publicar, atualize os dados da Meta. Campanhas em Simulação não geram resultados."}
-            </p>
-          </Card>
-        )}
+      </div>
+
+      {failed && <Alert tone="danger">Não foi possível carregar os dados. Recarregue a página.</Alert>}
+
+      <section aria-label="Resumo" className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+        <Card className="flex flex-col justify-between p-6">
+          <p className="text-sm text-ink-soft">Investido</p>
+          <p className="mt-3 text-5xl font-semibold tracking-tight">
+            {totals ? formatCents(totals.spend_cents, "BRL") : dash}
+          </p>
+          <p className="mt-4 text-sm text-ink-faint">
+            {totals ? `Atualizado em ${date(oldest)}` : "Aparece quando a primeira campanha rodar."}
+          </p>
+        </Card>
+        <dl className="grid grid-cols-2 gap-4">
+          {tiles.map(([label, value]) => (
+            <Card key={label} className="p-5">
+              <dt className="text-sm text-ink-soft">{label}</dt>
+              <dd className="mt-2 text-2xl font-semibold">{value}</dd>
+            </Card>
+          ))}
+        </dl>
       </section>
+
       <section aria-labelledby="campaigns-title">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 id="campaigns-title" className="font-display text-xl font-bold">
-            Suas campanhas
+            Campanhas
           </h2>
           <Link className="text-sm font-semibold text-brand underline" href="/app/campanhas">
-            Gerenciar campanhas
+            Gerenciar
           </Link>
         </div>
         {data.campaigns.length ? (
-          <div className="mt-4 divide-y divide-line rounded-2xl border border-line bg-surface px-5">
-            {data.campaigns.map((c) => (
-              <article key={c.id} className="py-5">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <Link className="font-semibold text-brand hover:underline" href={`/app/campanhas/${c.id}`}>
-                    {c.name}
-                  </Link>
-                  <div className="flex gap-2">
-                    <Badge>{statuses[c.status]}</Badge>
-                    {c.simulated && <Badge tone="demo">Simulação</Badge>}
-                  </div>
-                </div>
-                <p className="mt-3 text-sm text-ink-soft">
-                  {c.simulated
-                    ? "Sem veiculação em Simulação."
-                    : c.campaign_insights
-                      ? `${formatCents(c.campaign_insights.spend_cents, c.currency)} investidos · ${numbers.format(c.campaign_insights.clicks)} cliques · ${numbers.format(c.campaign_insights.reach)} pessoas alcançadas`
-                      : "Métricas ainda não sincronizadas."}
-                </p>
-                {c.execution_started_at && (
-                  <Alert tone="warning" className="mt-3">
-                    Esta campanha tem uma operação em andamento desde {date(c.execution_started_at)}. Se a operação não
-                    terminar, fale com o suporte. Para interromper uma veiculação urgente, confira e pause na Meta.
-                  </Alert>
-                )}
-              </article>
-            ))}
+          <div className="mt-4 overflow-x-auto rounded-2xl border border-line bg-surface">
+            <table className="w-full min-w-[640px] text-sm">
+              <thead className="text-left text-ink-soft">
+                <tr className="border-b border-line">
+                  <th className="px-5 py-3 font-medium">Campanha</th>
+                  <th className="px-3 py-3 font-medium">Investido</th>
+                  <th className="px-3 py-3 text-right font-medium">Cliques</th>
+                  <th className="px-3 py-3 text-right font-medium">Conversas</th>
+                  <th className="px-5 py-3 text-right font-medium">Custo por clique</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-line tabular-nums">
+                {data.campaigns.map((c) => {
+                  const m = c.simulated ? null : c.campaign_insights;
+                  const cpc = m && m.clicks > 0 ? formatCents(Math.round(m.spend_cents / m.clicks), c.currency) : dash;
+                  return (
+                    <tr key={c.id} className="align-top">
+                      <td className="px-5 py-4">
+                        <Link className="font-semibold text-ink hover:text-brand" href={`/app/campanhas/${c.id}`}>
+                          {c.name}
+                        </Link>
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
+                          <Badge>{statuses[c.status]}</Badge>
+                          {c.simulated && <Badge tone="demo">Simulação</Badge>}
+                        </div>
+                        {c.execution_started_at && (
+                          <p className="mt-2 text-xs text-warning">
+                            Operação em andamento desde {date(c.execution_started_at)}. Se não terminar, fale com o
+                            suporte.
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-3 py-4">
+                        {m ? (
+                          <div
+                            className="flex min-w-40 items-center gap-2"
+                            title={formatCents(m.spend_cents, c.currency)}
+                          >
+                            <span className="h-2 flex-1 rounded-full bg-brand-soft">
+                              <span
+                                className="block h-2 rounded-full bg-brand"
+                                style={{ width: `${Math.max(2, (m.spend_cents / maxSpend) * 100)}%` }}
+                              />
+                            </span>
+                            <span>{formatCents(m.spend_cents, c.currency)}</span>
+                          </div>
+                        ) : (
+                          <span className="text-ink-faint">{c.simulated ? "Simulação" : "Sem dados ainda"}</span>
+                        )}
+                      </td>
+                      <td className="px-3 py-4 text-right">{m ? numbers.format(m.clicks) : dash}</td>
+                      <td className="px-3 py-4 text-right">{m ? numbers.format(m.conversations) : dash}</td>
+                      <td className="px-5 py-4 text-right">{cpc}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         ) : (
-          <p className="mt-4 text-sm text-ink-soft">
-            Nenhuma campanha disponível. Comece revisando e aprovando suas peças em Criativos.
+          <Card className="mt-4 flex flex-wrap items-center justify-between gap-4 p-6">
+            <p className="text-ink-soft">Nenhuma campanha ainda.</p>
+            {!demo && (
+              <ButtonLink href="/app/criativos" variant="secondary">
+                Ver meus anúncios
+              </ButtonLink>
+            )}
+          </Card>
+        )}
+        {real.length > 0 && (
+          <p className="mt-3 text-xs text-ink-faint">
+            Totais em reais, só de campanhas reais com dados da Meta. Campanhas em Simulação não entram.
           </p>
         )}
       </section>
