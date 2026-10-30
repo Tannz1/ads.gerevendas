@@ -167,8 +167,33 @@ services:
     volumes:
       - ./migrate.sh:/migrate.sh:ro
       - ../../supabase/migrations:/migrations:ro
+      - ads-db-backups:/backups
+
+  # Dump diário do banco em ads-db-backups (backup.sh). Mesma imagem do banco: pg_dump na mesma versão.
+  ads-backup:
+    image: supabase/postgres:17.6.1.136
+    restart: unless-stopped
+    depends_on:
+      ads-db:
+        condition: service_healthy
+    entrypoint: ["sh", "/backup.sh"]
+    environment:
+      PGHOST: ads-db
+      PGPORT: 5432
+      PGUSER: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: postgres
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-14}
+    volumes:
+      - ./backup.sh:/backup.sh:ro
+      - ads-db-backups:/backups
+    deploy:
+      resources:
+        limits:
+          memory: 256m
 
 volumes:
+  ads-db-backups:
   ads-db-data:
   ads-db-config:
   ads-storage-data:
