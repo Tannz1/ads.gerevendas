@@ -51,25 +51,36 @@ export function BusinessStep({ form, errors, update }: StepProps) {
             {...invalid(errors, "business.name")}
           />
         </Field>
-        <Field
-          id="business.segment"
-          label="Segmento"
-          error={errors["business.segment"]}
-          hint="Escolha da lista ou escreva o seu."
-        >
-          <Input
-            id="business.segment"
-            list="segments"
-            value={b.segment}
-            onChange={(e) => update("business", { segment: e.target.value })}
-            {...invalid(errors, "business.segment")}
-          />
-          <datalist id="segments">
+        <fieldset>
+          <legend className="mb-2.5 text-sm font-semibold">Segmento</legend>
+          <div className="flex flex-wrap gap-2">
             {SEGMENTS.map((s) => (
-              <option key={s} value={s} />
+              <button
+                key={s}
+                type="button"
+                aria-pressed={b.segment === s}
+                onClick={() => update("business", { segment: s })}
+                className={cn(
+                  "rounded-full border px-3.5 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none",
+                  b.segment === s ? "border-ink bg-ink text-white" : "border-line-strong hover:bg-surface-muted",
+                )}
+              >
+                {s}
+              </button>
             ))}
-          </datalist>
-        </Field>
+          </div>
+          <div className="mt-3">
+            <Field id="business.segment" label="Outro segmento" error={errors["business.segment"]}>
+              <Input
+                id="business.segment"
+                value={SEGMENTS.includes(b.segment) ? "" : b.segment}
+                placeholder="Ex.: Floricultura"
+                onChange={(e) => update("business", { segment: e.target.value })}
+                {...invalid(errors, "business.segment")}
+              />
+            </Field>
+          </div>
+        </fieldset>
         <div className="grid gap-5 sm:grid-cols-[1fr_140px]">
           <Field id="business.city" label="Cidade" error={errors["business.city"]}>
             <Input
@@ -403,24 +414,31 @@ export function GoalStep({ form, errors, update }: StepProps) {
               <label
                 key={key}
                 className={cn(
-                  "flex cursor-pointer flex-col gap-1 rounded-xl border p-4 transition-colors",
-                  selected
-                    ? "border-brand bg-brand-soft ring-2 ring-brand/20"
-                    : "border-line-strong hover:bg-surface-muted",
+                  "flex cursor-pointer gap-4 rounded-2xl border p-4 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand",
+                  selected ? "border-brand bg-brand-soft" : "border-line-strong hover:bg-surface-muted",
                 )}
               >
-                <span className="flex items-center gap-2.5">
-                  <input
-                    type="radio"
-                    name="objective"
-                    value={key}
-                    className="accent-[var(--brand)]"
-                    checked={selected}
-                    onChange={() => update("goal", { objective: key })}
-                  />
-                  <span className="font-semibold">{OBJECTIVE_LABELS[key].title}</span>
+                <input
+                  type="radio"
+                  name="objective"
+                  value={key}
+                  className="sr-only"
+                  checked={selected}
+                  onChange={() => update("goal", { objective: key })}
+                />
+                <span
+                  aria-hidden
+                  className={cn(
+                    "grid size-11 shrink-0 place-items-center rounded-xl",
+                    selected ? "bg-brand text-white" : "bg-surface-muted text-ink-soft",
+                  )}
+                >
+                  <ObjectiveIcon objective={key} />
                 </span>
-                <span className="pl-6 text-sm text-ink-soft">{OBJECTIVE_LABELS[key].description}</span>
+                <span className="flex flex-col gap-0.5">
+                  <span className="font-semibold">{OBJECTIVE_LABELS[key].title}</span>
+                  <span className="text-sm text-ink-soft">{OBJECTIVE_LABELS[key].description}</span>
+                </span>
               </label>
             );
           })}
@@ -432,6 +450,52 @@ export function GoalStep({ form, errors, update }: StepProps) {
         </p>
       )}
     </>
+  );
+}
+
+const TONE_EXAMPLES: Record<(typeof TONES)[number], string> = {
+  acolhedor: "Passa aqui que a gente te atende com carinho.",
+  direto: "Pediu, chegou. Simples assim.",
+  premium: "Feito com cuidado, para quem exige o melhor.",
+  divertido: "Bateu a fome? Chama a gente!",
+  tecnico: "Diagnóstico completo, com laudo e garantia.",
+};
+
+function ObjectiveIcon({ objective }: { objective: Objective }) {
+  const paths: Record<Objective, ReactNode> = {
+    mensagens_whatsapp: <path d="M4 18l1.4-4A7.5 7.5 0 1 1 9 17.4L4 18z" />,
+    visitas_perfil: (
+      <>
+        <rect x="4" y="4" width="16" height="16" rx="5" />
+        <circle cx="12" cy="12" r="3.5" />
+        <circle cx="16.8" cy="7.2" r="0.6" fill="currentColor" />
+      </>
+    ),
+    trafego_site: (
+      <>
+        <circle cx="12" cy="12" r="8" />
+        <path d="M4 12h16M12 4c2.5 2.6 2.5 13.4 0 16M12 4c-2.5 2.6-2.5 13.4 0 16" />
+      </>
+    ),
+    reconhecimento_local: (
+      <>
+        <path d="M12 21s-6-5.3-6-10.5a6 6 0 1 1 12 0C18 15.7 12 21 12 21z" />
+        <circle cx="12" cy="10.5" r="2.2" />
+      </>
+    ),
+  };
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="size-5.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      {paths[objective]}
+    </svg>
   );
 }
 
@@ -489,12 +553,12 @@ export function IdentityStep({ form, errors, update }: StepProps) {
 
         <fieldset aria-describedby={errors["identity.tone_of_voice"] ? "identity.tone_of_voice-error" : undefined}>
           <legend className="mb-3 text-sm font-semibold">Tom de voz</legend>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid gap-2.5 sm:grid-cols-2">
             {TONES.map((t) => (
               <label
                 key={t}
                 className={cn(
-                  "cursor-pointer rounded-full border px-4 py-2 text-sm font-medium transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand",
+                  "flex cursor-pointer flex-col gap-1 rounded-2xl border p-4 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand",
                   i.tone_of_voice === t ? "border-ink bg-ink text-white" : "border-line-strong hover:bg-surface-muted",
                 )}
               >
@@ -506,7 +570,10 @@ export function IdentityStep({ form, errors, update }: StepProps) {
                   checked={i.tone_of_voice === t}
                   onChange={() => update("identity", { tone_of_voice: t })}
                 />
-                {TONE_LABELS[t]}
+                <span className="text-sm font-semibold">{TONE_LABELS[t]}</span>
+                <span className={cn("text-sm", i.tone_of_voice === t ? "text-white/80" : "text-ink-soft")}>
+                  “{TONE_EXAMPLES[t]}”
+                </span>
               </label>
             ))}
           </div>
@@ -516,19 +583,6 @@ export function IdentityStep({ form, errors, update }: StepProps) {
             </p>
           )}
         </fieldset>
-
-        <div className="flex items-center gap-4 rounded-xl border border-line bg-canvas p-4">
-          <span
-            aria-hidden
-            className="grid size-14 shrink-0 place-items-center rounded-2xl font-display text-lg font-bold text-white"
-            style={{ backgroundColor: valid ? i.brand_primary_color : "#98A2B3" }}
-          >
-            {(form.business.name.trim()[0] ?? "G").toUpperCase()}
-          </span>
-          <p className="text-sm text-ink-soft">
-            Prévia de como a cor aparece nas peças. O envio do logo chega junto com o editor de criativos.
-          </p>
-        </div>
       </div>
     </>
   );

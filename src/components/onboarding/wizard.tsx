@@ -21,6 +21,7 @@ import {
   type FormState,
 } from "./form-state";
 import { DEMO_STORAGE_KEY, readDemoDraft, writeDemoDraft } from "./demo-storage";
+import { LivePreview } from "./live-preview";
 import { MetaConnectStep, type MetaConnectProps } from "./meta-connect-step";
 import { AudienceStep, BusinessStep, GoalStep, IdentityStep, OfferStep, ReviewStep } from "./steps";
 
@@ -252,7 +253,7 @@ export function OnboardingWizard({ mode, initial, meta }: WizardProps) {
   const props = { form, errors, update };
 
   return (
-    <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[220px_1fr] lg:gap-10">
+    <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[200px_1fr] lg:gap-10 xl:grid-cols-[200px_1fr_280px]">
       <nav aria-label="Etapas do cadastro" className="lg:sticky lg:top-24 lg:self-start">
         <p className="mb-3 text-xs font-semibold tracking-wider text-ink-faint uppercase">
           Etapa {step} de {total}
@@ -358,6 +359,10 @@ export function OnboardingWizard({ mode, initial, meta }: WizardProps) {
           </div>
         </form>
       </Card>
+
+      <aside aria-label="Prévia do anúncio" className="lg:col-span-2 xl:sticky xl:top-24 xl:col-span-1 xl:self-start">
+        <LivePreview form={form} />
+      </aside>
     </div>
   );
 }

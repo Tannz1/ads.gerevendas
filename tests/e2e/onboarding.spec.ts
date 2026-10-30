@@ -21,7 +21,7 @@ test("fluxo completo do onboarding em modo demonstração", async ({ page }) => 
   await expect(page.getByRole("heading", { name: "Seu negócio" })).toBeVisible();
 
   await page.getByLabel("Nome do negócio").fill("Padaria Exemplo");
-  await page.getByLabel("Segmento").fill("Alimentação");
+  await page.getByRole("button", { name: "Alimentação" }).click();
   await page.getByLabel("Cidade").fill("Campinas");
   await page.getByLabel("Estado").selectOption("SP");
   await page.getByLabel(/WhatsApp/).fill("19999990000");
@@ -56,7 +56,7 @@ test("fluxo completo do onboarding em modo demonstração", async ({ page }) => 
   await cont(page);
 
   await expect(page.getByRole("heading", { name: "Revisão" })).toBeVisible();
-  await expect(page.getByText("R$ 24,90", { exact: false })).toBeVisible();
+  await expect(page.locator("form").getByText("R$ 24,90", { exact: false })).toBeVisible();
   await page.getByRole("button", { name: "Concluir cadastro" }).click();
   await expect(page.getByText("Confirme que as informações são verdadeiras")).toBeVisible();
 
