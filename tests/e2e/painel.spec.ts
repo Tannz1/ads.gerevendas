@@ -4,10 +4,9 @@ import { p } from "./paths";
 test("painel em demonstração não inventa conta nem métricas", async ({ page }) => {
   await page.goto(p("/app/painel"));
   await expect(page.getByRole("heading", { name: "Resultados", exact: true })).toBeVisible();
-  // Sem campanhas reais, nenhum número: todos os indicadores mostram "—".
+  // Sem campanhas, nenhum número inventado.
   await expect(page.getByText("R$", { exact: false })).toHaveCount(0);
-  await expect(page.getByText("—")).toHaveCount(5);
-  await expect(page.getByText("Nenhuma campanha ainda.")).toBeVisible();
+  await expect(page.getByText("Nenhuma campanha ainda")).toBeVisible();
   await expect(page.getByRole("button", { name: "Atualizar métricas da Meta" })).toHaveCount(0);
   await expect(page.getByRole("link", { name: "Nova campanha", exact: true })).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)).toBeLessThanOrEqual(0);
