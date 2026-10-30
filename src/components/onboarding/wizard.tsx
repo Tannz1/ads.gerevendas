@@ -21,6 +21,7 @@ import {
   type FormState,
 } from "./form-state";
 import { DEMO_STORAGE_KEY, readDemoDraft, writeDemoDraft } from "./demo-storage";
+import { MetaConnectStep, type MetaConnectProps } from "./meta-connect-step";
 import { AudienceStep, BusinessStep, GoalStep, IdentityStep, OfferStep, ReviewStep } from "./steps";
 
 type SaveStatus = "idle" | "saving" | "saved" | "error";
@@ -28,9 +29,13 @@ type SaveStatus = "idle" | "saving" | "saved" | "error";
 export type WizardProps = {
   mode: AppMode;
   initial?: { step: number; data: unknown; completed: boolean } | null;
+  /** Etapa final "Página e Instagram" (só com conta). */
+  meta?: MetaConnectProps;
 };
 
-export function OnboardingWizard({ mode, initial }: WizardProps) {
+const META_STEP_TITLE = "Página e Instagram";
+
+export function OnboardingWizard({ mode, initial, meta }: WizardProps) {
   const demo = mode === "demo";
   // Só mostra o formulário após hidratar: antes disso, "Continuar" faria um envio nativo que
   // recarrega a página e perde o que foi digitado.
@@ -147,6 +152,53 @@ export function OnboardingWizard({ mode, initial }: WizardProps) {
 
   if (!ready) return <WizardSkeleton />;
 
+  const total = ONBOARDING_STEPS.length + (meta ? 1 : 0);
+
+  if (completed && meta && !demo) {
+    return (
+      <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[220px_1fr] lg:gap-10">
+        <nav aria-label="Etapas do cadastro" className="lg:sticky lg:top-24 lg:self-start">
+          <p className="mb-3 text-xs font-semibold tracking-wider text-ink-faint uppercase">
+            Etapa {total} de {total}
+          </p>
+          <ol className="hidden flex-col gap-1 lg:flex">
+            {ONBOARDING_STEPS.map((s) => (
+              <li key={s.key} className="flex items-center gap-3 px-3 py-2 text-sm text-ink-soft">
+                <span
+                  aria-hidden
+                  className="grid size-6 place-items-center rounded-full bg-success text-xs font-bold text-white"
+                >
+                  ✓
+                </span>
+                {s.title}
+                <span className="sr-only">(concluída)</span>
+              </li>
+            ))}
+            <li
+              aria-current="step"
+              className="flex items-center gap-3 rounded-xl bg-surface px-3 py-2 text-sm font-semibold text-ink shadow-[var(--shadow-card)]"
+            >
+              <span
+                aria-hidden
+                className="grid size-6 place-items-center rounded-full bg-brand text-xs font-bold text-white"
+              >
+                {total}
+              </span>
+              {META_STEP_TITLE}
+            </li>
+          </ol>
+        </nav>
+        <Card className="p-5 sm:p-8">
+          <p className="text-sm font-semibold text-success">Cadastro salvo</p>
+          <h1 className="mt-1 mb-4 font-display text-2xl font-bold tracking-tight">
+            Conecte sua Página e seu Instagram
+          </h1>
+          <MetaConnectStep {...meta} />
+        </Card>
+      </div>
+    );
+  }
+
   if (completed) {
     return (
       <Card className="mx-auto max-w-2xl p-6 text-center sm:p-10">
@@ -203,13 +255,10 @@ export function OnboardingWizard({ mode, initial }: WizardProps) {
     <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[220px_1fr] lg:gap-10">
       <nav aria-label="Etapas do cadastro" className="lg:sticky lg:top-24 lg:self-start">
         <p className="mb-3 text-xs font-semibold tracking-wider text-ink-faint uppercase">
-          Etapa {step} de {ONBOARDING_STEPS.length}
+          Etapa {step} de {total}
         </p>
         <div className="mb-4 h-1.5 overflow-hidden rounded-full bg-surface-muted lg:hidden" aria-hidden>
-          <div
-            className="h-full rounded-full bg-brand transition-all"
-            style={{ width: `${(step / ONBOARDING_STEPS.length) * 100}%` }}
-          />
+          <div className="h-full rounded-full bg-brand transition-all" style={{ width: `${(step / total) * 100}%` }} />
         </div>
         <ol className="hidden flex-col gap-1 lg:flex">
           {ONBOARDING_STEPS.map((s, i) => {
@@ -246,6 +295,17 @@ export function OnboardingWizard({ mode, initial }: WizardProps) {
               </li>
             );
           })}
+          {meta && (
+            <li className="flex items-center gap-3 px-3 py-2 text-sm text-ink-soft">
+              <span
+                aria-hidden
+                className="grid size-6 shrink-0 place-items-center rounded-full border border-line-strong text-xs font-bold text-ink-faint"
+              >
+                {total}
+              </span>
+              {META_STEP_TITLE}
+            </li>
+          )}
         </ol>
       </nav>
 
