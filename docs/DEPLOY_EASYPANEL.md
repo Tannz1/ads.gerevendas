@@ -82,6 +82,29 @@ para o compose service `ads-gateway`, porta `8000`. Variáveis (aba Environment)
 
 Aba **Deployments → Auto Deploy** para publicar a cada push no `main`.
 
+## Backup e restauração
+
+O serviço `ads-backup` do compose faz um `pg_dump -Fc` do banco ao subir e depois a cada 24 h, no
+volume `ads-db-backups`. Os arquivos ficam por `BACKUP_KEEP_DAYS` dias (padrão 14). O `ads-migrate`
+também grava `pre-migration-<versão>.dump` antes de aplicar migrations novas. Os arquivos do Storage
+(volume `ads-storage-data`) não entram no dump.
+
+A cópia fica na mesma VPS: ela protege de erro humano e de migration ruim, mas não da perda do
+disco. Copie `ads-db-backups` para fora da VPS assim que houver um destino (S3, R2 ou Drive).
+
+Conferir os backups: EasyPanel › `ads-supabase` › logs do `ads-backup` (`backup ok: ...`).
+
+Restaurar (para um teste, use um compose separado; nunca teste sobre o banco de produção):
+
+```bash
+# dentro do container ads-backup
+pg_restore --list /backups/<arquivo>.dump | head          # o arquivo está íntegro?
+pg_restore --clean --if-exists --no-owner -d postgres /backups/<arquivo>.dump
+```
+
+Restaurar em produção apaga o que foi gravado depois do dump. Pare o serviço `ads` antes e confirme
+o arquivo escolhido.
+
 ## Verificação
 
 - `https://gerevendas.com.br/ads/api/health` → `{"ok":true,...}`

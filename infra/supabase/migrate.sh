@@ -21,6 +21,12 @@ for f in /migrations/*.sql; do
   if [ -n "$(psql -tAc "select 1 from supabase_migrations.schema_migrations where version = '$version'")" ]; then
     continue
   fi
+  # Antes da primeira migration nova deste deploy, guarda o banco como estava.
+  if [ -z "${backed_up:-}" ]; then
+    pg_dump -Fc -f "/backups/pre-migration-$version.dump"
+    echo "backup pré-migration: /backups/pre-migration-$version.dump"
+    backed_up=1
+  fi
   echo "migration: $base"
   psql -v ON_ERROR_STOP=1 -q -1 -f "$f" \
     -c "insert into supabase_migrations.schema_migrations (version, name) values ('$version', '$name')"

@@ -15,9 +15,11 @@ import { apiError, type ApiResult } from "@/contracts/api";
 import { fieldErrors } from "@/contracts/onboarding";
 import { detectImage, MAX_PHOTO_BYTES } from "@/lib/image-bytes";
 import { log } from "@/lib/logger";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAppContext, getCorrelationId } from "./context";
-import { ASSETS_BUCKET } from "./creatives-data";
+import { ASSETS_BUCKET, VIDEOS_BUCKET } from "./creatives-data";
+import { removeOrganizationFiles } from "./storage-cleanup";
 
 const uuid = z.uuid();
 
@@ -261,6 +263,18 @@ export async function deleteOrganizationData(input: unknown): Promise<ApiResult<
     }
     log("error", "account.delete_failed", { correlation_id: correlationId, code: error.code });
     return apiError("internal", "Não foi possível excluir a empresa agora.", correlationId);
+  }
+
+  // O usuário já não é membro da empresa: o Storage só pode ser limpo com service role.
+  const orgId = parsed.data.organization_id;
+  try {
+    const admin = createSupabaseAdminClient();
+    for (const bucket of [ASSETS_BUCKET, VIDEOS_BUCKET]) {
+      await removeOrganizationFiles(admin.storage.from(bucket), orgId);
+    }
+  } catch {
+    // Os dados do banco já foram apagados; o operador limpa a pasta `<org>/` pelo log.
+    log("error", "account.delete_files_failed", { correlation_id: correlationId, organization_id: orgId });
   }
 
   revalidatePath("/app", "layout");
