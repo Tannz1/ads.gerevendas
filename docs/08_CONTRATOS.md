@@ -137,3 +137,12 @@ RPCs: `create_organization(p_name, p_correlation_id)`,
 - `meta_execution_overview` é leitura autenticada de IDs de campanha e datas da própria organização; não retorna tokens ou snapshots e permite manter avisos de operação pendente no painel.
 - Uma intenção pendente não pode ser repetida automaticamente. Uma trava sem pausa confirmada só é liberada após recuperação técnica. Consulte o ADR 0007 para os procedimentos e os limites da homologação.
 
+## Fluxo simples "Da foto ao cliente no WhatsApp" (`src/contracts/products.ts`, ADR 0010)
+
+- Telas: `/app` (Início, com cadastro concluído), `/app/anuncios/novo` (produto e oferta), `/app/anuncios/[briefId]?etapa=previa|regiao|investimento|publicar`, `/app/anuncios/[briefId]/resultados`, `/app/anuncios` (lista).
+- `productInputSchema`: `name`, `details` (opcional), `price_cents` (inteiro > 0 ou `null`), `highlights` (`parcelamento` | `desconto` | `entrega`, um de cada), `photo_asset_id`, `facts_confirmed: true`, `request_key`. Preço e destaques são fatos digitados pelo dono.
+- Server actions (`src/server/products.ts`): `uploadProductPhoto(FormData)` → `{ asset_id, url }`; `createProduct(input)` → `{ brief_id, job_started, warning? }` (já pede as 5 peças); `setProductReach({ brief_id, reach })`; `approveProductCreatives(strategyId)`; `recordSale({ campaign_id, quantity, amount_cents })`; `deleteSale(id)`. A publicação usa `publishPausedCampaign` (sempre `PAUSED`).
+- Alcance: `REACH_OPTIONS` = `cidade` (17 km) e `regiao` (40 km), gravado em `briefs.service_radius_km`.
+- Banco (`20261108120000_fluxo_simples.sql`): `offers.photo_asset_id`, `briefs.request_key` (único por organização), tabela `sales_records` (leitura por membros; escrita só por RPC). RPCs: `register_product_photo`, `create_product_brief` (erros `onboarding_required`, `missing_whatsapp`, `invalid_photo`, `facts_not_confirmed`), `record_sale` (`invalid_date` para data futura), `delete_sale` (quem registrou ou owner/admin). `export_organization_data` passa a incluir `sales_records`.
+- Separação: o modo completo (Criativos, Nova campanha) lê só briefs sem `request_key`.
+

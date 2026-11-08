@@ -39,6 +39,7 @@ export default async function NewCampaignPage() {
       .select("objective, offers(name)")
       .eq("organization_id", ctx.organization.id)
       .eq("status", "submitted")
+      .is("request_key", null)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
