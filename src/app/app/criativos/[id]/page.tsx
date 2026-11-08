@@ -15,8 +15,14 @@ import { loadCreative, loadImageJob, loadVideoJob, loadVideoUrl } from "@/server
 
 export const metadata: Metadata = { title: "Editar peça" };
 
-export default async function CreativeEditorPage({ params }: PageProps<"/app/criativos/[id]">) {
+export default async function CreativeEditorPage({ params, searchParams }: PageProps<"/app/criativos/[id]">) {
   const { id } = await params;
+  // Vindo do fluxo simples, o "voltar" leva de volta para a prévia do anúncio (só caminhos internos).
+  const voltar = (await searchParams).voltar;
+  const back =
+    typeof voltar === "string" && /^\/app\/anuncios\/[0-9a-f-]{36}$/.test(voltar)
+      ? { href: `${voltar}?etapa=previa`, label: "← Voltar para o anúncio" }
+      : { href: "/app/criativos", label: "← Criativos" };
   const ctx = await getAppContext();
   if (ctx.mode !== "supabase" || !z.uuid().safeParse(id).success) notFound();
   const [view, imageJob, videoJob] = await Promise.all([loadCreative(id), loadImageJob(id), loadVideoJob(id)]);
@@ -26,8 +32,8 @@ export default async function CreativeEditorPage({ params }: PageProps<"/app/cri
 
   return (
     <div className="mx-auto max-w-6xl">
-      <Link href="/app/criativos" className="text-sm font-medium text-ink-soft hover:text-ink">
-        ← Criativos
+      <Link href={back.href} className="text-sm font-medium text-ink-soft hover:text-ink">
+        {back.label}
       </Link>
       <div className="mt-2 mb-8 flex flex-wrap items-center gap-3">
         <h1 className="font-display text-3xl font-bold tracking-tight">

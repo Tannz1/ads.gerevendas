@@ -56,5 +56,10 @@ Next.js único (ADR 0001): `apps/web` corresponde a `src/app`, `packages/contrac
 - Healthcheck `/api/health`, testes unitários, RLS e E2E: **REAL**.
 
 
+### Fluxo simples "Da foto ao cliente no WhatsApp" (ADR 0010)
+- 8 telas no celular (Início, Produto, Oferta, Prévia, Região, Investimento, Publicação, Resultados) ao lado do modo completo: **REAL** no banco (migration `20261108120000_fluxo_simples.sql`, RLS em `99_fluxo_simples_rls.test.sql`); publicação usa o adaptador Meta atual (**Simulação** até o modo real).
+- Vendas registradas pelo dono por campanha: **REAL** no banco.
+- Raio em volta do endereço da loja: **BLOQUEADO** até teste de contrato de `custom_locations`; hoje "Na cidade" (17 km) e "Cidade e região" (40 km).
+
 ### Vídeo com avatar (ADR 0008)
 - Job de vídeo com avatar (TTS + `creatify-aurora`), créditos (20/mês), consentimento de rosto, tela no editor da peça e publicação como vídeo na Meta (`advideos` + `video_data`, sempre PAUSED): **REAL** no banco local e nos testes com mocks. **BLOQUEADO** até a chamada real à ElevenLabs (plano Pro) e o contrato de vídeo na Meta (`META_CONTRACT_VIDEO_URL`).

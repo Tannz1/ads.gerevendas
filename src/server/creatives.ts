@@ -41,7 +41,7 @@ async function loadBriefFacts(supabase: Supabase, briefId: string) {
     .select(
       "objective, audience_description, age_min, age_max, service_radius_km, " +
         "businesses(name, segment, city, state, tone_of_voice, brand_primary_color, instagram_handle, website_url, competitors), " +
-        "offers(name, description, price_cents, differentiators)",
+        "offers(name, description, price_cents, differentiators, photo_asset_id)",
     )
     .eq("id", briefId)
     .single();
@@ -60,9 +60,11 @@ async function loadBriefFacts(supabase: Supabase, briefId: string) {
       website_url: string | null;
       competitors: string[] | null;
     };
-    offers: StrategyInput["offer"];
+    offers: StrategyInput["offer"] & { photo_asset_id: string | null };
   };
   const { brand_primary_color, instagram_handle, website_url, competitors, ...business } = row.businesses;
+  // A foto do produto (fluxo simples) vira a imagem das peças; o id não vai para a IA.
+  const { photo_asset_id: productPhotoId, ...offer } = row.offers;
   const researchInput: ResearchInput = {
     business: {
       name: business.name,
@@ -72,12 +74,12 @@ async function loadBriefFacts(supabase: Supabase, briefId: string) {
       instagram_handle,
       website_url,
     },
-    offer: { name: row.offers.name, description: row.offers.description },
+    offer: { name: offer.name, description: offer.description },
     competitors_listed: competitors ?? [],
   };
   const input: StrategyInput = {
     business,
-    offer: row.offers,
+    offer,
     audience: {
       description: row.audience_description,
       age_min: row.age_min,
@@ -86,7 +88,7 @@ async function loadBriefFacts(supabase: Supabase, briefId: string) {
     },
     objective: row.objective,
   };
-  return { input, researchInput, brandColor: brand_primary_color };
+  return { input, researchInput, brandColor: brand_primary_color, productPhotoId };
 }
 
 type StoredResearch = NonNullable<StoredStrategyPlan["research"]>;
@@ -145,8 +147,10 @@ async function runStrategyJob(jobId: string, briefId: string, correlationId: str
   };
 
   let strategyId: string | null = null;
+  let photoId: string | null = null;
   try {
-    const { input, researchInput, brandColor } = await loadBriefFacts(supabase, briefId);
+    const { input, researchInput, brandColor, productPhotoId } = await loadBriefFacts(supabase, briefId);
+    photoId = productPhotoId;
     const started = Date.now();
     const [{ research, usage: researchUsage }, previous] = await Promise.all([
       runResearch(provider, researchInput, meta),
@@ -188,6 +192,16 @@ async function runStrategyJob(jobId: string, briefId: string, correlationId: str
     strategyId = savedId as string;
   } catch (e) {
     await fail(e instanceof ProviderError ? e.code : "internal");
+  }
+
+  // Produto com foto (fluxo simples): a foto do dono vai nas 5 peças, sem gerar imagem com IA.
+  if (strategyId && photoId) {
+    const { error } = await supabase
+      .from("creatives")
+      .update({ image_asset_id: photoId })
+      .eq("strategy_id", strategyId);
+    if (error) log("error", "creatives.product_photo_apply_failed", { ...meta, code: error.code });
+    return;
   }
 
   // Imagem de cada peça logo em seguida, com o texto dela como contexto. Fora do try acima: uma

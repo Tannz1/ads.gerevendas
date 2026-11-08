@@ -101,7 +101,16 @@ export type CreativesOverview =
       image_jobs: Array<{ id: string; creative_id: string }>;
     };
 
-/** Brief mais recente da empresa, último job de estratégia e a estratégia mais nova com as peças. */
+type BriefForCreatives = {
+  id: string;
+  businesses: { name: string };
+  offers: { price_cents: number | null; currency: string };
+};
+
+/**
+ * Brief mais recente do cadastro (modo avançado), último job de estratégia e a estratégia mais nova.
+ * Produtos do fluxo simples (`request_key` preenchida) têm tela própria e ficam de fora.
+ */
 export async function loadCreativesOverview(organizationId: string): Promise<CreativesOverview> {
   const supabase = await createSupabaseServerClient();
   const { data: brief } = await supabase
@@ -109,16 +118,19 @@ export async function loadCreativesOverview(organizationId: string): Promise<Cre
     .select("id, businesses(name), offers(price_cents, currency)")
     .eq("organization_id", organizationId)
     .eq("status", "submitted")
+    .is("request_key", null)
     .order("created_at", { ascending: false })
     .limit(1)
     .maybeSingle();
   if (!brief) return { state: "no_brief" };
-  const b = brief as unknown as {
-    id: string;
-    businesses: { name: string };
-    offers: { price_cents: number | null; currency: string };
-  };
+  return loadBriefCreatives(brief as unknown as BriefForCreatives);
+}
 
+/** Último job de estratégia e estratégia mais nova (com as peças) de um brief já lido. */
+export async function loadBriefCreatives(
+  b: BriefForCreatives,
+): Promise<Exclude<CreativesOverview, { state: "no_brief" }>> {
+  const supabase = await createSupabaseServerClient();
   const [{ data: job }, { data: strategy }] = await Promise.all([
     supabase
       .from("generation_jobs")
