@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   createInvite,
@@ -315,7 +316,13 @@ export function AccountManagement({
               onChange={(e) => setTermsChecked(e.target.checked)}
               className="mt-1 h-4 w-4 rounded border-line text-brand"
             />
-            <span>Aceito os Termos de Uso do GereVendas Ads (obrigatório).</span>
+            <span>
+              Aceito os{" "}
+              <Link href="/termos" target="_blank" className="font-medium text-brand underline">
+                Termos de Uso
+              </Link>{" "}
+              do GereVendas Ads (obrigatório).
+            </span>
           </label>
           <label className="flex items-start gap-2.5 text-sm">
             <input
@@ -324,7 +331,13 @@ export function AccountManagement({
               onChange={(e) => setPrivacyChecked(e.target.checked)}
               className="mt-1 h-4 w-4 rounded border-line text-brand"
             />
-            <span>Estou ciente da Política de Privacidade e proteção de dados LGPD (obrigatório).</span>
+            <span>
+              Estou ciente da{" "}
+              <Link href="/privacidade" target="_blank" className="font-medium text-brand underline">
+                Política de Privacidade
+              </Link>{" "}
+              e proteção de dados LGPD (obrigatório).
+            </span>
           </label>
           <label className="flex items-start gap-2.5 text-sm">
             <input

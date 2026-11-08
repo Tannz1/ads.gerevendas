@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { LegalLinks } from "@/components/marketing/legal-page";
 import { SignInForm } from "@/components/auth/sign-in-form";
 import { Card } from "@/components/ui/card";
 import { Logo } from "@/components/ui/logo";
@@ -29,6 +30,7 @@ export default function SignInPage() {
             </Suspense>
           </div>
         </Card>
+        <LegalLinks className="mt-6 flex justify-center gap-4 text-sm text-ink-faint" />
       </div>
     </main>
   );
