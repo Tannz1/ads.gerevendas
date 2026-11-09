@@ -1,7 +1,7 @@
 import { FORMATS } from "@/contracts/creatives";
 import { AdTemplate, type AdTemplateProps } from "./ad-template";
 
-const BROWSER_FONTS = { display: "var(--font-display), sans-serif", body: "var(--font-body), sans-serif" };
+export const BROWSER_FONTS = { display: "var(--font-display), sans-serif", body: "var(--font-body), sans-serif" };
 
 /** Prévia da peça no navegador: o template em tamanho real, reduzido por CSS. */
 export function AdPreview({
