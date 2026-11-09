@@ -88,11 +88,13 @@ test("login, empresa e onboarding persistidos; outra empresa não vê os dados",
   await expect(page.getByText("Simulação")).toHaveCount(0);
 
   await expect(page.getByRole("link", { name: "Criar meus anúncios" })).toBeVisible();
+  // Com o cadastro concluído, o Início é o fluxo simples (ADR 0010).
   await page.goto(p("/app"));
-  await expect(page.getByText("Concluído", { exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Vamos vender mais?" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Criar meu anúncio" }).first()).toBeVisible();
 
-  // Criativos: estratégia + 5 peças (provedor simulado sem chave de IA), editar, aprovar, baixar.
-  await page.getByRole("link", { name: "Criar meus anúncios" }).click();
+  // Modo completo, Criativos: estratégia + 5 peças (provedor simulado sem chave de IA), editar, aprovar, baixar.
+  await page.goto(p("/app/criativos"));
   await page.getByRole("button", { name: "Gerar estratégia e anúncios" }).click();
   await expect(page.getByRole("heading", { name: "Seus anúncios" })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText("Simulação").first()).toBeVisible();

@@ -26,8 +26,8 @@ export default async function AppHome() {
     failed = true;
   }
   return (
-    <SimpleShell>
-      <SimpleHome products={products} failed={failed} />
+    <SimpleShell layout="page">
+      <SimpleHome businessName={ctx.organization.name} products={products} failed={failed} />
     </SimpleShell>
   );
 }

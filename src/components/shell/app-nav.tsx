@@ -6,26 +6,43 @@ import { Suspense, useState, type ReactNode } from "react";
 import { Logo } from "@/components/ui/logo";
 import { cn } from "@/lib/cn";
 
-const items = [
-  { href: "/app/painel", label: "Resultados", icon: <path d="M4 20h16M7 16V9m5 7V4m5 12v-5" /> },
+type Item = { href: string; label: string; icon: ReactNode; match: (p: string) => boolean };
+
+/** Menu enxuto (ADR 0010): o dia a dia do dono. Negócio, conexões e assinatura ficam dentro de Conta. */
+const MAIN: Item[] = [
   {
     href: "/app",
     label: "Início",
+    match: (p) => p === "/app",
     icon: <path d="M3 10.5L12 3l9 7.5V20a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1v-9.5z" />,
   },
   {
     href: "/app/anuncios",
     label: "Anúncios",
+    match: (p) => p.startsWith("/app/anuncios"),
     icon: <path d="M20.6 13.4l-7.2 7.2a2 2 0 01-2.8 0L3 13V3h10l7.6 7.6a2 2 0 010 2.8zM7.5 7.5h.01" />,
   },
   {
-    href: "/app/onboarding",
-    label: "Meu negócio",
-    icon: <path d="M4 7h16M4 7v12a1 1 0 001 1h14a1 1 0 001-1V7M4 7l2-3h12l2 3M9 11h6" />,
+    href: "/app/painel",
+    label: "Resultados",
+    match: (p) => p.startsWith("/app/painel"),
+    icon: <path d="M4 20h16M7 16V9m5 7V4m5 12v-5" />,
   },
+  {
+    href: "/app/conta",
+    label: "Conta",
+    match: (p) =>
+      ["/app/conta", "/app/onboarding", "/app/conexoes", "/app/assinatura", "/app/senha"].some((x) => p.startsWith(x)),
+    icon: <path d="M12 12a4 4 0 100-8 4 4 0 000 8zm-7 9a7 7 0 0114 0" />,
+  },
+];
+
+/** Modo completo: estratégia com 5 peças, editor e campanhas manuais. */
+const ADVANCED: Item[] = [
   {
     href: "/app/criativos",
     label: "Criativos",
+    match: (p) => p.startsWith("/app/criativos"),
     icon: (
       <path d="M4 5a1 1 0 011-1h14a1 1 0 011 1v14a1 1 0 01-1 1H5a1 1 0 01-1-1V5zm0 11l4.5-4.5 3.5 3.5 2.5-2.5L20 16M15 9h.01" />
     ),
@@ -33,23 +50,9 @@ const items = [
   {
     href: "/app/campanhas",
     label: "Campanhas",
-    icon: (
-      <path d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
-    ),
+    match: (p) => p.startsWith("/app/campanhas"),
+    icon: <path d="M4 13h3l9 5V6L7 11H4v2zm16-3v4" />,
   },
-  {
-    href: "/app/conexoes",
-    label: "Conexões",
-    icon: (
-      <path d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-    ),
-  },
-  {
-    href: "/app/assinatura",
-    label: "Assinatura",
-    icon: <path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />,
-  },
-  { href: "/app/conta", label: "Conta", icon: <path d="M12 12a4 4 0 100-8 4 4 0 000 8zm-7 9a7 7 0 0114 0" /> },
 ];
 
 // O item ativo depende da URL, que em rotas dinâmicas só existe na requisição (Cache Components):
@@ -66,52 +69,72 @@ function ActiveNavLinks({ onNavigate }: { onNavigate?: () => void }) {
   return <NavList pathname={usePathname()} onNavigate={onNavigate} />;
 }
 
-function NavList({ pathname, onNavigate }: { pathname: string | null; onNavigate?: () => void }) {
+function NavItem({ item, active, onNavigate }: { item: Item; active: boolean; onNavigate?: () => void }) {
   return (
-    <ul className="flex flex-col gap-1">
-      {items.map((item) => {
-        const active =
-          pathname !== null && (item.href === "/app" ? pathname === "/app" : pathname.startsWith(item.href));
-        return (
-          <li key={item.href}>
-            <Link
-              href={item.href}
-              onClick={onNavigate}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-all duration-150",
-                active
-                  ? "bg-ink font-semibold text-white shadow-xs"
-                  : "text-ink-soft hover:bg-surface-muted hover:text-ink active:scale-[0.99]",
-              )}
-            >
-              <svg
-                aria-hidden
-                viewBox="0 0 24 24"
-                className={cn(
-                  "size-[18px] transition-transform duration-150 group-hover:scale-105",
-                  active ? "text-white" : "text-ink-faint group-hover:text-ink",
-                )}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={active ? "2" : "1.75"}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                {item.icon}
-              </svg>
-              {item.label}
-            </Link>
-          </li>
-        );
-      })}
-    </ul>
+    <li>
+      <Link
+        href={item.href}
+        onClick={onNavigate}
+        aria-current={active ? "page" : undefined}
+        className={cn(
+          "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-[15px] font-medium transition-colors",
+          active
+            ? "bg-brand-soft font-semibold text-brand-strong"
+            : "text-ink-soft hover:bg-surface-muted hover:text-ink",
+        )}
+      >
+        <svg
+          aria-hidden
+          viewBox="0 0 24 24"
+          className={cn("size-5", active ? "text-brand" : "text-ink-faint group-hover:text-ink")}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={active ? "2.2" : "1.8"}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {item.icon}
+        </svg>
+        {item.label}
+      </Link>
+    </li>
+  );
+}
+
+function NavList({ pathname, onNavigate }: { pathname: string | null; onNavigate?: () => void }) {
+  const is = (i: Item) => pathname !== null && i.match(pathname);
+  return (
+    <div className="flex flex-col gap-6">
+      <Link
+        href="/app/anuncios/novo"
+        onClick={onNavigate}
+        className="flex h-12 items-center justify-center gap-2 rounded-xl bg-brand text-[15px] font-bold text-white shadow-[0_6px_16px_-8px_rgb(26_138_60/0.7)] transition-colors hover:bg-brand-strong"
+      >
+        <svg aria-hidden viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+        </svg>
+        Criar anúncio
+      </Link>
+      <ul className="flex flex-col gap-1">
+        {MAIN.map((i) => (
+          <NavItem key={i.href} item={i} active={is(i)} onNavigate={onNavigate} />
+        ))}
+      </ul>
+      <div>
+        <p className="px-3 text-xs font-semibold tracking-wider text-ink-faint uppercase">Modo completo</p>
+        <ul className="mt-2 flex flex-col gap-1">
+          {ADVANCED.map((i) => (
+            <NavItem key={i.href} item={i} active={is(i)} onNavigate={onNavigate} />
+          ))}
+        </ul>
+      </div>
+    </div>
   );
 }
 
 export function Sidebar({ footer }: { footer?: ReactNode }) {
   return (
-    <div className="hidden border-r border-line bg-surface/80 backdrop-blur-md lg:block">
+    <div className="hidden border-r border-line bg-surface lg:block">
       <aside className="sticky top-0 flex h-dvh flex-col justify-between px-4 py-6">
         <div>
           <div className="px-2">
@@ -132,7 +155,7 @@ export function MobileNav({ footer }: { footer?: ReactNode }) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="lg:hidden">
+    <div className="flex items-center gap-3 lg:hidden">
       <button
         type="button"
         onClick={() => setOpen(true)}
@@ -153,6 +176,7 @@ export function MobileNav({ footer }: { footer?: ReactNode }) {
           <path d="M4 7h16M4 12h16M4 17h16" />
         </svg>
       </button>
+      <Logo href="/app" />
       {open && (
         <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Menu">
           <button

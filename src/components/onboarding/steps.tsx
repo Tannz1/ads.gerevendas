@@ -62,7 +62,9 @@ export function BusinessStep({ form, errors, update }: StepProps) {
                 onClick={() => update("business", { segment: s })}
                 className={cn(
                   "rounded-full border px-3.5 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-brand focus-visible:outline-none",
-                  b.segment === s ? "border-ink bg-ink text-white" : "border-line-strong hover:bg-surface-muted",
+                  b.segment === s
+                    ? "border-brand bg-brand-soft text-brand-strong"
+                    : "border-line-strong hover:bg-surface-muted",
                 )}
               >
                 {s}
@@ -559,7 +561,9 @@ export function IdentityStep({ form, errors, update }: StepProps) {
                 key={t}
                 className={cn(
                   "flex cursor-pointer flex-col gap-1 rounded-2xl border p-4 transition-colors has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-brand",
-                  i.tone_of_voice === t ? "border-ink bg-ink text-white" : "border-line-strong hover:bg-surface-muted",
+                  i.tone_of_voice === t
+                    ? "border-brand bg-brand-soft text-brand-strong"
+                    : "border-line-strong hover:bg-surface-muted",
                 )}
               >
                 <input

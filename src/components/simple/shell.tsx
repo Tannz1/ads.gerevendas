@@ -4,13 +4,28 @@ import { cn } from "@/lib/cn";
 import { TabBarLinks } from "./tab-bar";
 
 /**
- * Casca das telas do fluxo simples (ADR 0010): coluna de celular, tema verde e, no celular, a barra
- * inferior Início / Anúncios / Conta. No computador a navegação continua na barra lateral.
+ * Casca das telas do fluxo simples (ADR 0010). `page`: telas de consulta (Início, Anúncios,
+ * Resultados), largas no computador. `step`: etapas do assistente, numa coluna de celular que no
+ * computador vira um cartão centralizado. No celular aparece a barra inferior Início / Anúncios / Conta.
  */
-export function SimpleShell({ children, tabs = true }: { children: ReactNode; tabs?: boolean }) {
+export function SimpleShell({
+  children,
+  tabs = true,
+  layout = "step",
+}: {
+  children: ReactNode;
+  tabs?: boolean;
+  layout?: "page" | "step";
+}) {
   return (
-    <div className="theme-zap -mx-4 -my-8 min-h-[calc(100dvh-4rem)] bg-canvas px-4 pt-6 pb-28 sm:-mx-8 sm:-my-10 sm:px-8 lg:pb-12">
-      <div className="mx-auto max-w-md">{children}</div>
+    <div className="pb-24 lg:pb-4">
+      {layout === "page" ? (
+        <div className="mx-auto max-w-5xl">{children}</div>
+      ) : (
+        <div className="mx-auto max-w-md lg:max-w-xl lg:rounded-3xl lg:border lg:border-line lg:bg-surface lg:px-10 lg:py-8 lg:shadow-[var(--shadow-lift)]">
+          {children}
+        </div>
+      )}
       {tabs && (
         <nav
           aria-label="Atalhos"
@@ -46,27 +61,47 @@ export function ScreenHeader({
       <path d="M19 12H5m6-6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
-  const backClass = "-ml-2 grid size-10 place-items-center rounded-full text-ink hover:bg-surface-muted";
+  const backClass = "-ml-2 grid size-10 shrink-0 place-items-center rounded-full text-ink hover:bg-surface-muted";
+  const progress = step ? /^(\d+) de (\d+)$/.exec(step) : null;
+  const hasTop = back || aside || progress;
   return (
-    <header className="mb-6">
-      <div className="flex min-h-10 items-center justify-between gap-3">
-        {typeof back === "string" ? (
-          <Link href={back} aria-label="Voltar" className={backClass}>
-            {arrow}
-          </Link>
-        ) : back ? (
-          <button type="button" onClick={back} aria-label="Voltar" className={backClass}>
-            {arrow}
-          </button>
-        ) : (
-          <span />
-        )}
-        <div className="flex items-center gap-2">
+    <header className="mb-7">
+      {hasTop && (
+        <div className="flex min-h-10 items-center gap-3">
+          {typeof back === "string" ? (
+            <Link href={back} aria-label="Voltar" className={backClass}>
+              {arrow}
+            </Link>
+          ) : back ? (
+            <button type="button" onClick={back} aria-label="Voltar" className={backClass}>
+              {arrow}
+            </button>
+          ) : null}
+          {progress ? (
+            <div
+              className="flex flex-1 gap-1.5"
+              role="progressbar"
+              aria-label={`Etapa ${progress[1]} de ${progress[2]}`}
+              aria-valuemin={1}
+              aria-valuemax={Number(progress[2])}
+              aria-valuenow={Number(progress[1])}
+            >
+              {Array.from({ length: Number(progress[2]) }, (_, i) => (
+                <span
+                  key={i}
+                  className={cn("h-1.5 flex-1 rounded-full", i < Number(progress[1]) ? "bg-brand" : "bg-line")}
+                />
+              ))}
+            </div>
+          ) : (
+            <span className="flex-1" />
+          )}
           {aside}
-          {step && <span className="text-sm font-medium text-ink-faint">{step}</span>}
         </div>
-      </div>
-      <h1 className="mt-3 font-display text-[28px] leading-tight font-bold tracking-tight text-ink">{title}</h1>
+      )}
+      <h1 className="mt-4 font-display text-[28px] leading-tight font-bold tracking-tight text-ink sm:text-[32px]">
+        {title}
+      </h1>
     </header>
   );
 }
