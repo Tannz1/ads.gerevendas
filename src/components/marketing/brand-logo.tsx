@@ -9,7 +9,7 @@ export function BrandLogo({ tone = "dark" }: { tone?: "dark" | "light" }) {
   return (
     <Link href="/" aria-label="GereVendas Ads, início" className={`flex items-center gap-2.5 ${ink}`}>
       <svg aria-hidden viewBox="129.7 226.9 252.6 62.6" className="h-7 w-auto sm:h-8">
-        <g fill="#EA382A" fillRule="evenodd">
+        <g fill="#22A04B" fillRule="evenodd">
           <path d="M178.9,228.6c0.8-0.2,2-0.6,3.4-1c-1.7-0.5-3.7-0.7-5.9-0.7h-31.1c-10.4,0-15.6,5.2-15.6,15.6v1.2L178.9,228.6z" />
           <path d="M189,276.2l-25.4,13h12.8c10.2,0,15.3-5,15.5-14.9C191.5,275,190.6,275.7,189,276.2z" />
           <path d="M159.6,288.8l-4.9-3.2c-2-1.5-2.1-2.5-0.2-3.1L192,266v-10.6l-3.3,9c-0.5,1.7-2,3-4.4,3.7l-24.9,10.9c-2.4,0.7-4.3,0.5-5.7-0.6l-13.1-9.3c-2.6-1.8-2.8-3.1-0.4-3.8l51.7-19.1v-3.6c0-4.5-1-8-2.9-10.6l-4.1,13c-0.5,1.7-2,3-4.4,3.7l-35.5,13.2c-2.4,0.7-4.6,0.4-6.6-1.1l-8.7-7.1v20.1c0,10.4,5.2,15.6,15.6,15.6h14.6C159.8,289,159.7,288.9,159.6,288.8z" />
@@ -27,7 +27,7 @@ export function BrandLogo({ tone = "dark" }: { tone?: "dark" | "light" }) {
           <path d="M298.5,248.2c-1.2,4.8-6.4,8.3-12.3,8.3c-7.9,0-13.4-5.5-13.4-13.4c0-7.6,5.6-13,13.5-13c7.8,0,13.2,5.4,13.2,13.1c0,0.6,0,1.6-0.1,2.2l-19.2,0c0.6,3.4,2.7,7.4,6,7.4c2.7,0,3.6-5.1,5.5-5.2L298.5,248.2z M292.1,241c-0.4-3.1-2.8-5.4-6.1-5.4c-3.2,0-5.4,2.2-6,5.4H292.1z" />
         </g>
       </svg>
-      <span className="rounded-md bg-gv-red px-1.5 py-0.5 text-xs leading-none font-bold text-white">Ads</span>
+      <span className="rounded-md bg-gv-green px-1.5 py-0.5 text-xs leading-none font-bold text-white">Ads</span>
     </Link>
   );
 }

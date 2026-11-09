@@ -54,16 +54,16 @@
   --font-sign: var(--font-sign);
   --font-lp: var(--font-sora);
   /* Marca Gere Vendas (site do CRM), usada na landing. */
-  --color-gv-red: #d63221;
-  --color-gv-red-strong: #b9281a;
-  --color-gv-fire: #ea382a;
-  --color-gv-peach: #ffb5a6;
-  --color-gv-wine: #120a0c;
-  --color-gv-wine-soft: #1f1215;
-  --color-gv-ink: #231c20;
-  --color-gv-mute: #6b5a5e;
-  --color-gv-paper: #fbf8f8;
-  --color-gv-line: #ece2e1;
+  --color-gv-green: #1a8a3c;
+  --color-gv-green-strong: #13702f;
+  --color-gv-glow: #22c55e;
+  --color-gv-mint: #86efac;
+  --color-gv-night: #06130b;
+  --color-gv-night-soft: #0d2216;
+  --color-gv-ink: #13201a;
+  --color-gv-mute: #56665c;
+  --color-gv-paper: #f6faf7;
+  --color-gv-line: #e1ebe4;
   --shadow-card: 0 1px 3px 0 rgb(16 24 40 / 0.05), 0 1px 2px -1px rgb(16 24 40 / 0.05);
   --shadow-lift: 0 4px 6px -1px rgb(16 24 40 / 0.05), 0 12px 24px -4px rgb(16 24 40 / 0.08);
 }
@@ -107,8 +107,8 @@ body {
   position: relative;
   isolation: isolate;
   background:
-    radial-gradient(900px 520px at 85% -10%, rgb(234 56 42 / 0.32), transparent 62%),
-    radial-gradient(700px 480px at -10% 100%, rgb(255 181 166 / 0.1), transparent 60%), #120a0c;
+    radial-gradient(900px 520px at 85% -10%, rgb(34 197 94 / 0.3), transparent 62%),
+    radial-gradient(700px 480px at -10% 100%, rgb(134 239 172 / 0.1), transparent 60%), #06130b;
   color: #fff;
 }
 .lp-dark::before {
@@ -126,7 +126,7 @@ body {
 
 .lp-btn-primary {
   box-shadow:
-    0 10px 30px -10px rgb(234 56 42 / 0.8),
+    0 10px 30px -10px rgb(26 138 60 / 0.8),
     inset 0 1px 0 rgb(255 255 255 / 0.2);
 }
 

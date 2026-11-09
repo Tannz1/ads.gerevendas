@@ -18,7 +18,7 @@ const sora = localFont({
   display: "swap",
 });
 
-export const viewport: Viewport = { themeColor: "#120a0c" };
+export const viewport: Viewport = { themeColor: "#06130b" };
 
 const CRM_URL = "https://www.gerevendascrm.com.br/";
 
@@ -53,18 +53,18 @@ const segments = [
 ];
 
 const included = [
-  "Estratégia e cinco anúncios por rodada, para feed e stories",
-  "Imagens criadas pela IA ou fotos do seu negócio",
+  "Cinco versões do anúncio a cada produto, para feed e stories",
+  "A foto do seu produto em todas as versões",
   "Editor para ajustar título, texto, preço, cor e foto",
   "Campanha montada no Facebook e no Instagram",
-  "Painel com investimento, cliques e conversas",
-  "Download das peças em PNG",
+  "Painel com investimento, conversas e custo por conversa",
+  "Registro das vendas que vieram das conversas",
 ];
 
 const faq = [
   {
     q: "Preciso entender de tráfego pago?",
-    a: "Não. Você responde perguntas sobre o seu negócio com as suas palavras: o que vende, quanto custa, para quem e onde atende. A estratégia, o público e os textos saem dessas respostas.",
+    a: "Não. Você manda a foto do produto, diz o preço e escolhe a região e o valor por dia. Os textos, as versões do anúncio e a campanha saem dessas respostas.",
   },
   {
     q: "Preciso ter Instagram ou página no Facebook?",
@@ -72,7 +72,7 @@ const faq = [
   },
   {
     q: "A IA pode inventar promoção, preço ou depoimento?",
-    a: "Não. Ela só usa o que você informou no cadastro. Você revisa cada peça antes de publicar e pode mudar qualquer texto.",
+    a: "Não. Ela só usa o que você escreveu: preço, parcelamento, desconto ou entrega entram no anúncio só se você informou. Você revisa cada peça antes de publicar e pode mudar qualquer texto.",
   },
   {
     q: "Quanto vou gastar com os anúncios?",
@@ -80,7 +80,7 @@ const faq = [
   },
   {
     q: "Posso usar fotos do meu negócio?",
-    a: "Pode. Envie uma foto em JPG ou PNG de até 5 MB. Se preferir, a IA cria uma imagem nova para a peça.",
+    a: "Deve. O anúncio começa pela foto do seu produto, em JPG ou PNG de até 5 MB. Pode ser do celular mesmo.",
   },
   {
     q: "Quando o anúncio começa a aparecer?",
@@ -96,6 +96,7 @@ export default function Home() {
       <main>
         <Hero />
         <Segments />
+        <PhotoStart />
         <Compare />
         <Storyboard />
         <Showcase />
@@ -115,10 +116,10 @@ export default function Home() {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-30 border-b border-white/8 bg-gv-wine/95 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-white/8 bg-gv-night/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between gap-4 px-4 sm:h-[72px] sm:px-8">
         <BrandLogo tone="light" />
-        <nav aria-label="Principal" className="hidden items-center gap-7 text-[14.5px] text-[#eadbd7] lg:flex">
+        <nav aria-label="Principal" className="hidden items-center gap-7 text-[14.5px] text-[#d6e6dc] lg:flex">
           <a href="#como-funciona" className="hover:text-white">
             Como funciona
           </a>
@@ -135,11 +136,11 @@ function Header() {
         <div className="flex items-center gap-1 sm:gap-3">
           <Link
             href="/entrar"
-            className="hidden px-3 py-2 text-[14.5px] font-semibold text-[#eadbd7] hover:text-white sm:block"
+            className="hidden px-3 py-2 text-[14.5px] font-semibold text-[#d6e6dc] hover:text-white sm:block"
           >
             Entrar
           </Link>
-          <CtaLink size="sm">Criar meus anúncios</CtaLink>
+          <CtaLink size="sm">Criar meu anúncio</CtaLink>
         </div>
       </div>
     </header>
@@ -151,19 +152,19 @@ function Hero() {
     <section className="lp-dark">
       <div className="mx-auto grid max-w-[1240px] gap-12 px-4 pt-14 pb-20 sm:px-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:items-center lg:gap-14 lg:pt-20 lg:pb-28">
         <div>
-          <p className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-[13px] font-semibold text-[#eadbd7]">
-            <span aria-hidden className="size-2 rounded-full bg-gv-fire" />
-            Anúncios com IA para Instagram e Facebook
+          <p className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-[13px] font-semibold text-[#d6e6dc]">
+            <span aria-hidden className="size-2 rounded-full bg-gv-glow" />
+            Anúncios simples para negócios locais
           </p>
           <h1 className="mt-6 text-[clamp(2.5rem,5.2vw,4.25rem)] leading-[1.03] font-bold tracking-[-0.045em] text-balance">
-            Você diz o que vende. A gente faz o anúncio.
+            Da foto ao cliente no WhatsApp.
           </h1>
-          <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-[#cdbcb8] sm:text-xl">
-            Conte sobre o seu negócio em poucas frases e receba a estratégia e cinco anúncios prontos para o feed e os
-            stories, com o seu preço e o botão para o seu WhatsApp. Você ajusta, aprova e publica.
+          <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-[#b6c8bc] sm:text-xl">
+            Tire a foto do que você quer vender, diga o preço e escolha quanto investir. O anúncio vai para o Instagram
+            e o Facebook e os clientes chamam você direto no WhatsApp.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
-            <CtaLink size="lg">Criar meus anúncios</CtaLink>
+            <CtaLink size="lg">Criar meu anúncio</CtaLink>
             <a
               href="#como-funciona"
               className="inline-flex h-13 items-center rounded-xl border border-white/20 bg-white/5 px-6 font-semibold text-white transition-colors hover:border-white/35 hover:bg-white/10"
@@ -171,10 +172,10 @@ function Hero() {
               Ver como funciona
             </a>
           </div>
-          <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-[#bfaea9]">
+          <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-[#9fb3a6]">
             <Tick>R$ 199 por mês no piloto</Tick>
-            <Tick>Você aprova cada peça</Tick>
-            <Tick>Campanha nasce pausada</Tick>
+            <Tick>Pronto em poucos minutos</Tick>
+            <Tick>Só roda com o seu ok</Tick>
           </ul>
         </div>
 
@@ -203,6 +204,58 @@ function Segments() {
   );
 }
 
+/* ---------------------------------------------------------------- começa pela foto */
+
+function PhotoStart() {
+  const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+  return (
+    <section aria-labelledby="foto-titulo" className="mx-auto max-w-[1240px] px-4 pt-24 sm:px-8 lg:pt-32">
+      <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-center lg:gap-16">
+        <figure className="relative">
+          {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática da LP, já otimizada */}
+          <img
+            src={`${base}/lp/foto-do-produto.jpg`}
+            alt="Dona de padaria fotografando um bolo com o celular no balcão da loja"
+            width={1536}
+            height={1024}
+            loading="lazy"
+            className="aspect-[3/2] w-full rounded-[28px] object-cover shadow-[0_40px_80px_-40px_rgb(6_40_20/0.6)]"
+          />
+          <figcaption className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-semibold shadow-lg">
+            <span className="size-2 rounded-full bg-gv-glow" />
+            Foto do celular serve
+          </figcaption>
+        </figure>
+        <div>
+          <p className="font-semibold text-gv-green">Sem designer, sem agência</p>
+          <h2
+            id="foto-titulo"
+            className="mt-3 text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.06] font-bold tracking-[-0.04em]"
+          >
+            Tudo começa com uma foto do seu produto
+          </h2>
+          <p className="mt-6 text-lg leading-relaxed text-gv-mute">
+            Você fotografa o que quer vender, diz o preço e o que destacar. A gente transforma em cinco versões de
+            anúncio com a sua foto e coloca no Instagram e no Facebook, levando as pessoas direto para o seu WhatsApp.
+          </p>
+          <ul className="mt-8 grid gap-3 text-[17px]">
+            {["Foto e preço do produto", "Cinco versões prontas para aprovar", "Clientes chamando no WhatsApp"].map(
+              (t, i) => (
+                <li key={t} className="flex items-center gap-3">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-gv-green text-sm font-bold text-white">
+                    {i + 1}
+                  </span>
+                  {t}
+                </li>
+              ),
+            )}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ---------------------------------------------------------------- comparação */
 
 function Compare() {
@@ -219,16 +272,16 @@ function Compare() {
           Arte no Canva, texto do zero e o Gerenciador de Anúncios cheio de opções. Um erro no orçamento sai do seu
           bolso.
         </CompareCard>
-        <div className="relative rounded-3xl bg-gv-wine p-8 text-white shadow-[0_30px_60px_-30px_rgb(67_27_32/0.7)]">
-          <span className="absolute -top-3 left-8 rounded-full bg-gv-red px-3 py-1 text-xs font-bold">
+        <div className="relative rounded-3xl bg-gv-night p-8 text-white shadow-[0_30px_60px_-30px_rgb(6_40_20/0.7)]">
+          <span className="absolute -top-3 left-8 rounded-full bg-gv-green px-3 py-1 text-xs font-bold">
             Com o GereVendas Ads
           </span>
-          <h3 className="text-xl font-bold">Você responde, a IA monta</h3>
-          <p className="mt-3 leading-relaxed text-[#cdbcb8]">
-            Perguntas simples sobre o seu negócio viram estratégia, cinco anúncios e a campanha pronta no Facebook e no
-            Instagram, esperando o seu ok para gastar qualquer real.
+          <h3 className="text-xl font-bold">Você manda a foto, a IA monta</h3>
+          <p className="mt-3 leading-relaxed text-[#b6c8bc]">
+            A foto do produto, o preço e o que você quer destacar viram cinco anúncios e a campanha pronta no Facebook e
+            no Instagram, esperando o seu ok para gastar qualquer real.
           </p>
-          <p className="mt-6 flex items-center gap-2 font-semibold text-gv-peach">
+          <p className="mt-6 flex items-center gap-2 font-semibold text-gv-mint">
             <CheckIcon />
             R$ 199 por mês, sem fazer arte nem configurar campanha
           </p>
@@ -270,7 +323,7 @@ function Showcase() {
         <ul className="mt-14 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-5 lg:items-center">
           {BAKERY_ROUND.map(({ ad, stories }) => (
             <li key={ad.template} className={cn(stories && "md:row-span-2 lg:row-span-1")}>
-              <div className="overflow-hidden rounded-2xl shadow-[0_24px_40px_-24px_rgb(67_27_32/0.55)]">
+              <div className="overflow-hidden rounded-2xl shadow-[0_24px_40px_-24px_rgb(6_40_20/0.55)]">
                 <BakeryAd ad={ad} stories={stories} />
               </div>
               <p className="mt-3 text-sm font-semibold">
@@ -321,12 +374,12 @@ function Control() {
             {points.map((p) => (
               <li key={p.title}>
                 <p className="flex items-center gap-2 font-bold text-white">
-                  <span className="text-gv-peach">
+                  <span className="text-gv-mint">
                     <CheckIcon />
                   </span>
                   {p.title}
                 </p>
-                <p className="mt-2 leading-relaxed text-[#cdbcb8]">{p.text}</p>
+                <p className="mt-2 leading-relaxed text-[#b6c8bc]">{p.text}</p>
               </li>
             ))}
           </ul>
@@ -354,7 +407,7 @@ function Control() {
               </div>
               <div>
                 <dt className="text-gv-mute">Máximo</dt>
-                <dd className="mt-0.5 text-lg font-bold text-gv-red">R$ 140</dd>
+                <dd className="mt-0.5 text-lg font-bold text-gv-green">R$ 140</dd>
               </div>
             </dl>
             <p className="mt-4 text-sm leading-relaxed text-gv-mute">
@@ -364,7 +417,7 @@ function Control() {
               <span className="flex-1 rounded-xl border border-gv-line py-3 text-center text-sm font-semibold">
                 Voltar
               </span>
-              <span className="flex-[1.6] rounded-xl bg-gv-red py-3 text-center text-sm font-bold text-white">
+              <span className="flex-[1.6] rounded-xl bg-gv-green py-3 text-center text-sm font-bold text-white">
                 Confirmar R$ 20 por dia
               </span>
             </div>
@@ -382,14 +435,14 @@ function Results() {
     <section className="bg-gv-paper">
       <div className="mx-auto grid max-w-[1240px] gap-14 px-4 py-24 sm:px-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center lg:py-32">
         <div aria-hidden className="order-last lg:order-first">
-          <div className="rounded-3xl border border-gv-line bg-white p-6 shadow-[0_30px_60px_-34px_rgb(67_27_32/0.5)] sm:p-7">
+          <div className="rounded-3xl border border-gv-line bg-white p-6 shadow-[0_30px_60px_-34px_rgb(6_40_20/0.5)] sm:p-7">
             <div className="grid grid-cols-3 gap-3">
-              <div className="col-span-3 rounded-2xl bg-gv-wine p-5 text-white sm:col-span-1">
+              <div className="col-span-3 rounded-2xl bg-gv-night p-5 text-white sm:col-span-1">
                 <p className="text-sm text-white/70">Investido</p>
                 <p className="mt-1 text-2xl font-bold">R$ 86,40</p>
               </div>
-              <Metric label="Cliques" value="312" />
               <Metric label="Conversas" value="27" />
+              <Metric label="Por conversa" value="R$ 3,20" />
             </div>
             <div className="mt-4 flex items-center gap-4 rounded-2xl border border-gv-line p-4">
               <div className="w-16 shrink-0 overflow-hidden rounded-lg">
@@ -410,14 +463,14 @@ function Results() {
 
         <div>
           <h2 className="text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.06] font-bold tracking-[-0.04em]">
-            Veja o que cada campanha trouxe
+            Veja o que cada anúncio trouxe
           </h2>
           <p className="mt-6 max-w-lg text-lg leading-relaxed text-gv-mute">
-            No painel, cada campanha mostra quanto já foi investido, quantos cliques recebeu e quantas conversas começou
-            no WhatsApp. Sem abrir o Gerenciador de Anúncios e sem planilha.
+            No app, cada anúncio mostra quanto já foi investido, quantas conversas começou no WhatsApp e quanto custou
+            cada uma. Se uma conversa virou venda, você registra ali mesmo.
           </p>
           <CtaLink size="lg" className="mt-9">
-            Criar meus anúncios
+            Criar meu anúncio
           </CtaLink>
         </div>
       </div>
@@ -442,16 +495,16 @@ function Pricing() {
       <div className="mx-auto max-w-[1240px] px-4 py-24 sm:px-8 lg:py-32">
         <div className="grid overflow-hidden rounded-[32px] border border-gv-line lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <div className="lp-dark p-8 sm:p-12">
-            <p className="font-semibold text-gv-peach">Plano do piloto</p>
+            <p className="font-semibold text-gv-mint">Plano do piloto</p>
             <p className="mt-4 flex items-baseline gap-2">
               <span className="text-[clamp(3.4rem,8vw,5.5rem)] leading-none font-bold tracking-[-0.05em]">R$ 199</span>
-              <span className="text-lg font-semibold text-[#cdbcb8]">por mês</span>
+              <span className="text-lg font-semibold text-[#b6c8bc]">por mês</span>
             </p>
-            <p className="mt-5 max-w-sm leading-relaxed text-[#cdbcb8]">
+            <p className="mt-5 max-w-sm leading-relaxed text-[#b6c8bc]">
               Valor fixo pela ferramenta, sem contrato de agência e sem precisar de designer.
             </p>
             <CtaLink size="lg" className="mt-9 w-full sm:w-auto">
-              Criar meus anúncios
+              Criar meu anúncio
             </CtaLink>
           </div>
           <div className="bg-white p-8 sm:p-12">
@@ -459,7 +512,7 @@ function Pricing() {
             <ul className="mt-7 grid gap-4 text-[17px]">
               {included.map((item) => (
                 <li key={item} className="flex items-start gap-3">
-                  <span className="mt-0.5 text-gv-red">
+                  <span className="mt-0.5 text-gv-green">
                     <CheckIcon />
                   </span>
                   <span>{item}</span>
@@ -490,7 +543,7 @@ function Faq() {
                 {f.q}
                 <span
                   aria-hidden
-                  className="lp-faq-icon grid size-8 shrink-0 place-items-center rounded-full border border-gv-line text-xl leading-none text-gv-red transition-transform"
+                  className="lp-faq-icon grid size-8 shrink-0 place-items-center rounded-full border border-gv-line text-xl leading-none text-gv-green transition-transform"
                 >
                   +
                 </span>
@@ -511,13 +564,13 @@ function FinalCta() {
     <section className="lp-dark">
       <div className="mx-auto max-w-[1240px] px-4 py-28 text-center sm:px-8 lg:py-36">
         <h2 className="mx-auto max-w-3xl text-[clamp(2.2rem,5vw,4.2rem)] leading-[1.04] font-bold tracking-[-0.045em]">
-          Conte o que você vende. O anúncio fica com a gente.
+          Mande a foto. O anúncio fica com a gente.
         </h2>
-        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#cdbcb8]">
+        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#b6c8bc]">
           R$ 199 por mês no piloto. A campanha só vai ao ar com a sua confirmação.
         </p>
         <CtaLink size="lg" className="mt-10">
-          Criar meus anúncios
+          Criar meu anúncio
         </CtaLink>
       </div>
     </section>
@@ -526,20 +579,20 @@ function FinalCta() {
 
 function Footer() {
   return (
-    <footer className="border-t border-white/6 bg-[#0c0708] text-[#bfaea9]">
+    <footer className="border-t border-white/6 bg-[#040c07] text-[#9fb3a6]">
       <div className="mx-auto flex max-w-[1240px] flex-col gap-8 px-4 py-12 sm:px-8 md:flex-row md:items-start md:justify-between">
         <div>
           <BrandLogo tone="light" />
           <p className="mt-4 max-w-xs text-sm leading-relaxed">Um produto Gere Vendas para quem vende no bairro.</p>
         </div>
         <nav aria-label="Rodapé" className="flex flex-col gap-3 text-sm">
-          <Link href="/entrar" className="hover:text-gv-peach">
+          <Link href="/entrar" className="hover:text-gv-mint">
             Entrar
           </Link>
-          <a href="#preco" className="hover:text-gv-peach">
+          <a href="#preco" className="hover:text-gv-mint">
             Preço
           </a>
-          <a href={CRM_URL} className="hover:text-gv-peach">
+          <a href={CRM_URL} className="hover:text-gv-mint">
             Conheça o Gere Vendas CRM
           </a>
         </nav>
@@ -559,7 +612,7 @@ function CtaLink({ size, className, children }: { size: "sm" | "lg"; className?:
     <Link
       href="/entrar"
       className={cn(
-        "lp-btn-primary inline-flex items-center justify-center rounded-xl bg-gv-red font-bold whitespace-nowrap text-white transition-colors hover:bg-gv-red-strong",
+        "lp-btn-primary inline-flex items-center justify-center rounded-xl bg-gv-green font-bold whitespace-nowrap text-white transition-colors hover:bg-gv-green-strong",
         size === "sm" ? "h-10 px-4 text-sm" : "h-13 px-7 text-base",
         className,
       )}
@@ -572,7 +625,7 @@ function CtaLink({ size, className, children }: { size: "sm" | "lg"; className?:
 function Tick({ children }: { children: ReactNode }) {
   return (
     <li className="flex items-center gap-2">
-      <span className="text-gv-peach">
+      <span className="text-gv-mint">
         <CheckIcon />
       </span>
       {children}

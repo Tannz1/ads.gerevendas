@@ -3,7 +3,7 @@ import { p } from "./paths";
 
 test("landing mostra proposta, preço e mídia à parte", async ({ page }) => {
   await page.goto(p("/"));
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Você diz o que vende");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Da foto ao cliente no WhatsApp");
   await expect(page.locator("#preco")).toContainText("R$ 199");
   await expect(page.locator("#preco")).toContainText("A verba dos anúncios não está incluída");
   await expect(page.getByText("Exemplo ilustrativo")).toBeVisible();
@@ -11,7 +11,7 @@ test("landing mostra proposta, preço e mídia à parte", async ({ page }) => {
 
 test("CTA leva ao login", async ({ page }) => {
   await page.goto(p("/"));
-  await page.getByRole("link", { name: "Criar meus anúncios" }).first().click();
+  await page.getByRole("link", { name: "Criar meu anúncio" }).first().click();
   await expect(page).toHaveURL(/\/entrar$/);
   await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible();
 });
@@ -21,5 +21,5 @@ test("rota inexistente mostra 404 em português", async ({ page }) => {
   expect(res?.status()).toBe(404);
   await expect(page.getByRole("heading", { name: "Página não encontrada" })).toBeVisible();
   await page.getByRole("link", { name: "Voltar ao início" }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Você diz o que vende");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("Da foto ao cliente no WhatsApp");
 });

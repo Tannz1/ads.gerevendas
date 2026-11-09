@@ -80,7 +80,7 @@ export function HeroDemo() {
       <div className="mt-6 grid items-start gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,300px)]">
         <div className="sm:pt-10">
           <figure className="rounded-2xl border border-white/12 bg-white/[0.06] p-5 backdrop-blur-md">
-            <figcaption className="flex items-center gap-2 text-[13px] font-semibold text-gv-peach">
+            <figcaption className="flex items-center gap-2 text-[13px] font-semibold text-gv-mint">
               <PenIcon />O que o dono escreveu no cadastro
             </figcaption>
             <blockquote className="mt-3 min-h-[7.5em] text-[15.5px] leading-relaxed text-white">
@@ -144,10 +144,10 @@ export function HeroDemo() {
                   />
                 </div>
               ) : (
-                <div aria-hidden className="relative aspect-[4/5] animate-pulse bg-[#efe8e6]">
-                  <div className="absolute top-7 left-7 h-6 w-3/5 rounded bg-[#e2d8d5]" />
-                  <div className="absolute top-16 left-7 h-6 w-2/5 rounded bg-[#e2d8d5]" />
-                  <div className="absolute bottom-8 left-7 h-9 w-28 rounded bg-[#e2d8d5]" />
+                <div aria-hidden className="relative aspect-[4/5] animate-pulse bg-[#edf2ef]">
+                  <div className="absolute top-7 left-7 h-6 w-3/5 rounded bg-[#dbe5df]" />
+                  <div className="absolute top-16 left-7 h-6 w-2/5 rounded bg-[#dbe5df]" />
+                  <div className="absolute bottom-8 left-7 h-9 w-28 rounded bg-[#dbe5df]" />
                 </div>
               )}
             </div>
