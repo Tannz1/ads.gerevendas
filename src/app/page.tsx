@@ -18,7 +18,7 @@ const sora = localFont({
   display: "swap",
 });
 
-export const viewport: Viewport = { themeColor: "#06130b" };
+export const viewport: Viewport = { themeColor: "#ffffff" };
 
 const CRM_URL = "https://www.gerevendascrm.com.br/";
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -88,25 +88,22 @@ export default function Home() {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-30 border-b border-white/8 bg-gv-night/95 backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-gv-line/80 bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-5 sm:px-8">
-        <BrandLogo tone="light" />
-        <nav aria-label="Principal" className="hidden items-center gap-7 text-[15px] text-[#d6e6dc] lg:flex">
-          <a href="#como-funciona" className="hover:text-white">
+        <BrandLogo />
+        <nav aria-label="Principal" className="hidden items-center gap-8 text-[15px] font-medium text-gv-mute lg:flex">
+          <a href="#como-funciona" className="hover:text-gv-ink">
             Como funciona
           </a>
-          <a href="#preco" className="hover:text-white">
+          <a href="#preco" className="hover:text-gv-ink">
             Preço
           </a>
-          <a href="#duvidas" className="hover:text-white">
+          <a href="#duvidas" className="hover:text-gv-ink">
             Dúvidas
           </a>
         </nav>
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Link
-            href="/entrar"
-            className="hidden px-3 py-2 text-[15px] font-semibold text-[#d6e6dc] hover:text-white sm:block"
-          >
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Link href="/entrar" className="hidden text-[15px] font-semibold text-gv-mute hover:text-gv-ink sm:block">
             Entrar
           </Link>
           <CtaLink size="sm">Criar meu anúncio</CtaLink>
@@ -118,29 +115,51 @@ function Header() {
 
 function Hero() {
   return (
-    <section className="lp-dark">
-      <div className="mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-12 px-5 pt-12 pb-16 sm:px-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-10 lg:pt-20 lg:pb-24">
+    <section className="relative overflow-hidden bg-[#f3faf5]">
+      {/* Brilho suave do verde da marca, atrás da foto. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-40 right-[-10%] size-[720px] rounded-full bg-[radial-gradient(closest-side,rgb(34_197_94/0.22),transparent)]"
+      />
+      <div className="relative mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-12 px-5 pt-10 pb-16 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16 lg:pt-16 lg:pb-24">
         <div>
-          <p className="text-[15px] font-semibold text-gv-mint">Para quem vende no bairro</p>
-          <h1 className="mt-4 text-[clamp(2.4rem,9vw,4.4rem)] leading-[1.02] font-bold tracking-[-0.045em] text-balance">
-            Seu produto é bom. Falta gente ver.
-          </h1>
-          <p className="mt-5 max-w-[32rem] text-[18px] leading-relaxed text-[#c3d4c9] sm:text-xl">
-            Mande a foto do produto. A gente cria o anúncio no Instagram e no Facebook, e os clientes chamam você direto
-            no WhatsApp.
+          <p className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[14px] font-semibold text-gv-green shadow-[0_4px_14px_-6px_rgb(6_40_20/0.25)]">
+            <span aria-hidden className="size-2 rounded-full bg-gv-glow" />
+            Para quem vende no bairro
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <h1 className="mt-5 text-[clamp(2.6rem,9.5vw,4.6rem)] leading-[1] font-bold tracking-[-0.05em] text-balance text-gv-ink">
+            Seu produto é bom. <span className="text-gv-green">Falta gente ver.</span>
+          </h1>
+          <p className="mt-6 max-w-[30rem] text-[18px] leading-relaxed text-gv-mute sm:text-[20px]">
+            Mande a foto do produto. A gente cria o anúncio no Instagram e no Facebook, e quem se interessa chama você
+            direto no WhatsApp.
+          </p>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
             <CtaLink size="lg" className="w-full sm:w-auto">
               Criar meu anúncio
             </CtaLink>
             <a
-              href="#como-funciona"
-              className="inline-flex h-14 items-center justify-center rounded-2xl border border-white/20 px-6 text-[16px] font-semibold text-white transition-colors hover:bg-white/10"
+              href="#passos"
+              className="inline-flex h-12 items-center justify-center gap-2.5 text-[16px] font-semibold text-gv-ink hover:text-gv-green"
             >
-              Ver como funciona
+              <span className="grid size-10 place-items-center rounded-full bg-white shadow-[0_6px_16px_-8px_rgb(6_40_20/0.4)]">
+                <svg aria-hidden viewBox="0 0 24 24" className="ml-0.5 size-4 text-gv-green" fill="currentColor">
+                  <path d="M8 5.5v13l11-6.5z" />
+                </svg>
+              </span>
+              Ver em 2 minutos
             </a>
           </div>
-          <p className="mt-5 text-[15px] text-[#9fb3a6]">R$ 199/mês no piloto · sem contrato · só roda com o seu ok</p>
+          <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5 text-[15px] font-medium text-gv-ink/80">
+            {["R$ 199/mês no piloto", "Sem contrato", "Só roda com o seu ok"].map((t) => (
+              <li key={t} className="flex items-center gap-2">
+                <span className="text-gv-green">
+                  <CheckIcon />
+                </span>
+                {t}
+              </li>
+            ))}
+          </ul>
         </div>
 
         <HeroVisual />
@@ -149,40 +168,61 @@ function Hero() {
   );
 }
 
-/** Um post patrocinado e a conversa que ele gerou: o resultado que o dono quer, sem animação pesada. */
+/** A dona do negócio recebendo a conversa que o anúncio trouxe. Pessoa, negócio e conversa são ilustrativos. */
 function HeroVisual() {
   return (
-    <figure className="mx-auto w-full max-w-[420px] lg:mr-0 lg:ml-auto">
-      {/* O post ocupa a esquerda; a conversa encosta na borda direita da coluna, sem vazar. */}
-      <div className="relative pb-20">
-        <div className="w-[88%] overflow-hidden rounded-[26px] bg-white text-gv-ink shadow-[0_40px_80px_-30px_rgb(0_0_0/0.85)]">
-          <div className="flex items-center gap-3 px-4 py-3">
-            <span className="grid size-9 place-items-center rounded-full bg-[#c2410c] text-xs font-bold text-white">
-              {BAKERY.initials}
+    <figure className="mx-auto w-full max-w-[460px] lg:mr-0 lg:ml-auto">
+      <div className="relative px-3 pt-6 pb-10 sm:px-6">
+        {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática da LP, já otimizada */}
+        <img
+          src={`${base}/lp/dona-padaria.jpg`}
+          alt="Dona de padaria sorrindo enquanto olha o celular no balcão"
+          width={880}
+          height={1320}
+          fetchPriority="high"
+          className="aspect-[4/5] w-full rounded-[32px] object-cover shadow-[0_40px_80px_-40px_rgb(6_40_20/0.55)]"
+        />
+
+        {/* Mensagem chegando no WhatsApp */}
+        <div className="absolute top-[14%] left-0 w-[68%] max-w-[280px] rounded-2xl bg-white p-3.5 shadow-[0_24px_48px_-20px_rgb(6_40_20/0.45)]">
+          <div className="flex items-center gap-2.5">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#25d366] text-white">
+              <WhatsIcon className="size-5" />
             </span>
             <div className="min-w-0 leading-tight">
-              <p className="truncate text-sm font-semibold">{BAKERY.businessName}</p>
-              <p className="text-xs text-gv-mute">Patrocinado</p>
+              <p className="text-[13px] font-bold">Nova mensagem</p>
+              <p className="text-[12px] text-gv-mute">WhatsApp · agora</p>
             </div>
           </div>
-          <FluidAd
-            format="feed"
-            content={BAKERY.ad}
-            businessName={BAKERY.businessName}
-            priceLabel={BAKERY.priceLabel}
-            imageSrc={BAKERY.photo ?? null}
-            label={`Anúncio de exemplo: ${BAKERY.ad.headline}`}
-          />
-        </div>
-        <div className="absolute right-0 bottom-0 w-[70%] rounded-2xl bg-[#d9fdd3] p-3.5 text-[14.5px] leading-snug text-[#111b21] shadow-[0_20px_40px_-16px_rgb(0_0_0/0.7)]">
-          <p className="flex items-center gap-1.5 text-xs font-bold text-[#128c4a]">
-            <WhatsIcon className="size-3.5" />
-            Nova conversa
+          <p className="mt-2.5 rounded-xl bg-[#e7fbe3] px-3 py-2 text-[14px] leading-snug text-[#111b21]">
+            Oi! Vi o anúncio. Ainda tem o café da manhã completo?
           </p>
-          <p className="mt-1">Oi! Vi o anúncio. Ainda dá pra pedir o café da manhã pra amanhã?</p>
+        </div>
+
+        {/* O anúncio que trouxe a conversa */}
+        <div className="absolute right-0 bottom-0 flex w-[66%] max-w-[270px] items-center gap-3 rounded-2xl bg-white p-2.5 shadow-[0_24px_48px_-20px_rgb(6_40_20/0.45)]">
+          <div className="w-14 shrink-0 overflow-hidden rounded-lg">
+            <FluidAd
+              format="feed"
+              content={BAKERY.ad}
+              businessName={BAKERY.businessName}
+              priceLabel={BAKERY.priceLabel}
+              imageSrc={BAKERY.photo ?? null}
+            />
+          </div>
+          <div className="min-w-0 leading-tight">
+            <p className="flex items-center gap-1.5 text-[12px] font-semibold text-gv-green">
+              <span className="size-1.5 rounded-full bg-gv-glow" />
+              Anúncio no ar
+            </p>
+            <p className="mt-0.5 truncate text-[13.5px] font-bold">{BAKERY.ad.headline}</p>
+            <p className="text-[12px] text-gv-mute">Instagram e Facebook</p>
+          </div>
         </div>
       </div>
-      <figcaption className="mt-4 text-[13px] text-white/55">Exemplo ilustrativo, com negócio fictício</figcaption>
+      <figcaption className="mt-3 text-center text-[13px] text-gv-mute lg:text-right">
+        Exemplo ilustrativo, com negócio fictício
+      </figcaption>
     </figure>
   );
 }
@@ -242,7 +282,7 @@ function HowItWorks() {
     { title: "Receba clientes no WhatsApp", text: "Quem se interessa toca no anúncio e chama você." },
   ];
   return (
-    <section aria-labelledby="passos-titulo" className="bg-gv-paper">
+    <section id="passos" aria-labelledby="passos-titulo" className="scroll-mt-20 bg-gv-paper">
       <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-14 lg:py-24">
         <div>
           <p className="text-[15px] font-semibold text-gv-green">Simples assim</p>
