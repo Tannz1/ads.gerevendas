@@ -1,0 +1,28 @@
+{
+  "name": "gerevendas-ads-video",
+  "private": true,
+  "description": "Reels e VSL do GereVendas Ads (Remotion). Usa os componentes da LP do app em ../src.",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "voz": "node scripts/voz.mjs",
+    "render:reels": "remotion render src/index.ts ReelsUso out/reels-uso.mp4",
+    "render:apresentacao": "remotion render src/index.ts Apresentacao out/apresentacao.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.541",
+    "@remotion/tailwind-v4": "4.0.541",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "remotion": "4.0.541",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/react": "^19",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true
+  }
+}

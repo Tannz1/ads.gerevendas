@@ -58,16 +58,16 @@ const steps: Array<{ title: string; text: string; screen: ReactNode }> = [
 export function Storyboard() {
   return (
     <section id="como-funciona" aria-labelledby="como-funciona-titulo" className="scroll-mt-20 bg-gv-paper">
-      <div className="mx-auto max-w-[1240px] px-4 py-24 sm:px-8 lg:py-32">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
         <div className="max-w-2xl">
           <p className="font-semibold text-gv-green">Anúncios simples para negócios locais</p>
           <h2
             id="como-funciona-titulo"
-            className="mt-3 text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.06] font-bold tracking-[-0.04em]"
+            className="mt-3 text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]"
           >
             Da foto ao cliente no WhatsApp
           </h2>
-          <p className="mt-5 text-lg leading-relaxed text-gv-mute">
+          <p className="mt-4 text-[17px] leading-relaxed text-gv-mute">
             Oito telas no celular, do jeito que estão no app. Você vê exatamente o que vai ao ar antes de gastar
             qualquer real.
           </p>
@@ -76,10 +76,10 @@ export function Storyboard() {
         <ol
           tabIndex={0}
           aria-label="Passo a passo no app"
-          className="-mx-4 mt-14 flex snap-x snap-mandatory scroll-px-4 gap-5 overflow-x-auto px-4 pb-6 focus-visible:outline-2 focus-visible:outline-gv-green md:mx-0 md:grid md:snap-none md:grid-cols-2 md:gap-x-6 md:gap-y-14 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-4"
+          className="-mx-5 mt-10 flex snap-x snap-mandatory scroll-px-5 gap-5 overflow-x-auto px-5 pb-6 focus-visible:outline-2 focus-visible:outline-gv-green sm:-mx-8 sm:px-8 md:mx-0 md:grid md:snap-none md:grid-cols-2 md:gap-x-6 md:gap-y-14 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-4"
         >
           {steps.map((s, i) => (
-            <li key={s.title} className="w-[236px] shrink-0 snap-start md:w-auto">
+            <li key={s.title} className="w-[68vw] max-w-[260px] shrink-0 snap-start md:w-auto md:max-w-none">
               <Phone>{s.screen}</Phone>
               <div className="mx-auto mt-5 flex max-w-[260px] gap-3">
                 <span className="grid size-8 shrink-0 place-items-center rounded-full bg-gv-green text-sm font-bold text-white">
@@ -93,7 +93,8 @@ export function Storyboard() {
             </li>
           ))}
         </ol>
-        <p className="mt-8 text-sm text-gv-mute">
+        <p className="mt-2 text-[14px] text-gv-mute md:hidden">Arraste para o lado para ver os 8 passos →</p>
+        <p className="mt-4 text-[14px] text-gv-mute">
           Telas simplificadas do app com uma padaria fictícia. Os números da última tela são ilustrativos.
         </p>
       </div>
@@ -103,7 +104,7 @@ export function Storyboard() {
 
 /* ---------------------------------------------------------------- moldura e peças */
 
-function Phone({ children }: { children: ReactNode }) {
+export function Phone({ children }: { children: ReactNode }) {
   return (
     <div
       aria-hidden
@@ -181,7 +182,7 @@ function Check() {
 
 /* ---------------------------------------------------------------- telas */
 
-function ScreenHome() {
+export function ScreenHome() {
   return (
     <>
       <div className="rounded-2xl bg-gv-green p-3 text-white">
@@ -211,7 +212,7 @@ function ScreenHome() {
   );
 }
 
-function ScreenProduct() {
+export function ScreenProduct() {
   return (
     <>
       <Top step={1} title="O que você quer vender?" />
@@ -231,7 +232,7 @@ function ScreenProduct() {
   );
 }
 
-function ScreenOffer() {
+export function ScreenOffer() {
   return (
     <>
       <Top step={2} title="Qual é a sua oferta?" />
@@ -266,7 +267,7 @@ function ScreenOffer() {
   );
 }
 
-function ScreenPreview() {
+export function ScreenPreview() {
   return (
     <>
       <Top step={3} title="Olha como ficou!" />
@@ -282,7 +283,7 @@ function ScreenPreview() {
   );
 }
 
-function ScreenRegion() {
+export function ScreenRegion() {
   return (
     <>
       <Top step={4} title="Onde estão seus clientes?" />
@@ -306,7 +307,7 @@ function ScreenRegion() {
   );
 }
 
-function ScreenBudget() {
+export function ScreenBudget() {
   return (
     <>
       <Top step={5} title="Quanto quer investir?" />
@@ -337,7 +338,7 @@ function ScreenBudget() {
   );
 }
 
-function ScreenPublish() {
+export function ScreenPublish() {
   return (
     <>
       <Top step={6} title="Tudo pronto!" />
@@ -374,7 +375,7 @@ function ScreenPublish() {
   );
 }
 
-function ScreenResults() {
+export function ScreenResults() {
   return (
     <>
       <Top title="Seu anúncio em números" />

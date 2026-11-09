@@ -1,0 +1,30 @@
+/* Mesmos tokens e utilitários do app; o Tailwind também lê as classes dos componentes em ../src. */
+@import "../../src/app/globals.css";
+@source "../../src";
+@source "./";
+
+@font-face {
+  font-family: "Inter";
+  src: url("../../src/app/fonts/inter-latin.woff2") format("woff2");
+  font-weight: 100 900;
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("../../src/app/fonts/plus-jakarta-sans-latin.woff2") format("woff2");
+  font-weight: 600 800;
+}
+@font-face {
+  font-family: "Sora";
+  src: url("../../src/app/fonts/sora-latin.woff2") format("woff2");
+  font-weight: 300 800;
+}
+
+:root {
+  --font-body: "Inter";
+  --font-display: "Plus Jakarta Sans";
+  --font-sora: "Sora";
+}
+
+body {
+  background: #06130b;
+}
