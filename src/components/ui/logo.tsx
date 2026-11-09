@@ -4,7 +4,7 @@ import Link from "next/link";
 export function Logo({ href = "/" }: { href?: string }) {
   return (
     <Link href={href} className="flex items-center gap-2.5" aria-label="GereVendas Ads, início">
-      <span aria-hidden className="grid size-8 place-items-center rounded-[10px] bg-ink text-white">
+      <span aria-hidden className="grid size-8 place-items-center rounded-[10px] bg-brand text-white">
         <svg
           viewBox="0 0 24 24"
           className="size-4.5"

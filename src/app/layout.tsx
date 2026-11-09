@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     "Crie anúncios para o seu negócio local com inteligência artificial. Você revisa, edita e aprova antes de publicar.",
 };
 
-export const viewport: Viewport = { themeColor: "#f6f5f1" };
+export const viewport: Viewport = { themeColor: "#f6f8f7" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
