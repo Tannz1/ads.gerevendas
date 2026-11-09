@@ -1,4 +1,5 @@
 import "server-only";
+import type { CampaignStatus, MediaFundingStatus, MetaReviewStatus } from "@/contracts/campaigns";
 import type { MetaPoolStatus } from "@/contracts/meta";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { META_ONBOARDING_COLUMNS, type MetaOnboardingView } from "./steps";
@@ -13,6 +14,27 @@ export async function loadMetaOnboarding(organizationId: string): Promise<MetaOn
   return (data as MetaOnboardingView | null) ?? null;
 }
 
+export type BusinessContactsView = {
+  whatsapp_e164: string | null;
+  instagram_handle: string | null;
+};
+
+export async function loadBusinessContacts(organizationId: string): Promise<BusinessContactsView> {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("businesses")
+    .select("whatsapp_e164, instagram_handle")
+    .eq("organization_id", organizationId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const row = data as BusinessContactsView | null;
+  return {
+    whatsapp_e164: row?.whatsapp_e164 ?? null,
+    instagram_handle: row?.instagram_handle ?? null,
+  };
+}
+
 export type PoolOverview = { available: number; assigned: number; retired: number; waiting: number };
 export type PoolAccountView = {
   id: string;
@@ -25,15 +47,37 @@ export type PoolAccountView = {
   created_at: string;
 };
 
+export type OperatorSharedCampaignView = {
+  id: string;
+  organization_id: string;
+  organization_name: string;
+  name: string;
+  status: CampaignStatus;
+  meta_review_status: MetaReviewStatus;
+  simulated: boolean;
+  daily_budget_cents: number;
+  duration_days: number;
+  currency: string;
+  media_funding_status: MediaFundingStatus;
+  funded_amount_cents: number;
+  wallet_balance_cents: number;
+  created_at: string;
+  activated_at: string | null;
+};
+
 export async function isPlatformOperator(): Promise<boolean> {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase.rpc("am_i_platform_operator");
   return data === true;
 }
 
-export async function loadPool(simulated: boolean): Promise<{ overview: PoolOverview; accounts: PoolAccountView[] }> {
+export async function loadPool(simulated: boolean): Promise<{
+  overview: PoolOverview;
+  accounts: PoolAccountView[];
+  sharedCampaigns: OperatorSharedCampaignView[];
+}> {
   const supabase = await createSupabaseServerClient();
-  const [{ data: overview }, { data: accounts }] = await Promise.all([
+  const [{ data: overview }, { data: accounts }, { data: sharedCampaigns }] = await Promise.all([
     supabase.rpc("meta_pool_overview", { p_simulated: simulated }),
     supabase
       .from("meta_ad_account_pool")
@@ -41,9 +85,11 @@ export async function loadPool(simulated: boolean): Promise<{ overview: PoolOver
       .eq("simulated", simulated)
       .order("created_at", { ascending: false })
       .limit(200),
+    supabase.rpc("operator_shared_campaigns", { p_simulated: simulated }),
   ]);
   return {
     overview: (overview as PoolOverview | null) ?? { available: 0, assigned: 0, retired: 0, waiting: 0 },
     accounts: (accounts ?? []) as PoolAccountView[],
+    sharedCampaigns: (sharedCampaigns as OperatorSharedCampaignView[] | null) ?? [],
   };
 }

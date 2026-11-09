@@ -5,6 +5,7 @@ import { z } from "zod";
 import { apiError, type ApiResult } from "@/contracts/api";
 import {
   BILLING_EVENT_TYPES,
+  mediaTopupSchema,
   PLAN_MONTHLY_PRICE_CENTS,
   submitPilotFeedbackSchema,
   type BillingEventType,
@@ -84,4 +85,91 @@ export async function submitPilotFeedback(input: unknown): Promise<ApiResult<{ i
 
   revalidatePath("/app/criativos", "layout");
   return { ok: true, data: { id: data as string }, correlation_id: correlationId };
+}
+
+/**
+ * Adiciona saldo na carteira de verba de mídia da organização e financia automaticamente
+ * campanhas que estavam aguardando saldo na conta compartilhada (ADR 0009).
+ */
+export async function addMediaBalanceAction(
+  input: unknown,
+): Promise<ApiResult<{ balance_cents: number; reserved_cents: number; funded_campaigns: number; replayed: boolean }>> {
+  const correlationId = await getCorrelationId();
+  const parsed = mediaTopupSchema.safeParse(input);
+  if (!parsed.success) {
+    return apiError("validation_failed", "Revise o valor do saldo.", correlationId, fieldErrors(parsed.error));
+  }
+  const ctx = await getAppContext();
+  if (ctx.mode !== "supabase" || !ctx.organization) {
+    return apiError("feature_disabled", "Disponível no piloto com conta.", correlationId);
+  }
+  if (ctx.organization.role !== "owner" && ctx.organization.role !== "admin") {
+    return apiError(
+      "forbidden",
+      "Apenas o proprietário ou administrador pode adicionar saldo de mídia.",
+      correlationId,
+    );
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("add_media_balance", {
+    p_org: ctx.organization.id,
+    p_amount_cents: parsed.data.amount_cents,
+    p_provider: "mock",
+    p_external_reference: parsed.data.idempotency_key,
+    p_simulated: true,
+    p_correlation_id: correlationId,
+  });
+
+  if (error) {
+    if (error.code === "42501") return apiError("forbidden", "Sem permissão para adicionar saldo.", correlationId);
+    log("error", "billing.media_topup_failed", { correlation_id: correlationId, code: error.code });
+    return apiError("internal", "Não foi possível adicionar o saldo agora.", correlationId);
+  }
+
+  revalidatePath("/app/assinatura");
+  revalidatePath("/app/campanhas", "layout");
+  revalidatePath("/app/anuncios", "layout");
+  const res = data as { balance_cents: number; reserved_cents: number; funded_campaigns: number; replayed: boolean };
+  return { ok: true, data: res, correlation_id: correlationId };
+}
+
+/** Reserva saldo existente na carteira da empresa para financiar uma campanha específica. */
+export async function fundCampaignFromWalletAction(
+  campaignId: unknown,
+): Promise<ApiResult<{ funded: boolean; amount_cents: number }>> {
+  const correlationId = await getCorrelationId();
+  const id = z.uuid().safeParse(campaignId);
+  if (!id.success) return apiError("validation_failed", "Campanha inválida.", correlationId);
+  const ctx = await getAppContext();
+  if (ctx.mode !== "supabase" || !ctx.organization) {
+    return apiError("feature_disabled", "Disponível no piloto com conta.", correlationId);
+  }
+  if (ctx.organization.role !== "owner" && ctx.organization.role !== "admin") {
+    return apiError("forbidden", "Apenas o proprietário ou administrador pode reservar saldo.", correlationId);
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("fund_campaign_from_wallet", {
+    p_campaign: id.data,
+    p_correlation_id: correlationId,
+  });
+  if (error) {
+    if (error.message.includes("insufficient_media_balance")) {
+      return apiError(
+        "conflict",
+        "Saldo insuficiente na carteira de mídia. Adicione o valor da campanha primeiro.",
+        correlationId,
+      );
+    }
+    if (error.code === "42501") return apiError("forbidden", "Sem permissão.", correlationId);
+    log("error", "billing.fund_campaign_failed", { correlation_id: correlationId, code: error.code });
+    return apiError("internal", "Não foi possível reservar o saldo para a campanha agora.", correlationId);
+  }
+
+  revalidatePath("/app/assinatura");
+  revalidatePath("/app/campanhas", "layout");
+  revalidatePath("/app/anuncios", "layout");
+  const res = data as { funded: boolean; amount_cents: number };
+  return { ok: true, data: res, correlation_id: correlationId };
 }

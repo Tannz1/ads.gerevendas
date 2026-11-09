@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { serverEnv } from "@/lib/env";
 import { resolveFlags } from "@/lib/flags";
 import { getAppContext } from "@/server/context";
-import { loadMetaOnboarding } from "@/server/meta/data";
+import { loadBusinessContacts, loadMetaOnboarding } from "@/server/meta/data";
 import { resolveMetaBusinessMode } from "@/server/meta/mode";
 
 export const metadata: Metadata = { title: "Conexões Meta" };
@@ -14,8 +14,10 @@ export default async function ConnectionsPage() {
   const demo = ctx.mode === "demo" || !ctx.organization;
   const env = serverEnv();
   const mode = resolveMetaBusinessMode(env, resolveFlags(env));
-  const connection =
-    demo || ctx.mode !== "supabase" || !ctx.organization ? null : await loadMetaOnboarding(ctx.organization.id);
+  const [connection, contacts] =
+    demo || ctx.mode !== "supabase" || !ctx.organization
+      ? [null, null]
+      : await Promise.all([loadMetaOnboarding(ctx.organization.id), loadBusinessContacts(ctx.organization.id)]);
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -36,6 +38,7 @@ export default async function ConnectionsPage() {
 
       <ConnectionSteps
         connection={connection}
+        contacts={contacts}
         canManage={ctx.mode === "supabase" && ctx.organization?.role === "owner"}
         demo={demo}
         simulated={mode.kind !== "real"}

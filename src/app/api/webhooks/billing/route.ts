@@ -46,6 +46,24 @@ export async function POST(request: Request) {
     auth: { persistSession: false, autoRefreshToken: false },
   });
 
+  if (parsed.data.event_type === "media.topup_paid") {
+    const { data, error } = await supabase.rpc("add_media_balance", {
+      p_org: parsed.data.organization_id,
+      p_amount_cents: parsed.data.amount_cents,
+      p_provider: parsed.data.provider,
+      p_external_reference: parsed.data.event_id,
+      p_simulated: parsed.data.simulated,
+      p_correlation_id: correlationId,
+    });
+    if (error) {
+      log("error", "billing.media_topup_webhook_failed", { correlation_id: correlationId, code: error.code });
+      return NextResponse.json(apiError("internal", "Erro ao processar crédito de mídia.", correlationId), {
+        status: 500,
+      });
+    }
+    return NextResponse.json({ ok: true, data, correlation_id: correlationId });
+  }
+
   const { data, error } = await supabase.rpc("process_billing_event", {
     p_org: parsed.data.organization_id,
     p_provider: parsed.data.provider,

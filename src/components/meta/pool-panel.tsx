@@ -6,10 +6,13 @@ import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import type { PoolAccountView, PoolOverview } from "@/server/meta/data";
+import { formatCents } from "@/lib/money";
+import type { OperatorSharedCampaignView, PoolAccountView, PoolOverview } from "@/server/meta/data";
 import {
   createPoolAccount,
   listImportCandidates,
+  operatorActivateSharedCampaign,
+  operatorAddClientMediaBalance,
   registerPoolAccounts,
   retirePoolAccount,
 } from "@/server/meta/operator-actions";
@@ -17,6 +20,7 @@ import {
 type Props = {
   overview: PoolOverview;
   accounts: PoolAccountView[];
+  sharedCampaigns?: OperatorSharedCampaignView[];
   simulated: boolean;
   minAvailable: number;
   disabledMessage: string | null;
@@ -24,7 +28,14 @@ type Props = {
 
 const STATUS_LABEL = { available: "Livre", assigned: "Atribuída", retired: "Aposentada" } as const;
 
-export function PoolPanel({ overview, accounts, simulated, minAvailable, disabledMessage }: Props) {
+export function PoolPanel({
+  overview,
+  accounts,
+  sharedCampaigns = [],
+  simulated,
+  minAvailable,
+  disabledMessage,
+}: Props) {
   const router = useRouter();
   const [pending, start] = useTransition();
   const [message, setMessage] = useState<{ tone: "success" | "danger" | "info"; text: string } | null>(null);
@@ -182,6 +193,98 @@ export function PoolPanel({ overview, accounts, simulated, minAvailable, disable
                   </td>
                 </tr>
               ))}
+            </tbody>
+          </table>
+        )}
+      </Card>
+
+      <Card className="overflow-x-auto p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="font-display text-lg font-bold">Campanhas na conta compartilhada</h2>
+            <p className="mt-1 text-sm text-ink-soft">
+              Confirme o saldo de mídia do cliente e coloque no ar as campanhas pausadas (ADR 0009).
+            </p>
+          </div>
+          {simulated && <Badge tone="demo">Simulação</Badge>}
+        </div>
+        {sharedCampaigns.length === 0 ? (
+          <p className="mt-3 text-sm text-ink-soft">Nenhuma campanha na conta compartilhada neste modo.</p>
+        ) : (
+          <table className="mt-3 w-full text-left text-sm">
+            <thead className="text-ink-faint">
+              <tr>
+                <th className="py-2 pr-3">Cliente / Campanha</th>
+                <th className="py-2 pr-3">Verba total</th>
+                <th className="py-2 pr-3">Saldo / Verba</th>
+                <th className="py-2 pr-3">Status</th>
+                <th className="py-2 text-right">Ações</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sharedCampaigns.map((c) => {
+                const total = c.daily_budget_cents * c.duration_days;
+                const missing = Math.max(total - c.wallet_balance_cents, 2000);
+                return (
+                  <tr key={c.id} className="border-t border-line">
+                    <td className="py-2.5 pr-3">
+                      <div className="font-semibold">{c.organization_name}</div>
+                      <div className="text-xs text-ink-soft">{c.name}</div>
+                    </td>
+                    <td className="py-2.5 pr-3">
+                      {formatCents(total, c.currency)}
+                      <div className="text-xs text-ink-faint">
+                        {formatCents(c.daily_budget_cents, c.currency)} × {c.duration_days}d
+                      </div>
+                    </td>
+                    <td className="py-2.5 pr-3">
+                      <Badge tone={c.media_funding_status === "funded" ? "success" : "warning"}>
+                        {c.media_funding_status === "funded" ? "Verba reservada" : "Aguardando saldo"}
+                      </Badge>
+                      <div className="mt-1 text-xs text-ink-faint">
+                        Livre: {formatCents(c.wallet_balance_cents, c.currency)}
+                      </div>
+                    </td>
+                    <td className="py-2.5 pr-3">{c.status}</td>
+                    <td className="py-2.5 text-right">
+                      <div className="flex flex-wrap justify-end gap-2">
+                        {c.media_funding_status !== "funded" && (
+                          <Button
+                            variant="secondary"
+                            disabled={pending}
+                            onClick={() =>
+                              act(
+                                () =>
+                                  operatorAddClientMediaBalance({
+                                    organization_id: c.organization_id,
+                                    amount_cents: missing,
+                                    external_reference: `op_topup_${c.id}_${Date.now()}`,
+                                  }),
+                                `Saldo de ${formatCents(missing, c.currency)} confirmado para ${c.organization_name}.`,
+                              )
+                            }
+                          >
+                            Confirmar +{formatCents(missing, c.currency)}
+                          </Button>
+                        )}
+                        {c.status === "paused" && c.media_funding_status === "funded" && (
+                          <Button
+                            disabled={pending || Boolean(disabledMessage)}
+                            onClick={() =>
+                              act(
+                                () => operatorActivateSharedCampaign({ campaign_id: c.id }),
+                                `Campanha ${c.name} colocada no ar.`,
+                              )
+                            }
+                          >
+                            Ativar campanha
+                          </Button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

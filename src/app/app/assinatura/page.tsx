@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { PLAN_MONTHLY_PRICE_CENTS } from "@/contracts/billing";
 import { formatCents } from "@/lib/money";
-import { loadBillingOverview } from "@/server/billing-data";
+import { loadBillingOverview, loadMediaWallet } from "@/server/billing-data";
 import { getAppContext } from "@/server/context";
 import { loadCreditSummary } from "@/server/creatives-data";
 
@@ -40,9 +40,10 @@ export default async function BillingPage() {
   }
 
   const canManage = ctx.organization.role === "owner" || ctx.organization.role === "admin";
-  const [{ subscription, events }, credits] = await Promise.all([
+  const [{ subscription, events }, credits, { wallet: mediaWallet, entries: walletEntries }] = await Promise.all([
     loadBillingOverview(ctx.organization.id, canManage),
     loadCreditSummary(ctx.organization.id),
+    loadMediaWallet(ctx.organization.id, canManage),
   ]);
 
   const status = subscription?.status ?? "trialing";
@@ -105,6 +106,51 @@ export default async function BillingPage() {
         )}
 
         <BillingSandboxControls canManage={canManage} />
+      </Card>
+
+      <Card className="p-5 sm:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs font-semibold tracking-wider text-ink-soft uppercase">
+              Carteira de mídia (Conta compartilhada — ADR 0009)
+            </p>
+            <h2 className="mt-1 font-display text-2xl font-bold">
+              Saldo livre: {formatCents(mediaWallet.balance_cents, mediaWallet.currency)}
+            </h2>
+          </div>
+          <Badge tone={mediaWallet.balance_cents > 0 || mediaWallet.reserved_cents > 0 ? "success" : "neutral"}>
+            Reservado em campanhas: {formatCents(mediaWallet.reserved_cents, mediaWallet.currency)}
+          </Badge>
+        </div>
+        <p className="mt-2 text-sm text-ink-soft">
+          Quando sua empresa anuncia pela conta compartilhada da GereVendas, o saldo adicionado aqui reserva
+          automaticamente a verba das campanhas aguardando pagamento.
+        </p>
+
+        {walletEntries.length > 0 && (
+          <ul className="mt-4 divide-y divide-line border-t border-line pt-3 text-sm">
+            {walletEntries.map((entry) => (
+              <li key={entry.id} className="flex flex-wrap items-center justify-between gap-2 py-2">
+                <div>
+                  <span className="font-medium">
+                    {entry.kind === "topup_confirmed"
+                      ? "Recarga de saldo confirmada"
+                      : entry.kind === "campaign_reserved"
+                        ? "Verba reservada em campanha"
+                        : "Verba liberada"}
+                  </span>{" "}
+                  <span className="text-xs text-ink-soft">
+                    ({formatCents(entry.amount_cents, entry.currency)} · {entry.external_reference})
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {entry.simulated && <Badge tone="demo">Simulação</Badge>}
+                  <span className="text-xs text-ink-faint">{new Date(entry.created_at).toLocaleString("pt-BR")}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </Card>
 
       {canManage && (

@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { billingWebhookPayloadSchema, submitPilotFeedbackSchema } from "@/contracts/billing";
+import {
+  billingWebhookPayloadSchema,
+  mediaTopupSchema,
+  operatorMediaTopupSchema,
+  submitPilotFeedbackSchema,
+} from "@/contracts/billing";
 import { computeWebhookHmac, verifyWebhookHmac } from "@/lib/webhook-signature";
 
 describe("billing contracts and HMAC verification (Milestone 4 & 5)", () => {
@@ -40,6 +45,37 @@ describe("billing contracts and HMAC verification (Milestone 4 & 5)", () => {
         stage: "strategy",
         rating: "helpful",
         comment: "Propostas muito claras!",
+      }).success,
+    ).toBe(true);
+  });
+
+  it("valida recarga de saldo de mídia (cliente, operador e webhook media.topup_paid)", () => {
+    expect(
+      mediaTopupSchema.safeParse({
+        amount_cents: 14_000,
+        external_reference: "sim_topup_001",
+      }).success,
+    ).toBe(true);
+    expect(
+      mediaTopupSchema.safeParse({
+        amount_cents: 500,
+        external_reference: "sim_topup_low",
+      }).success,
+    ).toBe(false);
+    expect(
+      operatorMediaTopupSchema.safeParse({
+        organization_id: "11111111-1111-4111-8111-111111111111",
+        amount_cents: 21_000,
+        external_reference: "op_pix_001",
+      }).success,
+    ).toBe(true);
+    expect(
+      billingWebhookPayloadSchema.safeParse({
+        provider: "asaas_sandbox",
+        event_id: "evt_media_001",
+        event_type: "media.topup_paid",
+        organization_id: "11111111-1111-4111-8111-111111111111",
+        amount_cents: 14_000,
       }).success,
     ).toBe(true);
   });

@@ -16,7 +16,7 @@ export default async function PoolPage() {
   const env = serverEnv();
   const mode = resolveMetaBusinessMode(env, resolveFlags(env));
   const simulated = mode.kind !== "real";
-  const { overview, accounts } = await loadPool(simulated);
+  const { overview, accounts, sharedCampaigns } = await loadPool(simulated);
   const disabledMessage =
     mode.kind === "disabled"
       ? mode.reason === "kill_switch"
@@ -31,6 +31,7 @@ export default async function PoolPage() {
       <PoolPanel
         overview={overview}
         accounts={accounts}
+        sharedCampaigns={sharedCampaigns}
         simulated={simulated}
         minAvailable={env.META_POOL_MIN_AVAILABLE}
         disabledMessage={disabledMessage}

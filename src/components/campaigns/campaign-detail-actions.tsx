@@ -3,8 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { formatCents } from "@/lib/money";
+import { addMediaBalanceAction } from "@/server/billing";
 import { activatePausedCampaign, pauseActiveCampaign } from "@/server/campaigns";
-import type { CampaignStatus } from "@/contracts/campaigns";
+import type { CampaignStatus, MediaFundingStatus } from "@/contracts/campaigns";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -18,6 +19,8 @@ type Props = {
   simulated: boolean;
   isOwner: boolean;
   canPause: boolean;
+  mediaFundingStatus?: MediaFundingStatus;
+  fundedAmountCents?: number;
 };
 
 export function CampaignDetailActions({
@@ -29,6 +32,8 @@ export function CampaignDetailActions({
   simulated,
   isOwner,
   canPause,
+  mediaFundingStatus = "not_required",
+  fundedAmountCents = 0,
 }: Props) {
   const router = useRouter();
   const [confirmActivate, setConfirmActivate] = useState(false);
@@ -37,6 +42,30 @@ export function CampaignDetailActions({
   const [pending, start] = useTransition();
 
   const totalCents = dailyBudgetCents * durationDays;
+
+  function handleAddBalance() {
+    setMessage(null);
+    start(async () => {
+      const amount = Math.max(totalCents, 2000);
+      const res = await addMediaBalanceAction({
+        amount_cents: amount,
+        external_reference: `sim_topup_${campaignId}_${Date.now()}`,
+      }).catch(() => null);
+      if (!res) {
+        setMessage({ tone: "danger", text: "Não foi possível adicionar o saldo de mídia agora." });
+        return;
+      }
+      if (!res.ok) {
+        setMessage({ tone: "danger", text: res.error.message });
+        return;
+      }
+      setMessage({
+        tone: "success",
+        text: `Saldo de ${formatCents(amount, currency)} adicionado e reservado para a campanha.`,
+      });
+      router.refresh();
+    });
+  }
 
   function handleActivate() {
     setMessage(null);
@@ -95,6 +124,27 @@ export function CampaignDetailActions({
 
       {status === "paused" && (
         <div className="mt-3 space-y-4">
+          {mediaFundingStatus === "awaiting_funds" && (
+            <Alert tone="warning" title="Aguardando saldo de verba de mídia">
+              Esta campanha está na conta compartilhada e precisa de{" "}
+              <strong>{formatCents(totalCents, currency)}</strong> reservados em carteira antes da ativação.
+              {canPause && (
+                <div className="mt-3">
+                  <Button type="button" variant="secondary" onClick={handleAddBalance} disabled={pending}>
+                    {pending
+                      ? "Adicionando saldo…"
+                      : `Adicionar saldo de ${formatCents(Math.max(totalCents, 2000), currency)} (Simulação)`}
+                  </Button>
+                </div>
+              )}
+            </Alert>
+          )}
+          {mediaFundingStatus === "funded" && (
+            <Alert tone="success" title="Saldo de mídia reservado">
+              Verba de <strong>{formatCents(fundedAmountCents || totalCents, currency)}</strong> confirmada e reservada
+              para esta campanha.
+            </Alert>
+          )}
           <p className="text-sm text-ink-soft">
             Esta campanha está <strong>PAUSADA</strong> (nenhum valor está sendo gasto). Para iniciar a veiculação, o
             proprietário precisa confirmar o orçamento abaixo:

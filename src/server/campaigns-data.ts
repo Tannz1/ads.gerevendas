@@ -1,6 +1,6 @@
 import "server-only";
 import { getAppContext } from "./context";
-import type { CampaignStatus, MetaConnectionStatus, MetaReviewStatus } from "@/contracts/campaigns";
+import type { CampaignStatus, MediaFundingStatus, MetaConnectionStatus, MetaReviewStatus } from "@/contracts/campaigns";
 import type { Objective } from "@/contracts/onboarding";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -14,6 +14,7 @@ export type MetaConnectionView = {
   instagram_actor_id: string | null;
   whatsapp_phone_e164: string | null;
   billing_verified_on_meta: boolean;
+  shared_account?: boolean;
   connected_at: string | null;
 };
 
@@ -27,6 +28,8 @@ export type CampaignListItem = {
   daily_budget_cents: number;
   currency: string;
   duration_days: number;
+  media_funding_status: MediaFundingStatus;
+  funded_amount_cents: number;
   external_campaign_id: string | null;
   created_at: string;
   activated_at: string | null;
@@ -65,7 +68,7 @@ export async function loadMetaConnection(organizationId: string): Promise<MetaCo
   const { data } = await supabase
     .from("meta_connections")
     .select(
-      "status, simulated, ad_account_id, ad_account_name, page_id, page_name, instagram_actor_id, whatsapp_phone_e164, billing_verified_on_meta, connected_at",
+      "status, simulated, ad_account_id, ad_account_name, page_id, page_name, instagram_actor_id, whatsapp_phone_e164, billing_verified_on_meta, shared_account, connected_at",
     )
     .eq("organization_id", organizationId)
     .maybeSingle();
@@ -78,7 +81,7 @@ export async function loadCampaignsList(organizationId: string): Promise<Campaig
   const { data } = await supabase
     .from("campaigns")
     .select(
-      "id, name, objective, status, meta_review_status, simulated, daily_budget_cents, currency, duration_days, external_campaign_id, created_at, activated_at",
+      "id, name, objective, status, meta_review_status, simulated, daily_budget_cents, currency, duration_days, media_funding_status, funded_amount_cents, external_campaign_id, created_at, activated_at",
     )
     .eq("organization_id", organizationId)
     .order("created_at", { ascending: false });
@@ -93,7 +96,7 @@ export async function loadCampaignDetail(campaignId: string): Promise<CampaignDe
     supabase
       .from("campaigns")
       .select(
-        "id, strategy_id, name, objective, status, meta_review_status, simulated, daily_budget_cents, currency, duration_days, external_campaign_id, external_adset_id, spend_confirmed_at, activated_at, paused_at, created_at",
+        "id, strategy_id, name, objective, status, meta_review_status, simulated, daily_budget_cents, currency, duration_days, media_funding_status, funded_amount_cents, external_campaign_id, external_adset_id, spend_confirmed_at, activated_at, paused_at, created_at",
       )
       .eq("id", campaignId)
       .eq("organization_id", ctx.organization.id)

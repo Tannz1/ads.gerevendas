@@ -54,6 +54,29 @@ export async function loadRealCampaign(campaignId: string): Promise<RealCampaign
   };
 }
 
+/** Leitura exclusiva para o operador da plataforma ativar/pausar campanha de cliente na conta compartilhada. */
+export async function loadRealCampaignForOperator(campaignId: string): Promise<RealCampaign | null> {
+  const admin = createSupabaseAdminClient();
+  const [{ data: camp, error: campaignError }, { data: links, error: linksError }] = await Promise.all([
+    admin
+      .from("campaigns")
+      .select(
+        "id, organization_id, status, simulated, daily_budget_cents, duration_days, external_campaign_id, external_adset_id",
+      )
+      .eq("id", campaignId)
+      .maybeSingle(),
+    admin.from("campaign_creatives").select("external_ad_id").eq("campaign_id", campaignId),
+  ]);
+  if (campaignError || linksError) throw new Error("campaign_load_failed");
+  if (!camp) return null;
+  return {
+    ...(camp as Omit<RealCampaign, "ad_ids">),
+    ad_ids: ((links ?? []) as Array<{ external_ad_id: string | null }>)
+      .map((l) => l.external_ad_id)
+      .filter((id): id is string => Boolean(id)),
+  };
+}
+
 async function loadPublicationInput(campaignId: string): Promise<PublicationInput | null> {
   const ctx = await getAppContext();
   if (ctx.mode !== "supabase" || !ctx.organization) return null;

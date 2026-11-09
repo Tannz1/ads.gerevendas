@@ -9,6 +9,7 @@ import { Button, ButtonLink, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/field";
 import { META_PARTNERS_URL, metaBillingUrl } from "@/lib/meta-links";
+import { formatBrazilWhatsapp } from "@/lib/phone";
 import {
   linkMetaInstagram,
   linkMetaPage,
@@ -16,11 +17,13 @@ import {
   requestAdAccount,
   sendMetaInvite,
   unlinkMetaPage,
+  updateBusinessContacts,
 } from "@/server/meta/actions";
 import { computeSteps, type MetaOnboardingView, type StepKey, type StepState } from "@/server/meta/steps";
 
 type Props = {
   connection: MetaOnboardingView | null;
+  contacts?: { whatsapp_e164: string | null; instagram_handle: string | null } | null;
   canManage: boolean;
   demo: boolean;
   simulated: boolean;
@@ -57,6 +60,7 @@ export const INSTAGRAM_MESSAGE = {
 
 export function ConnectionSteps({
   connection,
+  contacts = null,
   canManage,
   demo,
   simulated,
@@ -72,10 +76,14 @@ export function ConnectionSteps({
   const anyWaiting = steps.some((s) => s.state === "waiting");
   const allDone = steps.every((s) => s.state === "done");
 
+  const initialInstagram = contacts?.instagram_handle ?? "";
+  const initialWhatsappRaw = connection?.whatsapp_phone_e164 ?? contacts?.whatsapp_e164 ?? null;
+
   const [message, setMessage] = useState<Message | null>(null);
   const [pending, start] = useTransition();
   const [pageUrl, setPageUrl] = useState("");
-  const [instagram, setInstagram] = useState("");
+  const [instagram, setInstagram] = useState(initialInstagram);
+  const [whatsapp, setWhatsapp] = useState(initialWhatsappRaw ? formatBrazilWhatsapp(initialWhatsappRaw) : "");
   const [email, setEmail] = useState(connection?.client_invite_email ?? defaultInviteEmail);
   const [copied, setCopied] = useState(false);
 
@@ -189,54 +197,92 @@ export function ConnectionSteps({
 
       {/* Passo 2 */}
       <StepCard title={TITLE.page} state={stateOf("page")} simulated={simulated}>
-        {stateOf("page") === "locked" && <p>Disponível depois da conta de anúncios.</p>}
+        {stateOf("page") === "locked" && !interactive && <p>Disponível depois da conta de anúncios.</p>}
         {stateOf("page") === "done" && connection && (
           <>
             <p>
               Página <strong>{connection.page_name}</strong> conectada.{" "}
               {connection.instagram_status === "done"
-                ? "Instagram conectado."
-                : "Instagram ainda não conectado: os anúncios saem só no Facebook até você ligar o Instagram."}
+                ? `Instagram conectado${contacts?.instagram_handle ? ` (@${contacts.instagram_handle})` : ""}.`
+                : "Instagram ainda não conectado: os anúncios saem só no Facebook até você ligar o Instagram."}{" "}
+              {connection.whatsapp_phone_e164 || contacts?.whatsapp_e164
+                ? `WhatsApp configurado: ${formatBrazilWhatsapp(connection.whatsapp_phone_e164 ?? contacts?.whatsapp_e164 ?? "")}.`
+                : "WhatsApp ainda não configurado."}
             </p>
             {interactive && (
-              <div className="mt-3 flex flex-wrap items-end gap-3">
-                {connection.instagram_status !== "done" && (
-                  <form
-                    className="flex flex-wrap items-end gap-3"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      run(
-                        () => linkMetaInstagram({ instagram_username: instagram }),
-                        (d) => ({
-                          tone: d.instagram === "linked" ? "success" : "warning",
-                          text: INSTAGRAM_MESSAGE[d.instagram],
+              <div className="mt-3 space-y-3">
+                <div className="flex flex-wrap items-end gap-3">
+                  {connection.instagram_status !== "done" && (
+                    <form
+                      className="flex flex-wrap items-end gap-3"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        run(
+                          () => linkMetaInstagram({ instagram_username: instagram }),
+                          (d) => ({
+                            tone: d.instagram === "linked" ? "success" : "warning",
+                            text: INSTAGRAM_MESSAGE[d.instagram],
+                          }),
+                        );
+                      }}
+                    >
+                      <Field id="instagram_retry" label="@ do Instagram">
+                        <Input
+                          id="instagram_retry"
+                          value={instagram}
+                          onChange={(e) => setInstagram(e.target.value)}
+                          placeholder="@seunegocio"
+                        />
+                      </Field>
+                      <Button type="submit" variant="secondary" disabled={pending || !instagram.trim()}>
+                        Ligar Instagram
+                      </Button>
+                    </form>
+                  )}
+                  <Button type="button" variant="secondary" disabled={pending} onClick={() => run(unlinkMetaPage)}>
+                    Trocar Página
+                  </Button>
+                </div>
+
+                <form
+                  className="flex flex-wrap items-end gap-3 border-t border-line pt-3"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    run(
+                      () =>
+                        updateBusinessContacts({
+                          whatsapp_phone: whatsapp,
+                          instagram_username: instagram,
                         }),
-                      );
-                    }}
-                  >
-                    <Field id="instagram_retry" label="@ do Instagram">
-                      <Input
-                        id="instagram_retry"
-                        value={instagram}
-                        onChange={(e) => setInstagram(e.target.value)}
-                        placeholder="@seunegocio"
-                      />
-                    </Field>
-                    <Button type="submit" variant="secondary" disabled={pending || !instagram.trim()}>
-                      Ligar Instagram
-                    </Button>
-                  </form>
-                )}
-                <Button type="button" variant="secondary" disabled={pending} onClick={() => run(unlinkMetaPage)}>
-                  Trocar Página
-                </Button>
+                      () => ({
+                        tone: "success",
+                        text: "WhatsApp e Instagram sincronizados com o cadastro da empresa.",
+                      }),
+                    );
+                  }}
+                >
+                  <Field id="whatsapp_sync" label="WhatsApp dos anúncios (com DDD)">
+                    <Input
+                      id="whatsapp_sync"
+                      value={whatsapp}
+                      onChange={(e) => setWhatsapp(e.target.value)}
+                      placeholder="(11) 98765-4321"
+                    />
+                  </Field>
+                  <Button type="submit" variant="secondary" disabled={pending}>
+                    Salvar WhatsApp
+                  </Button>
+                </form>
               </div>
             )}
           </>
         )}
-        {stateOf("page") === "todo" && (
+        {(stateOf("page") === "todo" || (stateOf("page") === "locked" && interactive)) && (
           <>
-            <p>Compartilhe sua Página e seu Instagram com a GereVendas na Meta. Você continua dono deles.</p>
+            <p>
+              Compartilhe sua Página e seu Instagram com a GereVendas na Meta. Ao verificar a Página, reservamos a conta
+              de anúncios, descobrimos o Instagram e sincronizamos o WhatsApp automaticamente.
+            </p>
             <ol className="mt-3 list-decimal space-y-1.5 pl-5">
               <li>
                 Abra as{" "}
@@ -274,11 +320,16 @@ export function ConnectionSteps({
             </p>
             {interactive && (
               <form
-                className="mt-4 grid gap-3 sm:grid-cols-[1fr_200px_auto] sm:items-end"
+                className="mt-4 grid gap-3 sm:grid-cols-[1fr_170px_170px_auto] sm:items-end"
                 onSubmit={(e) => {
                   e.preventDefault();
                   run(
-                    () => linkMetaPage({ page_url: pageUrl, instagram_username: instagram }),
+                    () =>
+                      linkMetaPage({
+                        page_url: pageUrl,
+                        instagram_username: instagram,
+                        whatsapp_phone: whatsapp,
+                      }),
                     (d) => ({
                       tone: d.instagram === "not_found" || d.instagram === "taken" ? "warning" : "success",
                       text: `Página ${d.page_name} conectada. ${INSTAGRAM_MESSAGE[d.instagram]}`.trim(),
@@ -294,12 +345,20 @@ export function ConnectionSteps({
                     placeholder="facebook.com/seunegocio"
                   />
                 </Field>
-                <Field id="instagram_username" label="@ do Instagram (opcional)">
+                <Field id="instagram_username" label="@ do Instagram (auto)">
                   <Input
                     id="instagram_username"
                     value={instagram}
                     onChange={(e) => setInstagram(e.target.value)}
                     placeholder="@seunegocio"
+                  />
+                </Field>
+                <Field id="whatsapp_phone" label="WhatsApp (com DDD)">
+                  <Input
+                    id="whatsapp_phone"
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    placeholder="(11) 98765-4321"
                   />
                 </Field>
                 <Button type="submit" disabled={pending || !pageUrl.trim()}>

@@ -102,6 +102,9 @@ export default async function ProductResultsPage({ params }: PageProps<"/app/anu
         canPause={role === "owner" || role === "admin"}
         canActivate={role === "owner"}
         awaitingPayment={!c.simulated && flow.meta.shared_account}
+        mediaFundingStatus={c.media_funding_status}
+        fundedAmountCents={c.funded_amount_cents}
+        walletBalanceCents={flow.wallet_balance_cents}
       />
 
       <p className="mt-8 text-center text-sm">

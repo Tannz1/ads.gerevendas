@@ -14,6 +14,10 @@ export const META_REVIEW_STATUSES = ["not_submitted", "pending_review", "approve
 export const metaReviewStatusSchema = z.enum(META_REVIEW_STATUSES);
 export type MetaReviewStatus = z.infer<typeof metaReviewStatusSchema>;
 
+export const MEDIA_FUNDING_STATUSES = ["not_required", "awaiting_funds", "funded"] as const;
+export const mediaFundingStatusSchema = z.enum(MEDIA_FUNDING_STATUSES);
+export type MediaFundingStatus = z.infer<typeof mediaFundingStatusSchema>;
+
 /** Limites de orçamento diário no piloto: mínimo R$ 10,00/dia (1000 centavos), máximo R$ 500,00/dia (50000 centavos). */
 export const CAMPAIGN_BUDGET_LIMITS = {
   min_daily_cents: 1_000,

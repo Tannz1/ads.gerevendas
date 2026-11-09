@@ -36,6 +36,7 @@ const row: MetaOnboardingView = {
   page_access_status: "done",
   instagram_actor_id: null,
   instagram_status: "pending",
+  whatsapp_phone_e164: null,
   client_invite_status: "accepted",
   client_invite_email: null,
   billing_status: "verified",

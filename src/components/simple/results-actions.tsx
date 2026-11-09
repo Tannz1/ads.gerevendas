@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
+import type { MediaFundingStatus } from "@/contracts/campaigns";
 import { formatCents, parseBRLToCents } from "@/lib/money";
+import { addMediaBalanceAction, fundCampaignFromWalletAction } from "@/server/billing";
 import { activatePausedCampaign, pauseActiveCampaign } from "@/server/campaigns";
 import { deleteSale, recordSale } from "@/server/products";
 import type { SalesSummary } from "@/server/products-data";
@@ -157,7 +159,7 @@ export function SalesBox({ campaignId, sales }: { campaignId: string; sales: Sal
   );
 }
 
-/** Pausar (sempre disponível com o anúncio rodando) e ativar (segunda confirmação do dono). */
+/** Pausar (sempre disponível com o anúncio rodando), adicionar saldo de mídia e ativar (segunda confirmação do dono). */
 export function CampaignControls({
   campaignId,
   status,
@@ -168,6 +170,9 @@ export function CampaignControls({
   canPause,
   canActivate,
   awaitingPayment,
+  mediaFundingStatus = "not_required",
+  fundedAmountCents = 0,
+  walletBalanceCents = 0,
 }: {
   campaignId: string;
   status: "draft" | "paused" | "active" | "ended";
@@ -179,6 +184,9 @@ export function CampaignControls({
   canActivate: boolean;
   /** Conta compartilhada (ADR 0009): quem ativa é a GereVendas depois do pagamento da verba. */
   awaitingPayment: boolean;
+  mediaFundingStatus?: MediaFundingStatus;
+  fundedAmountCents?: number;
+  walletBalanceCents?: number;
 }) {
   const router = useRouter();
   const [confirm, setConfirm] = useState(false);
@@ -186,6 +194,7 @@ export function CampaignControls({
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const [pending, start] = useTransition();
   const total = dailyBudgetCents * durationDays;
+  const needsFunds = mediaFundingStatus === "awaiting_funds";
 
   function pause() {
     setMessage(null);
@@ -199,6 +208,32 @@ export function CampaignControls({
       }
       if (!res.ok) return setMessage({ ok: false, text: res.error.message });
       setKey(`act_${crypto.randomUUID()}`);
+      router.refresh();
+    });
+  }
+
+  function addCampaignFunds() {
+    setMessage(null);
+    start(async () => {
+      if (walletBalanceCents >= total) {
+        const res = await fundCampaignFromWalletAction(campaignId).catch(() => null);
+        if (!res) return setMessage({ ok: false, text: "Não foi possível reservar o saldo agora." });
+        if (!res.ok) return setMessage({ ok: false, text: res.error.message });
+        setMessage({ ok: true, text: `Saldo de ${formatCents(total, currency)} reservado para esta campanha.` });
+        router.refresh();
+        return;
+      }
+      const missing = Math.max(total - walletBalanceCents, 2000);
+      const res = await addMediaBalanceAction({
+        amount_cents: missing,
+        external_reference: `sim_topup_${campaignId}_${Date.now()}`,
+      }).catch(() => null);
+      if (!res) return setMessage({ ok: false, text: "Não foi possível adicionar o saldo agora." });
+      if (!res.ok) return setMessage({ ok: false, text: res.error.message });
+      setMessage({
+        ok: true,
+        text: `Saldo de ${formatCents(missing, currency)} adicionado e reservado para o anúncio.`,
+      });
       router.refresh();
     });
   }
@@ -221,7 +256,7 @@ export function CampaignControls({
   }
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 space-y-3">
       {status === "active" && canPause && (
         <button type="button" className={outlineButton} onClick={pause} disabled={pending}>
           <svg aria-hidden viewBox="0 0 24 24" className="size-4" fill="currentColor">
@@ -232,14 +267,41 @@ export function CampaignControls({
         </button>
       )}
 
-      {status === "paused" && awaitingPayment && (
-        <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink-soft">
-          Seu anúncio está pronto e pausado. Assim que o pagamento de {formatCents(total, currency)} de verba for
-          confirmado, a GereVendas coloca ele no ar e avisa você.
+      {status === "paused" && needsFunds && (
+        <div className="space-y-3 rounded-2xl border border-line bg-surface-muted p-4 text-sm text-ink-soft">
+          <p>
+            Falta adicionar o saldo de verba de <strong>{formatCents(total, currency)}</strong> para liberar este
+            anúncio.
+            {walletBalanceCents > 0 && ` Saldo livre atual: ${formatCents(walletBalanceCents, currency)}.`}
+          </p>
+          {canPause && (
+            <button type="button" className={bigButton} onClick={addCampaignFunds} disabled={pending}>
+              {pending
+                ? "Confirmando saldo…"
+                : walletBalanceCents >= total
+                  ? `Usar saldo livre (${formatCents(total, currency)})`
+                  : simulated
+                    ? `Adicionar saldo de ${formatCents(Math.max(total - walletBalanceCents, 2000), currency)} (Simulação)`
+                    : `Adicionar saldo de ${formatCents(Math.max(total - walletBalanceCents, 2000), currency)}`}
+            </button>
+          )}
+        </div>
+      )}
+
+      {status === "paused" && mediaFundingStatus === "funded" && (
+        <p className="rounded-2xl bg-brand-soft px-4 py-3 text-sm font-medium text-brand-strong">
+          Saldo de mídia confirmado e reservado ({formatCents(fundedAmountCents || total, currency)}).
         </p>
       )}
 
-      {status === "paused" && !awaitingPayment && canActivate && (
+      {status === "paused" && awaitingPayment && !needsFunds && (
+        <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink-soft">
+          Seu anúncio está pronto e pausado com saldo confirmado de {formatCents(total, currency)}. A equipe GereVendas
+          coloca ele no ar em instantes.
+        </p>
+      )}
+
+      {status === "paused" && !awaitingPayment && !needsFunds && canActivate && (
         <div className="space-y-3">
           <label className="flex items-start gap-3 rounded-2xl bg-surface-muted p-4 text-sm text-ink-soft">
             <input
@@ -260,7 +322,7 @@ export function CampaignControls({
         </div>
       )}
 
-      {status === "paused" && !awaitingPayment && !canActivate && (
+      {status === "paused" && !awaitingPayment && !needsFunds && !canActivate && (
         <p className="rounded-2xl bg-surface-muted px-4 py-3 text-sm text-ink-soft">
           O anúncio está pausado. Só o dono da empresa pode colocar no ar.
         </p>
@@ -269,7 +331,11 @@ export function CampaignControls({
       {message && (
         <p
           role={message.ok ? "status" : "alert"}
-          className="mt-3 rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger"
+          className={
+            message.ok
+              ? "mt-3 rounded-xl bg-brand-soft px-4 py-3 text-sm font-medium text-brand-strong"
+              : "mt-3 rounded-xl bg-danger-soft px-4 py-3 text-sm text-danger"
+          }
         >
           {message.text}
         </p>

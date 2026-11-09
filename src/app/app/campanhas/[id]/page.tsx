@@ -104,6 +104,8 @@ export default async function CampaignDetailPage({
         simulated={campaign.simulated}
         isOwner={isOwner}
         canPause={canPause}
+        mediaFundingStatus={campaign.media_funding_status}
+        fundedAmountCents={campaign.funded_amount_cents}
       />
 
       <Card className="p-5 sm:p-6">

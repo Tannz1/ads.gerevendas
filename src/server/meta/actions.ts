@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { apiError, type ApiError, type ApiResult } from "@/contracts/api";
-import { linkPageSchema, sendInviteSchema } from "@/contracts/meta";
+import { linkPageSchema, sendInviteSchema, updateBusinessContactsSchema } from "@/contracts/meta";
 import { fieldErrors } from "@/contracts/onboarding";
 import { serverEnv } from "@/lib/env";
 import { resolveFlags } from "@/lib/flags";
@@ -11,7 +11,7 @@ import { parsePageLink } from "@/lib/meta-page-link";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAppContext, getCorrelationId } from "../context";
-import { loadMetaOnboarding } from "./data";
+import { loadBusinessContacts, loadMetaOnboarding } from "./data";
 import { MetaError } from "./errors";
 import { metaBusinessClient } from "./index";
 import { resolveMetaBusinessMode, type ActiveMetaBusinessMode } from "./mode";
@@ -158,13 +158,22 @@ export async function requestAdAccount(): Promise<ApiResult<{ pool_empty: boolea
 }
 
 /** Passo 2: confere na BM se a Página (e o Instagram) do link foram compartilhados e vincula. */
-export async function linkMetaPage(
-  input: unknown,
-): Promise<ApiResult<{ page_name: string; instagram: "linked" | "not_found" | "taken" | "skipped" }>> {
+export async function linkMetaPage(input: unknown): Promise<
+  ApiResult<{
+    page_name: string;
+    instagram: "linked" | "not_found" | "taken" | "skipped";
+    whatsapp_e164: string | null;
+  }>
+> {
   const correlationId = await getCorrelationId();
   const parsed = linkPageSchema.safeParse(input);
   if (!parsed.success) {
-    return apiError("validation_failed", "Revise o link e o @.", correlationId, fieldErrors(parsed.error));
+    return apiError(
+      "validation_failed",
+      "Revise o link e os dados informados.",
+      correlationId,
+      fieldErrors(parsed.error),
+    );
   }
   const c = await ownerContext();
   if (isApiError(c)) return c;
@@ -177,6 +186,20 @@ export async function linkMetaPage(
       c.correlationId,
       { page_url: ["Link de Página inválido"] },
     );
+  }
+
+  // Se a empresa ainda não reservou a conta de anúncios, atribui automaticamente no mesmo passo.
+  const existing = await loadMetaOnboarding(c.orgId);
+  if (!existing?.ad_account_id) {
+    const assigned = await requestAdAccount();
+    if (!assigned.ok) return assigned;
+    if (assigned.data.pool_empty) {
+      return apiError(
+        "conflict",
+        "Estamos preparando sua conta de anúncios no estoque. Tente vincular a Página novamente em instantes.",
+        c.correlationId,
+      );
+    }
   }
 
   const admin = createSupabaseAdminClient();
@@ -204,6 +227,21 @@ export async function linkMetaPage(
     );
   }
 
+  // Sincroniza WhatsApp/Instagram informados com o cadastro do negócio antes de gravar a Página.
+  const supabase = await createSupabaseServerClient();
+  let contacts = await loadBusinessContacts(c.orgId);
+  if (parsed.data.whatsapp_phone || parsed.data.instagram_username) {
+    const { data: updatedContacts } = await supabase.rpc("set_business_contacts", {
+      p_org: c.orgId,
+      p_whatsapp_e164: parsed.data.whatsapp_phone ?? null,
+      p_instagram_handle: parsed.data.instagram_username ?? null,
+      p_correlation_id: c.correlationId,
+    });
+    if (updatedContacts) {
+      contacts = updatedContacts as { whatsapp_e164: string | null; instagram_handle: string | null };
+    }
+  }
+
   const setPage = await admin.rpc("meta_set_page", {
     p_org: c.orgId,
     p_status: "done",
@@ -226,10 +264,97 @@ export async function linkMetaPage(
     return apiError("internal", "Não foi possível salvar a Página agora.", c.correlationId);
   }
 
-  const instagram = parsed.data.instagram_username
-    ? await attachInstagram(c, parsed.data.instagram_username)
-    : "skipped";
-  return done({ page_name: page.name, instagram }, c.correlationId);
+  // Descoberta automática do Instagram: usa o @ digitado, o @ do cadastro do negócio ou o username da Página.
+  const igCandidates = [
+    parsed.data.instagram_username,
+    contacts.instagram_handle ?? undefined,
+    page.username ? page.username.replace(/^@/, "").toLowerCase() : undefined,
+  ].filter((v, idx, arr): v is string => Boolean(v) && arr.indexOf(v) === idx);
+
+  let instagram: "linked" | "not_found" | "taken" | "skipped" = "skipped";
+  for (const candidate of igCandidates) {
+    const res = await attachInstagram(c, candidate);
+    if (res === "linked") {
+      instagram = "linked";
+      if (!contacts.instagram_handle) {
+        await supabase.rpc("set_business_contacts", {
+          p_org: c.orgId,
+          p_whatsapp_e164: null,
+          p_instagram_handle: candidate,
+          p_correlation_id: c.correlationId,
+        });
+      }
+      break;
+    }
+    if (candidate === parsed.data.instagram_username) {
+      instagram = res;
+    }
+  }
+
+  revalidatePath("/app/anuncios", "layout");
+  return done({ page_name: page.name, instagram, whatsapp_e164: contacts.whatsapp_e164 }, c.correlationId);
+}
+
+/** Atualiza e sincroniza WhatsApp e Instagram da empresa (no cadastro e na conexão Meta). */
+export async function updateBusinessContacts(input: unknown): Promise<
+  ApiResult<{
+    whatsapp_e164: string | null;
+    instagram_handle: string | null;
+    instagram_status?: "linked" | "not_found" | "taken" | "skipped";
+  }>
+> {
+  const correlationId = await getCorrelationId();
+  const parsed = updateBusinessContactsSchema.safeParse(input);
+  if (!parsed.success) {
+    return apiError(
+      "validation_failed",
+      "Revise o WhatsApp e o @ do Instagram.",
+      correlationId,
+      fieldErrors(parsed.error),
+    );
+  }
+  if (!parsed.data.whatsapp_phone && !parsed.data.instagram_username) {
+    return apiError("validation_failed", "Informe o número do WhatsApp ou o @ do Instagram.", correlationId);
+  }
+  const ctx = await getAppContext();
+  if (ctx.mode !== "supabase" || !ctx.organization) {
+    return apiError("feature_disabled", "Disponível no piloto com conta.", correlationId);
+  }
+  if (ctx.organization.role !== "owner" && ctx.organization.role !== "admin") {
+    return apiError("forbidden", "Apenas o proprietário ou administrador pode atualizar os contatos.", correlationId);
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("set_business_contacts", {
+    p_org: ctx.organization.id,
+    p_whatsapp_e164: parsed.data.whatsapp_phone ?? null,
+    p_instagram_handle: parsed.data.instagram_username ?? null,
+    p_correlation_id: correlationId,
+  });
+  if (error) {
+    if (error.code === "42501") return apiError("forbidden", "Sem permissão.", correlationId);
+    if (error.message.includes("business_not_found")) {
+      return apiError("conflict", "Conclua o cadastro do seu negócio primeiro.", correlationId);
+    }
+    log("error", "meta.set_contacts_failed", { correlation_id: correlationId, code: error.code });
+    return apiError("internal", "Não foi possível salvar os contatos agora.", correlationId);
+  }
+
+  let instagram_status: "linked" | "not_found" | "taken" | "skipped" | undefined;
+  if (parsed.data.instagram_username && ctx.organization.role === "owner") {
+    const c = await ownerContext();
+    if (!isApiError(c)) {
+      const row = await loadMetaOnboarding(c.orgId);
+      if (row?.page_access_status === "done") {
+        instagram_status = await attachInstagram(c, parsed.data.instagram_username);
+      }
+    }
+  }
+
+  const saved = data as { whatsapp_e164: string | null; instagram_handle: string | null };
+  revalidatePath("/app/anuncios", "layout");
+  revalidatePath("/app/conta");
+  return done({ ...saved, instagram_status }, correlationId);
 }
 
 /** Procura o @ entre os Instagram compartilhados com a BM e vincula. Falhas não desfazem a Página. */

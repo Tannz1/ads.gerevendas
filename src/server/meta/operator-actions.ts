@@ -1,7 +1,10 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { apiError, type ApiError, type ApiResult } from "@/contracts/api";
+import { operatorMediaTopupSchema } from "@/contracts/billing";
 import { registerPoolAccountsSchema, retirePoolAccountSchema } from "@/contracts/meta";
 import { fieldErrors } from "@/contracts/onboarding";
 import { serverEnv } from "@/lib/env";
@@ -9,6 +12,7 @@ import { resolveFlags } from "@/lib/flags";
 import { log } from "@/lib/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getAppContext, getCorrelationId } from "../context";
+import { activateRealCampaign, loadRealCampaignForOperator, withCampaignExecution } from "./campaign-real";
 import { MetaError } from "./errors";
 import { metaBusinessClient } from "./index";
 import { resolveMetaBusinessMode, type ActiveMetaBusinessMode } from "./mode";
@@ -167,4 +171,119 @@ export async function retirePoolAccount(input: unknown): Promise<ApiResult<{ ret
   }
   revalidatePath("/app/operador/estoque");
   return { ok: true, data: { retired: true }, correlation_id: c.correlationId };
+}
+
+/** Operador confirma recebimento de saldo de mídia de um cliente e já financia campanhas aguardando verba. */
+export async function operatorAddClientMediaBalance(
+  input: unknown,
+): Promise<ApiResult<{ balance_cents: number; auto_funded_campaigns: number }>> {
+  const correlationId = await getCorrelationId();
+  const parsed = operatorMediaTopupSchema.safeParse(input);
+  if (!parsed.success) {
+    return apiError(
+      "validation_failed",
+      "Revise os dados do crédito de mídia.",
+      correlationId,
+      fieldErrors(parsed.error),
+    );
+  }
+  const c = await operatorContext();
+  if (isApiError(c)) return c;
+  const supabase = await createSupabaseServerClient();
+  const { data, error } = await supabase.rpc("add_media_balance", {
+    p_org: parsed.data.organization_id,
+    p_amount_cents: parsed.data.amount_cents,
+    p_provider: "operator",
+    p_external_reference: parsed.data.external_reference,
+    p_simulated: c.mode.kind === "mock",
+    p_correlation_id: c.correlationId,
+  });
+  if (error) {
+    log("error", "meta.operator_topup_failed", { correlation_id: c.correlationId, code: error.code });
+    return apiError("internal", "Não foi possível creditar o saldo de mídia do cliente.", c.correlationId);
+  }
+  revalidatePath("/app/operador/estoque");
+  revalidatePath("/app", "layout");
+  const res = data as { balance_cents: number; funded_campaigns: number };
+  return {
+    ok: true,
+    data: { balance_cents: res.balance_cents, auto_funded_campaigns: res.funded_campaigns },
+    correlation_id: c.correlationId,
+  };
+}
+
+const operatorActivateSchema = z.object({
+  campaign_id: z.uuid(),
+});
+
+/** Operador ativa campanha de cliente na conta compartilhada depois que a verba está financiada (`funded`). */
+export async function operatorActivateSharedCampaign(input: unknown): Promise<ApiResult<{ activated: true }>> {
+  const correlationId = await getCorrelationId();
+  const parsed = operatorActivateSchema.safeParse(input);
+  if (!parsed.success) {
+    return apiError("validation_failed", "Campanha inválida.", correlationId);
+  }
+  const c = await operatorContext();
+  if (isApiError(c)) return c;
+  const ctx = await getAppContext();
+  if (ctx.mode !== "supabase") {
+    return apiError("feature_disabled", "Disponível só com conta.", c.correlationId);
+  }
+  const campaign = await loadRealCampaignForOperator(parsed.data.campaign_id);
+  if (!campaign) return apiError("not_found", "Campanha não encontrada.", c.correlationId);
+  if (campaign.status !== "paused") {
+    return apiError("conflict", "Apenas campanhas pausadas podem ser ativadas.", c.correlationId);
+  }
+
+  let error: { code?: string; message: string } | null = null;
+  if (campaign.simulated) {
+    const supabase = await createSupabaseServerClient();
+    ({ error } = await supabase.rpc("activate_campaign", {
+      p_campaign: campaign.id,
+      p_confirmed_daily_budget_cents: campaign.daily_budget_cents,
+      p_confirmed_duration_days: campaign.duration_days,
+      p_idempotency_key: `op_activate_${campaign.id}_${randomUUID().slice(0, 8)}`,
+      p_correlation_id: c.correlationId,
+    }));
+  } else {
+    if (c.mode.kind !== "real") {
+      return apiError("feature_disabled", "Publicação real suspensa no momento.", c.correlationId);
+    }
+    try {
+      ({ error } = await withCampaignExecution(campaign.id, async () => {
+        const current = await loadRealCampaignForOperator(campaign.id);
+        if (!current || current.status !== "paused") {
+          return { error: { message: "campaign_not_paused" } };
+        }
+        return activateRealCampaign(
+          current,
+          ctx.user.id,
+          {
+            confirmed_daily_budget_cents: current.daily_budget_cents,
+            confirmed_duration_days: current.duration_days,
+            idempotency_key: `op_activate_${current.id}_${randomUUID().slice(0, 8)}`,
+          },
+          metaBusinessClient(c.mode),
+          c.correlationId,
+        );
+      }));
+    } catch (e) {
+      return failure(e, c.correlationId, "meta.operator_activate_failed");
+    }
+  }
+
+  if (error) {
+    if (error.message.includes("media_funding_required")) {
+      return apiError("conflict", "Confirme o saldo da verba de mídia antes de ativar a campanha.", c.correlationId);
+    }
+    if (error.message.includes("campaign_not_paused")) {
+      return apiError("conflict", "Apenas campanhas pausadas podem ser ativadas.", c.correlationId);
+    }
+    log("error", "meta.operator_activate_rpc_failed", { correlation_id: c.correlationId, code: error.code });
+    return apiError("internal", "Não foi possível ativar a campanha do cliente.", c.correlationId);
+  }
+
+  revalidatePath("/app/operador/estoque");
+  revalidatePath("/app", "layout");
+  return { ok: true, data: { activated: true }, correlation_id: c.correlationId };
 }

@@ -15,6 +15,7 @@ import {
   withCampaignExecution,
   activateRealCampaign,
   loadRealCampaign,
+  loadRealCampaignForOperator,
   pauseRealCampaign,
   publishRealCampaign,
   syncRealCampaign,
@@ -273,7 +274,8 @@ export async function activatePausedCampaign(input: unknown): Promise<ApiResult<
   if (ctx.mode !== "supabase" || !ctx.organization) {
     return apiError("feature_disabled", "Disponível no piloto com conta.", correlationId);
   }
-  if (ctx.organization.role !== "owner") {
+  const operator = await isPlatformOperator();
+  if (ctx.organization.role !== "owner" && !operator) {
     return apiError("forbidden", "Apenas o proprietário da empresa pode ativar a veiculação.", correlationId);
   }
 
@@ -283,7 +285,9 @@ export async function activatePausedCampaign(input: unknown): Promise<ApiResult<
     return apiError("feature_disabled", "Kill switch ativo: ativações suspensas.", correlationId);
   }
 
-  const campaign = await loadRealCampaign(parsed.data.campaign_id);
+  const campaign =
+    (await loadRealCampaign(parsed.data.campaign_id)) ??
+    (operator ? await loadRealCampaignForOperator(parsed.data.campaign_id) : null);
   if (!campaign) return apiError("not_found", "Campanha não encontrada.", correlationId);
 
   let error: { code?: string; message: string } | null;
@@ -303,8 +307,7 @@ export async function activatePausedCampaign(input: unknown): Promise<ApiResult<
     }
     // Conta compartilhada (ADR 0009): a verba sai do cartão da GereVendas, então só a equipe ativa,
     // depois de confirmar o pagamento da verba pelo cliente.
-    // ponytail: equipe precisa ser owner da empresa; ativar empresas de clientes vem com a cobrança da verba.
-    if (env.META_SHARED_AD_ACCOUNT_ID && !(await isPlatformOperator())) {
+    if (env.META_SHARED_AD_ACCOUNT_ID && !operator) {
       return apiError(
         "forbidden",
         "A GereVendas ativa a campanha assim que confirmar o pagamento da verba de mídia.",
@@ -323,7 +326,8 @@ export async function activatePausedCampaign(input: unknown): Promise<ApiResult<
     }
     try {
       ({ error } = await withCampaignExecution(campaign.id, async () => {
-        const current = await loadRealCampaign(campaign.id);
+        const current =
+          (await loadRealCampaign(campaign.id)) ?? (operator ? await loadRealCampaignForOperator(campaign.id) : null);
         if (
           !current ||
           current.status !== "paused" ||
@@ -332,9 +336,11 @@ export async function activatePausedCampaign(input: unknown): Promise<ApiResult<
         ) {
           return { error: { message: "budget_snapshot_mismatch" } };
         }
-        const connection = await loadMetaConnection(ctx.organization!.id);
-        if (!connection || connection.simulated || connection.status !== "connected") {
-          return { error: { message: "meta_not_connected" } };
+        if (current.organization_id === ctx.organization!.id) {
+          const connection = await loadMetaConnection(ctx.organization!.id);
+          if (!connection || connection.simulated || connection.status !== "connected") {
+            return { error: { message: "meta_not_connected" } };
+          }
         }
         return activateRealCampaign(current, ctx.user.id, parsed.data, metaBusinessClient(mode), correlationId);
       }));
@@ -346,6 +352,9 @@ export async function activatePausedCampaign(input: unknown): Promise<ApiResult<
   if (error) {
     if (error.code === "42501") {
       return apiError("forbidden", "Apenas o proprietário da empresa pode ativar a campanha.", correlationId);
+    }
+    if (error.message.includes("media_funding_required")) {
+      return apiError("conflict", "Adicione o saldo da verba de mídia antes de ativar a campanha.", correlationId);
     }
     if (error.message.includes("budget_snapshot_mismatch")) {
       return apiError("conflict", "O orçamento ou duração mudou. Recarregue a página antes de ativar.", correlationId);

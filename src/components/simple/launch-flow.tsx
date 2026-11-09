@@ -11,6 +11,7 @@ import { formatCents } from "@/lib/money";
 import { formatBrazilWhatsapp } from "@/lib/phone";
 import { publishPausedCampaign } from "@/server/campaigns";
 import type { CreativeView } from "@/server/creatives-data";
+import { linkMetaPage, updateBusinessContacts } from "@/server/meta/actions";
 import { approveProductCreatives, setProductReach } from "@/server/products";
 import { ProductThumb, WhatsAppIcon } from "./product-card";
 import { bigButton, CheckBadge, choiceClasses, outlineButton, ScreenHeader, SimulationTag } from "./shell";
@@ -297,10 +298,17 @@ function Publish({
   onBack,
   onPublished,
 }: Props & { reach: ReachKey; daily: number; days: number; onBack: () => void; onPublished: () => void }) {
+  const router = useRouter();
   const [spendOk, setSpendOk] = useState(false);
   const [categoryOk, setCategoryOk] = useState(false);
   const [idempotencyKey] = useState(() => `pub_${crypto.randomUUID()}`);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+  const [pageUrl, setPageUrl] = useState("");
+  const [whatsappInput, setWhatsappInput] = useState(
+    business.whatsapp_e164 ? formatBrazilWhatsapp(business.whatsapp_e164) : "",
+  );
+  const [editingWhatsapp, setEditingWhatsapp] = useState(!business.whatsapp_e164);
   const [pending, start] = useTransition();
   const total = daily * days;
   const lead = creatives.find((c) => c.angle_key === "oferta") ?? creatives[0];
@@ -310,11 +318,40 @@ function Publish({
   const payment = simulated
     ? "Simulação: nada é enviado à Meta e nada é cobrado."
     : meta.shared_account
-      ? `O anúncio é criado pausado. Você paga ${money(total)} de verba à GereVendas e a gente ativa assim que o pagamento for confirmado.`
+      ? `O anúncio é criado pausado. Você adiciona ${money(total)} de saldo de mídia e a GereVendas coloca no ar assim que confirmado.`
       : "O anúncio é criado pausado. Depois você confirma a ativação, e a verba é cobrada pela Meta na forma de pagamento cadastrada lá.";
+
+  function connectInlinePage() {
+    setError(null);
+    setInfo(null);
+    start(async () => {
+      const res = await linkMetaPage({
+        page_url: pageUrl,
+        whatsapp_phone: whatsappInput,
+      }).catch(() => null);
+      if (!res) return setError("Não foi possível verificar a Página agora.");
+      if (!res.ok) return setError(res.error.message);
+      setInfo(`Página ${res.data.page_name} conectada automaticamente.`);
+      router.refresh();
+    });
+  }
+
+  function saveInlineWhatsapp() {
+    setError(null);
+    setInfo(null);
+    start(async () => {
+      const res = await updateBusinessContacts({ whatsapp_phone: whatsappInput }).catch(() => null);
+      if (!res) return setError("Não foi possível salvar o WhatsApp agora.");
+      if (!res.ok) return setError(res.error.message);
+      setEditingWhatsapp(false);
+      setInfo("Número do WhatsApp atualizado.");
+      router.refresh();
+    });
+  }
 
   function publish() {
     setError(null);
+    setInfo(null);
     start(async () => {
       const res = await publishPausedCampaign({
         strategy_id: strategyId,
@@ -365,9 +402,43 @@ function Publish({
           {money(total)} ({money(daily)}/dia)
         </SummaryRow>
         <SummaryRow icon={<WhatsAppIcon className="size-5 text-brand" />} label="Destino">
-          seu WhatsApp {business.whatsapp_e164 ? formatBrazilWhatsapp(business.whatsapp_e164) : ""}
+          <span className="inline-flex flex-wrap items-center gap-2">
+            <span>
+              seu WhatsApp {business.whatsapp_e164 ? formatBrazilWhatsapp(business.whatsapp_e164) : "(não informado)"}
+            </span>
+            {isOwner && !editingWhatsapp && (
+              <button
+                type="button"
+                onClick={() => setEditingWhatsapp(true)}
+                className="text-xs font-semibold text-brand underline"
+              >
+                Trocar
+              </button>
+            )}
+          </span>
         </SummaryRow>
       </dl>
+
+      {isOwner && editingWhatsapp && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 rounded-2xl border border-line p-3">
+          <input
+            type="tel"
+            value={whatsappInput}
+            onChange={(e) => setWhatsappInput(e.target.value)}
+            placeholder="(11) 98765-4321"
+            aria-label="WhatsApp com DDD"
+            className="h-11 min-w-0 flex-1 rounded-xl border border-line-strong px-3 text-sm"
+          />
+          <button
+            type="button"
+            disabled={pending || !whatsappInput.trim()}
+            onClick={saveInlineWhatsapp}
+            className="h-11 rounded-xl bg-brand px-4 text-sm font-bold text-white disabled:opacity-50"
+          >
+            Salvar WhatsApp
+          </button>
+        </div>
+      )}
 
       {meta.connected ? (
         <p className="mt-4 flex items-center justify-center gap-2 rounded-2xl bg-brand-soft px-4 py-3 text-sm font-semibold text-brand-strong">
@@ -377,12 +448,40 @@ function Publish({
           Conta conectada
         </p>
       ) : (
-        <div className="mt-4 rounded-2xl bg-warning-soft px-4 py-3 text-sm text-warning">
-          Falta conectar a sua Página do Facebook.{" "}
-          <Link href="/app/conexoes" className="font-semibold underline">
-            Conectar agora
-          </Link>
+        <div className="mt-4 space-y-3 rounded-2xl bg-warning-soft px-4 py-3 text-sm text-warning">
+          <p>
+            Falta conectar a sua Página do Facebook.{" "}
+            <Link href="/app/conexoes" className="font-semibold underline">
+              Abrir Conexões
+            </Link>
+          </p>
+          {isOwner && (
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="text"
+                value={pageUrl}
+                onChange={(e) => setPageUrl(e.target.value)}
+                placeholder="facebook.com/seunegocio"
+                aria-label="Link da sua Página do Facebook"
+                className="h-11 min-w-0 flex-1 rounded-xl border border-line-strong bg-white px-3 text-sm text-ink"
+              />
+              <button
+                type="button"
+                disabled={pending || !pageUrl.trim()}
+                onClick={connectInlinePage}
+                className="h-11 rounded-xl bg-brand px-4 text-sm font-bold text-white disabled:opacity-50"
+              >
+                {pending ? "Conectando…" : "Conectar Página"}
+              </button>
+            </div>
+          )}
         </div>
+      )}
+
+      {info && (
+        <p role="status" className="mt-3 rounded-xl bg-brand-soft px-4 py-2.5 text-sm font-medium text-brand-strong">
+          {info}
+        </p>
       )}
 
       <p className="mt-4 text-sm text-ink-soft">{payment}</p>

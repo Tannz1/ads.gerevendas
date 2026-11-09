@@ -1,5 +1,5 @@
 import "server-only";
-import type { CampaignStatus } from "@/contracts/campaigns";
+import type { CampaignStatus, MediaFundingStatus } from "@/contracts/campaigns";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { ASSETS_BUCKET, loadBriefCreatives, type CreativesOverview } from "./creatives-data";
 
@@ -14,6 +14,8 @@ export type ProductCampaign = {
   daily_budget_cents: number;
   duration_days: number;
   currency: string;
+  media_funding_status: MediaFundingStatus;
+  funded_amount_cents: number;
   created_at: string;
   activated_at: string | null;
   insights: { spend_cents: number; conversations: number; clicks: number; fetched_at: string } | null;
@@ -38,7 +40,7 @@ type OfferRow = {
 };
 
 const CAMPAIGN_COLUMNS =
-  "id, strategy_id, status, simulated, daily_budget_cents, duration_days, currency, created_at, activated_at, " +
+  "id, strategy_id, status, simulated, daily_budget_cents, duration_days, currency, media_funding_status, funded_amount_cents, created_at, activated_at, " +
   "campaign_insights(spend_cents, conversations, clicks, fetched_at)";
 
 type CampaignRow = Omit<ProductCampaign, "insights"> & {
@@ -122,6 +124,7 @@ export type ProductFlow = {
   creatives: Exclude<CreativesOverview, { state: "no_brief" }>;
   campaign: ProductCampaign | null;
   meta: { connected: boolean; shared_account: boolean };
+  wallet_balance_cents: number;
 };
 
 /** Tudo que as telas 4 a 8 precisam de um produto. null = não existe ou é de outra empresa. */
@@ -145,7 +148,7 @@ export async function loadProductFlow(organizationId: string, briefId: string): 
     offers: OfferRow;
   };
 
-  const [creatives, campaigns, urls, meta] = await Promise.all([
+  const [creatives, campaigns, urls, meta, wallet] = await Promise.all([
     loadBriefCreatives({
       id: b.id,
       businesses: { name: b.businesses.name },
@@ -158,6 +161,7 @@ export async function loadProductFlow(organizationId: string, briefId: string): 
       .select("status, shared_account")
       .eq("organization_id", organizationId)
       .maybeSingle(),
+    supabase.from("media_wallets").select("balance_cents").eq("organization_id", organizationId).maybeSingle(),
   ]);
 
   return {
@@ -175,6 +179,7 @@ export async function loadProductFlow(organizationId: string, briefId: string): 
       connected: meta.data?.status === "connected",
       shared_account: Boolean(meta.data?.shared_account),
     },
+    wallet_balance_cents: Number(wallet.data?.balance_cents ?? 0),
   };
 }
 
