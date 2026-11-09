@@ -2,7 +2,9 @@ import type { ReactNode } from "react";
 import { AbsoluteFill, Audio, Easing, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
 import { BrandMark } from "@/components/marketing/brand-mark";
 import { Phone } from "@/components/marketing/storyboard";
+import { EstiloProvider, useEstilo } from "../estilo";
 import type { Cena } from "../kit";
+import { LegendaDinamica } from "../legenda";
 import { usePreload } from "../shared";
 import timeline from "../timeline-uso.json";
 import { Inicio, Investimento, Oferta, Previa, Produto, Publicacao, Regiao, Resultados, type Tela } from "./telas";
@@ -28,7 +30,16 @@ const PASSOS: Record<string, { titulo: string; tela: (t: Tela) => ReactNode }> =
   resultados: { titulo: "Acompanhe as conversas", tela: (t) => <Resultados t={t} /> },
 };
 
-export function Uso() {
+/** `novo`: cursor do mouse e legenda dinâmica. Sem ele, o visual clássico. */
+export function Uso({ novo = false }: { novo?: boolean }) {
+  return (
+    <EstiloProvider novo={novo}>
+      <UsoConteudo />
+    </EstiloProvider>
+  );
+}
+
+function UsoConteudo() {
   usePreload();
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
@@ -180,6 +191,22 @@ function EndCard({ f }: { f: number }) {
 
 /** Legenda por frase, discreta, na base. */
 function Subtitle({ cena, seg }: { cena: Cena; seg: number }) {
+  const { novo } = useEstilo();
+  if (novo) {
+    return (
+      <LegendaDinamica
+        cena={cena}
+        t={seg}
+        left={70}
+        right={70}
+        bottom={120}
+        align="center"
+        fontSize={42}
+        padding="18px 30px"
+        radius={22}
+      />
+    );
+  }
   const frases: { texto: string; ini: number; fim: number }[] = [];
   let atual: Cena["palavras"] = [];
   for (const w of cena.palavras) {

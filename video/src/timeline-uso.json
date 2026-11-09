@@ -1,674 +1,144 @@
 {
-  "voz": "pNInz6obpgDQGcFmaJgB",
-  "duracao": 54.141000000000005,
+  "voz": "eleven:oArP4WehPe3qjqvCwHNo:eleven_multilingual_v2",
+  "duracao": 54.92598500000001,
   "cenas": [
     {
       "id": "intro",
-      "ini": 0,
-      "fim": 4.098,
+      "ini": 0.3,
+      "fim": 3.9579139999999997,
       "palavras": [
         {
-          "texto": "Olha",
-          "ini": 0,
-          "fim": 0.244
-        },
-        {
-          "texto": "como",
-          "ini": 0.29,
-          "fim": 0.488
-        },
-        {
-          "texto": "funciona",
-          "ini": 0.534,
-          "fim": 1.184
-        },
-        {
-          "texto": "o",
-          "ini": 1.254,
-          "fim": 1.277
-        },
-        {
-          "texto": "GereVendas",
-          "ini": 1.37,
-          "fim": 2.113
-        },
-        {
-          "texto": "Ads,",
-          "ini": 2.276,
-          "fim": 2.728
-        },
-        {
-          "texto": "do",
-          "ini": 2.786,
-          "fim": 2.891
-        },
-        {
-          "texto": "começo",
-          "ini": 2.937,
-          "fim": 3.309
-        },
-        {
-          "texto": "ao",
-          "ini": 3.344,
-          "fim": 3.413
-        },
-        {
-          "texto": "fim.",
-          "ini": 3.46,
-          "fim": 3.866
+          "texto": "Olha só como funciona o GereVendas Ads, do começo ao fim.",
+          "ini": 0.3,
+          "fim": 3.4579139999999997
         }
       ]
     },
     {
       "id": "inicio",
-      "ini": 4.098,
-      "fim": 7.686,
+      "ini": 3.9579139999999997,
+      "fim": 7.383628,
       "palavras": [
         {
-          "texto": "Na",
-          "ini": 4.098,
-          "fim": 4.238
-        },
-        {
-          "texto": "tela",
-          "ini": 4.296,
-          "fim": 4.563
-        },
-        {
-          "texto": "inicial,",
-          "ini": 4.598,
-          "fim": 5.213
-        },
-        {
-          "texto": "você",
-          "ini": 5.248,
-          "fim": 5.492
-        },
-        {
-          "texto": "toca",
-          "ini": 5.608,
-          "fim": 5.921
-        },
-        {
-          "texto": "em",
-          "ini": 5.968,
-          "fim": 6.049
-        },
-        {
-          "texto": "criar",
-          "ini": 6.107,
-          "fim": 6.502
-        },
-        {
-          "texto": "meu",
-          "ini": 6.571,
-          "fim": 6.722
-        },
-        {
-          "texto": "anúncio.",
-          "ini": 6.792,
-          "fim": 7.523
+          "texto": "Na tela inicial, você toca em criar meu anúncio.",
+          "ini": 3.9579139999999997,
+          "fim": 6.883628
         }
       ]
     },
     {
       "id": "produto",
-      "ini": 7.686,
-      "fim": 10.484,
+      "ini": 7.383628,
+      "fim": 10.530702999999999,
       "palavras": [
         {
-          "texto": "Tira",
-          "ini": 7.686,
-          "fim": 8.022
-        },
-        {
-          "texto": "a",
-          "ini": 8.046,
-          "fim": 8.069
-        },
-        {
-          "texto": "foto",
-          "ini": 8.15,
-          "fim": 8.406
-        },
-        {
-          "texto": "do",
-          "ini": 8.452,
-          "fim": 8.51
-        },
-        {
-          "texto": "produto",
-          "ini": 8.545,
-          "fim": 9.091
-        },
-        {
-          "texto": "e",
-          "ini": 9.183,
-          "fim": 9.218
-        },
-        {
-          "texto": "escreve",
-          "ini": 9.276,
-          "fim": 9.729
-        },
-        {
-          "texto": "o",
-          "ini": 9.752,
-          "fim": 9.776
-        },
-        {
-          "texto": "nome.",
-          "ini": 9.834,
-          "fim": 10.321
+          "texto": "Tira a foto do produto e escreve o nome.",
+          "ini": 7.383628,
+          "fim": 10.030702999999999
         }
       ]
     },
     {
       "id": "oferta",
-      "ini": 10.484,
-      "fim": 18.448,
+      "ini": 10.530702999999999,
+      "fim": 17.317891,
       "palavras": [
         {
-          "texto": "Coloca",
-          "ini": 10.484,
-          "fim": 10.937
+          "texto": "Coloca o preço e escolhe o que destacar.",
+          "ini": 10.530702999999999,
+          "fim": 13.038457999999999
         },
         {
-          "texto": "o",
-          "ini": 10.983,
-          "fim": 11.006
-        },
-        {
-          "texto": "preço",
-          "ini": 11.076,
-          "fim": 11.54
-        },
-        {
-          "texto": "e",
-          "ini": 11.622,
-          "fim": 11.738
-        },
-        {
-          "texto": "escolhe",
-          "ini": 11.796,
-          "fim": 12.341
-        },
-        {
-          "texto": "o",
-          "ini": 12.411,
-          "fim": 12.458
-        },
-        {
-          "texto": "que",
-          "ini": 12.527,
-          "fim": 12.62
-        },
-        {
-          "texto": "destacar.",
-          "ini": 12.69,
-          "fim": 13.526
-        },
-        {
-          "texto": "A",
-          "ini": 13.839,
-          "fim": 13.92
-        },
-        {
-          "texto": "inteligência",
-          "ini": 13.99,
-          "fim": 14.617
-        },
-        {
-          "texto": "artificial",
-          "ini": 14.64,
-          "fim": 15.546
-        },
-        {
-          "texto": "usa",
-          "ini": 15.813,
-          "fim": 16.196
-        },
-        {
-          "texto": "só",
-          "ini": 16.312,
-          "fim": 16.66
-        },
-        {
-          "texto": "o",
-          "ini": 16.8,
-          "fim": 16.881
-        },
-        {
-          "texto": "que",
-          "ini": 16.939,
-          "fim": 17.008
-        },
-        {
-          "texto": "você",
-          "ini": 17.066,
-          "fim": 17.333
-        },
-        {
-          "texto": "escreveu.",
-          "ini": 17.415,
-          "fim": 18.181
+          "texto": "E a inteligência artificial só usa o que você escreveu.",
+          "ini": 13.288457999999999,
+          "fim": 16.817891
         }
       ]
     },
     {
       "id": "previa",
-      "ini": 18.448,
-      "fim": 26.25,
+      "ini": 17.317891,
+      "fim": 25.033877,
       "palavras": [
         {
-          "texto": "Em",
-          "ini": 18.448,
-          "fim": 18.599
+          "texto": "Em poucos minutos, chegam cinco versões do anúncio com a sua foto.",
+          "ini": 17.317891,
+          "fim": 22.194081
         },
         {
-          "texto": "poucos",
-          "ini": 18.68,
-          "fim": 19.04
-        },
-        {
-          "texto": "minutos,",
-          "ini": 19.086,
-          "fim": 19.806
-        },
-        {
-          "texto": "chegam",
-          "ini": 19.957,
-          "fim": 20.294
-        },
-        {
-          "texto": "cinco",
-          "ini": 20.352,
-          "fim": 20.631
-        },
-        {
-          "texto": "versões",
-          "ini": 20.677,
-          "fim": 21.153
-        },
-        {
-          "texto": "do",
-          "ini": 21.199,
-          "fim": 21.257
-        },
-        {
-          "texto": "anúncio",
-          "ini": 21.327,
-          "fim": 21.838
-        },
-        {
-          "texto": "com",
-          "ini": 21.884,
-          "fim": 22.024
-        },
-        {
-          "texto": "a",
-          "ini": 22.105,
-          "fim": 22.128
-        },
-        {
-          "texto": "sua",
-          "ini": 22.175,
-          "fim": 22.407
-        },
-        {
-          "texto": "foto.",
-          "ini": 22.477,
-          "fim": 22.976
-        },
-        {
-          "texto": "Você",
-          "ini": 23.266,
-          "fim": 23.487
-        },
-        {
-          "texto": "passa,",
-          "ini": 23.568,
-          "fim": 24.172
-        },
-        {
-          "texto": "confere",
-          "ini": 24.276,
-          "fim": 25.007
-        },
-        {
-          "texto": "e",
-          "ini": 25.112,
-          "fim": 25.216
-        },
-        {
-          "texto": "aprova.",
-          "ini": 25.275,
-          "fim": 26.064
+          "texto": "Você passa, confere e aprova.",
+          "ini": 22.444081,
+          "fim": 24.533877
         }
       ]
     },
     {
       "id": "regiao",
-      "ini": 26.25,
-      "fim": 31.567,
+      "ini": 25.033877,
+      "fim": 30.456507000000002,
       "palavras": [
         {
-          "texto": "Escolhe",
-          "ini": 26.25,
-          "fim": 26.749
-        },
-        {
-          "texto": "onde",
-          "ini": 26.83,
-          "fim": 27.121
-        },
-        {
-          "texto": "mostrar:",
-          "ini": 27.179,
-          "fim": 27.864
-        },
-        {
-          "texto": "na",
-          "ini": 28.154,
-          "fim": 28.247
-        },
-        {
-          "texto": "sua",
-          "ini": 28.293,
-          "fim": 28.479
-        },
-        {
-          "texto": "cidade,",
-          "ini": 28.514,
-          "fim": 29.21
-        },
-        {
-          "texto": "ou",
-          "ini": 29.419,
-          "fim": 29.547
-        },
-        {
-          "texto": "na",
-          "ini": 29.605,
-          "fim": 29.686
-        },
-        {
-          "texto": "cidade",
-          "ini": 29.733,
-          "fim": 30.302
-        },
-        {
-          "texto": "e",
-          "ini": 30.453,
-          "fim": 30.557
-        },
-        {
-          "texto": "região.",
-          "ini": 30.627,
-          "fim": 31.277
+          "texto": "Escolhe onde quer aparecer: na sua cidade, ou na cidade e região.",
+          "ini": 25.033877,
+          "fim": 29.956507000000002
         }
       ]
     },
     {
       "id": "investimento",
-      "ini": 31.567,
-      "fim": 35.12,
+      "ini": 30.456507000000002,
+      "fim": 34.53238,
       "palavras": [
         {
-          "texto": "Define",
-          "ini": 31.567,
-          "fim": 31.939
-        },
-        {
-          "texto": "quanto",
-          "ini": 31.985,
-          "fim": 32.264
-        },
-        {
-          "texto": "quer",
-          "ini": 32.31,
-          "fim": 32.449
-        },
-        {
-          "texto": "investir",
-          "ini": 32.484,
-          "fim": 32.856
-        },
-        {
-          "texto": "por",
-          "ini": 32.902,
-          "fim": 33.053
-        },
-        {
-          "texto": "dia,",
-          "ini": 33.123,
-          "fim": 33.483
-        },
-        {
-          "texto": "e",
-          "ini": 33.529,
-          "fim": 33.622
-        },
-        {
-          "texto": "por",
-          "ini": 33.68,
-          "fim": 33.808
-        },
-        {
-          "texto": "quantos",
-          "ini": 33.878,
-          "fim": 34.261
-        },
-        {
-          "texto": "dias.",
-          "ini": 34.319,
-          "fim": 34.841
+          "texto": "Define quanto quer investir por dia, e por quantos dias.",
+          "ini": 30.456507000000002,
+          "fim": 34.03238
         }
       ]
     },
     {
       "id": "publicacao",
-      "ini": 35.12,
-      "fim": 41.795,
+      "ini": 34.53238,
+      "fim": 40.99448900000001,
       "palavras": [
         {
-          "texto": "Confere",
-          "ini": 35.12,
-          "fim": 35.561
+          "texto": "Confere o resumo e publica.",
+          "ini": 34.53238,
+          "fim": 36.111337000000006
         },
         {
-          "texto": "o",
-          "ini": 35.596,
-          "fim": 35.631
-        },
-        {
-          "texto": "resumo",
-          "ini": 35.665,
-          "fim": 36.107
-        },
-        {
-          "texto": "e",
-          "ini": 36.176,
-          "fim": 36.246
-        },
-        {
-          "texto": "publica.",
-          "ini": 36.304,
-          "fim": 37.035
-        },
-        {
-          "texto": "O",
-          "ini": 37.326,
-          "fim": 37.372
-        },
-        {
-          "texto": "anúncio",
-          "ini": 37.477,
-          "fim": 37.953
-        },
-        {
-          "texto": "nasce",
-          "ini": 38.011,
-          "fim": 38.289
-        },
-        {
-          "texto": "pausado,",
-          "ini": 38.359,
-          "fim": 39.172
-        },
-        {
-          "texto": "e",
-          "ini": 39.23,
-          "fim": 39.346
-        },
-        {
-          "texto": "só",
-          "ini": 39.415,
-          "fim": 39.59
-        },
-        {
-          "texto": "roda",
-          "ini": 39.659,
-          "fim": 39.961
-        },
-        {
-          "texto": "com",
-          "ini": 40.008,
-          "fim": 40.147
-        },
-        {
-          "texto": "a",
-          "ini": 40.228,
-          "fim": 40.251
-        },
-        {
-          "texto": "sua",
-          "ini": 40.309,
-          "fim": 40.553
-        },
-        {
-          "texto": "confirmação.",
-          "ini": 40.611,
-          "fim": 41.563
+          "texto": "O anúncio nasce pausado, e só roda quando você confirmar.",
+          "ini": 36.361337000000006,
+          "fim": 40.49448900000001
         }
       ]
     },
     {
       "id": "resultados",
-      "ini": 41.795,
-      "fim": 50.364,
+      "ini": 40.99448900000001,
+      "fim": 51.01467000000001,
       "palavras": [
         {
-          "texto": "Depois,",
-          "ini": 41.795,
-          "fim": 42.631
-        },
-        {
-          "texto": "é",
-          "ini": 42.829,
-          "fim": 42.898
-        },
-        {
-          "texto": "só",
-          "ini": 43.015,
-          "fim": 43.328
-        },
-        {
-          "texto": "acompanhar:",
-          "ini": 43.444,
-          "fim": 44.628
-        },
-        {
-          "texto": "quanto",
-          "ini": 44.988,
-          "fim": 45.255
-        },
-        {
-          "texto": "investiu,",
-          "ini": 45.302,
-          "fim": 46.021
-        },
-        {
-          "texto": "quantas",
-          "ini": 46.138,
-          "fim": 46.439
-        },
-        {
-          "texto": "conversas",
-          "ini": 46.486,
-          "fim": 47.02
-        },
-        {
-          "texto": "chegaram",
-          "ini": 47.043,
-          "fim": 47.6
-        },
-        {
-          "texto": "no",
-          "ini": 47.647,
-          "fim": 47.728
-        },
-        {
-          "texto": "WhatsApp",
-          "ini": 47.798,
-          "fim": 48.367
-        },
-        {
-          "texto": "e",
-          "ini": 48.506,
-          "fim": 48.645
-        },
-        {
-          "texto": "quanto",
-          "ini": 48.727,
-          "fim": 48.994
-        },
-        {
-          "texto": "custou",
-          "ini": 49.04,
-          "fim": 49.423
-        },
-        {
-          "texto": "cada",
-          "ini": 49.47,
-          "fim": 49.713
-        },
-        {
-          "texto": "uma.",
-          "ini": 49.795,
-          "fim": 50.201
+          "texto": "Depois, é só acompanhar: quanto investiu, quantas conversas chegaram no WhatsApp, e quanto custou cada uma.",
+          "ini": 40.99448900000001,
+          "fim": 50.51467000000001
         }
       ]
     },
     {
       "id": "fim",
-      "ini": 50.364,
-      "fim": 53.741,
+      "ini": 51.01467000000001,
+      "fim": 54.525985000000006,
       "palavras": [
         {
-          "texto": "Simples",
-          "ini": 50.364,
-          "fim": 50.782
+          "texto": "Simples assim.",
+          "ini": 51.01467000000001,
+          "fim": 52.17566800000001
         },
         {
-          "texto": "assim.",
-          "ini": 50.863,
-          "fim": 51.339
-        },
-        {
-          "texto": "Link",
-          "ini": 51.652,
-          "fim": 52.047
-        },
-        {
-          "texto": "na",
-          "ini": 52.14,
-          "fim": 52.256
-        },
-        {
-          "texto": "bio.",
-          "ini": 52.326,
-          "fim": 52.941
+          "texto": "O link tá na bio.",
+          "ini": 52.42566800000001,
+          "fim": 53.72598500000001
         }
       ]
     }
