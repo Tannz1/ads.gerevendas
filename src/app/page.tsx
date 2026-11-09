@@ -2,10 +2,12 @@ import type { Viewport } from "next";
 import localFont from "next/font/local";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { AdPiece, type DemoAd } from "@/components/marketing/ad-piece";
 import { BrandLogo } from "@/components/marketing/brand-logo";
+import { BAKERY, BAKERY_ROUND } from "@/components/marketing/demo-ads";
+import { FluidAd } from "@/components/marketing/fluid-ad";
 import { HeroDemo } from "@/components/marketing/hero-demo";
-import { TEMPLATE_LABELS } from "@/contracts/creatives";
+import { Storyboard } from "@/components/marketing/storyboard";
+import { TEMPLATE_LABELS, type CreativeContent } from "@/contracts/creatives";
 import { cn } from "@/lib/cn";
 
 // Sora: fonte da marca Gere Vendas (site do CRM). Arquivo local, OFL, para o build não depender do Google Fonts.
@@ -20,58 +22,18 @@ export const viewport: Viewport = { themeColor: "#120a0c" };
 
 const CRM_URL = "https://www.gerevendascrm.com.br/";
 
-/** Uma rodada de peças de uma padaria FICTÍCIA: um anúncio por ângulo, como o app gera. */
-const bakery = { bg: "#f7dcc0", ink: "#3b1a08", shape: "#e9a76b" };
-const round: Array<{ ad: DemoAd; story?: boolean }> = [
-  {
-    ad: {
-      ...bakery,
-      layout: "oferta",
-      headline: "Café da manhã completo",
-      detail: "Pão na chapa, café e suco natural",
-      price: "R$ 24,90",
-      cta: "Pedir no WhatsApp",
-    },
-  },
-  {
-    ad: {
-      ...bakery,
-      layout: "problema",
-      headline: "Sem tempo de tomar café em casa?",
-      detail: "A gente separa o seu pedido",
-      cta: "Pedir no WhatsApp",
-    },
-  },
-  {
-    ad: {
-      ...bakery,
-      layout: "beneficio",
-      headline: "Pão na chapa do jeito que você gosta",
-      detail: "Com manteiga ou requeijão",
-      cta: "Pedir no WhatsApp",
-    },
-    story: true,
-  },
-  {
-    ad: {
-      ...bakery,
-      bg: "#fff4e8",
-      layout: "demonstracao",
-      headline: "Pão, café e suco na mesma bandeja",
-      detail: "Café da manhã completo",
-      cta: "Pedir no WhatsApp",
-    },
-  },
-  {
-    ad: {
-      ...bakery,
-      layout: "conveniencia",
-      headline: "Peça até as 10h pelo WhatsApp",
-      detail: "Retire no balcão sem fila",
-      cta: "Pedir no WhatsApp",
-    },
-  },
-];
+/** Peça da padaria FICTÍCIA desenhada pelo renderizador real do editor. */
+function BakeryAd({ ad, stories = false }: { ad: CreativeContent; stories?: boolean }) {
+  return (
+    <FluidAd
+      format={stories ? "stories" : "feed"}
+      content={ad}
+      businessName={BAKERY.businessName}
+      priceLabel={BAKERY.priceLabel}
+      imageSrc={BAKERY.photo ?? null}
+    />
+  );
+}
 
 const segments = [
   "Padaria",
@@ -135,7 +97,7 @@ export default function Home() {
         <Hero />
         <Segments />
         <Compare />
-        <HowItWorks />
+        <Storyboard />
         <Showcase />
         <Control />
         <Results />
@@ -289,154 +251,6 @@ function CompareCard({ title, verdict, children }: { title: string; verdict: str
   );
 }
 
-/* ---------------------------------------------------------------- como funciona */
-
-function HowItWorks() {
-  const steps = [
-    {
-      title: "Conte sobre o seu negócio",
-      text: "Seis etapas curtas: seu negócio, o que você vende, quem compra, objetivo, identidade e revisão. Salva sozinho, dá para parar e continuar depois.",
-      art: <StepForm />,
-    },
-    {
-      title: "Receba a estratégia e cinco peças",
-      text: "Cada anúncio fala com o cliente de um jeito: oferta, problema, benefício, demonstração e conveniência. Tudo a partir do que você contou.",
-      art: <StepPieces />,
-    },
-    {
-      title: "Ajuste do seu jeito",
-      text: "Troque título, texto, preço, cor e foto. Use uma foto sua ou peça uma imagem nova. Se quiser, baixe a peça em PNG.",
-      art: <StepEditor />,
-    },
-    {
-      title: "Publique quando aprovar",
-      text: "A campanha é criada pausada no Facebook e no Instagram. Você escolhe o valor por dia e a duração, e confirma antes de qualquer gasto.",
-      art: <StepPublish />,
-    },
-  ];
-
-  return (
-    <section id="como-funciona" className="scroll-mt-20 bg-gv-paper">
-      <div className="mx-auto max-w-[1240px] px-4 py-24 sm:px-8 lg:py-32">
-        <div className="max-w-2xl">
-          <h2 className="text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.06] font-bold tracking-[-0.04em]">
-            Do cadastro ao anúncio no ar em quatro passos
-          </h2>
-          <p className="mt-5 text-lg leading-relaxed text-gv-mute">
-            Sem tela complicada. Em cada passo você vê exatamente o que vai ao ar.
-          </p>
-        </div>
-
-        <ol className="mt-16 grid gap-6 md:grid-cols-2">
-          {steps.map((s, i) => (
-            <li key={s.title} className="flex flex-col overflow-hidden rounded-3xl border border-gv-line bg-white">
-              <div className="flex-1 p-8">
-                <span className="grid size-10 place-items-center rounded-full bg-gv-red text-lg font-bold text-white">
-                  {i + 1}
-                </span>
-                <h3 className="mt-5 text-2xl font-bold tracking-[-0.02em]">{s.title}</h3>
-                <p className="mt-3 max-w-md leading-relaxed text-gv-mute">{s.text}</p>
-              </div>
-              <div aria-hidden className="h-60 overflow-hidden border-t border-gv-line bg-[#f6f0ef] px-8 pt-8">
-                {s.art}
-              </div>
-            </li>
-          ))}
-        </ol>
-      </div>
-    </section>
-  );
-}
-
-function StepForm() {
-  return (
-    <div className="mx-auto max-w-sm rounded-t-2xl bg-white p-5 shadow-[0_10px_30px_-12px_rgb(67_27_32/0.3)]">
-      <p className="text-xs font-semibold text-gv-mute">Etapa 2 de 6</p>
-      <p className="mt-1 font-bold">O que você vende</p>
-      <div className="mt-4 grid gap-3 text-sm">
-        <FakeField label="Produto ou serviço" value="Café da manhã completo" />
-        <div className="grid grid-cols-2 gap-3">
-          <FakeField label="Preço" value="R$ 24,90" />
-          <FakeField label="Botão" value="WhatsApp" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StepPieces() {
-  return (
-    <div className="mx-auto grid max-w-sm grid-cols-5 items-end gap-2">
-      {round.map(({ ad }, i) => (
-        <div
-          key={ad.layout}
-          className="overflow-hidden rounded-lg shadow-[0_10px_20px_-10px_rgb(67_27_32/0.5)]"
-          style={{ transform: `translateY(${[18, 6, 0, 6, 18][i]}px)` }}
-        >
-          <AdPiece ad={ad} />
-        </div>
-      ))}
-      <p className="col-span-5 mt-8 text-center text-sm font-semibold text-gv-mute">5 peças, um ângulo em cada</p>
-    </div>
-  );
-}
-
-function StepEditor() {
-  return (
-    <div className="mx-auto grid max-w-sm grid-cols-[110px_1fr] gap-4 rounded-t-2xl bg-white p-5 shadow-[0_10px_30px_-12px_rgb(67_27_32/0.3)]">
-      <div className="overflow-hidden rounded-lg">
-        <AdPiece ad={round[0].ad} />
-      </div>
-      <div className="grid content-start gap-3 text-sm">
-        <FakeField label="Título" value="Café da manhã completo" />
-        <FakeField label="Preço" value="R$ 24,90" />
-        <div>
-          <p className="text-xs font-semibold text-gv-mute">Cor</p>
-          <div className="mt-1.5 flex gap-1.5">
-            {["#f7dcc0", "#3b1a08", "#d63221", "#cfe9d8"].map((c, i) => (
-              <span
-                key={c}
-                className={cn(
-                  "size-6 rounded-full border border-black/10",
-                  i === 0 && "ring-2 ring-gv-ink ring-offset-2",
-                )}
-                style={{ background: c }}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StepPublish() {
-  return (
-    <div className="mx-auto max-w-sm rounded-t-2xl bg-white p-5 shadow-[0_10px_30px_-12px_rgb(67_27_32/0.3)]">
-      <div className="flex items-center justify-between gap-3">
-        <p className="font-bold">Café da manhã completo</p>
-        <span className="rounded-full bg-[#fdf0d8] px-2.5 py-1 text-xs font-bold text-[#9a5b00]">Pausada</span>
-      </div>
-      <div className="mt-4 grid grid-cols-2 gap-3 text-sm">
-        <FakeField label="Valor por dia" value="R$ 20" />
-        <FakeField label="Duração" value="7 dias" />
-      </div>
-      <p className="mt-4 rounded-lg bg-gv-red px-4 py-2.5 text-center text-sm font-bold text-white">
-        Revisar e confirmar
-      </p>
-    </div>
-  );
-}
-
-function FakeField({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <p className="text-xs font-semibold text-gv-mute">{label}</p>
-      <p className="mt-1 truncate rounded-lg border border-gv-line px-3 py-2 font-medium">{value}</p>
-    </div>
-  );
-}
-
 /* ---------------------------------------------------------------- vitrine */
 
 function Showcase() {
@@ -454,14 +268,14 @@ function Showcase() {
         </div>
 
         <ul className="mt-14 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-5 lg:items-center">
-          {round.map(({ ad, story }) => (
-            <li key={ad.layout} className={cn(story && "md:row-span-2 lg:row-span-1")}>
+          {BAKERY_ROUND.map(({ ad, stories }) => (
+            <li key={ad.template} className={cn(stories && "md:row-span-2 lg:row-span-1")}>
               <div className="overflow-hidden rounded-2xl shadow-[0_24px_40px_-24px_rgb(67_27_32/0.55)]">
-                <AdPiece ad={ad} format={story ? "story" : "feed"} />
+                <BakeryAd ad={ad} stories={stories} />
               </div>
               <p className="mt-3 text-sm font-semibold">
-                {TEMPLATE_LABELS[ad.layout]}
-                <span className="font-normal text-gv-mute">{story ? ", formato stories" : ", formato feed"}</span>
+                {TEMPLATE_LABELS[ad.template]}
+                <span className="font-normal text-gv-mute">{stories ? ", formato stories" : ", formato feed"}</span>
               </p>
             </li>
           ))}
@@ -522,7 +336,7 @@ function Control() {
           <div className="rounded-3xl bg-white p-7 text-gv-ink shadow-[0_40px_80px_-30px_rgb(0_0_0/0.8)]">
             <div className="flex items-center gap-4">
               <div className="w-14 shrink-0 overflow-hidden rounded-lg">
-                <AdPiece ad={round[0].ad} />
+                <BakeryAd ad={BAKERY.ad} />
               </div>
               <div className="min-w-0">
                 <p className="font-bold">Ativar &quot;Café da manhã completo&quot;?</p>
@@ -579,7 +393,7 @@ function Results() {
             </div>
             <div className="mt-4 flex items-center gap-4 rounded-2xl border border-gv-line p-4">
               <div className="w-16 shrink-0 overflow-hidden rounded-lg">
-                <AdPiece ad={round[0].ad} />
+                <BakeryAd ad={BAKERY.ad} />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="truncate font-bold">Café da manhã completo</p>

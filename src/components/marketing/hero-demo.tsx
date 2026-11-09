@@ -1,83 +1,16 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { AdPiece, type DemoAd } from "./ad-piece";
+import { DEMO_BUSINESSES } from "./demo-ads";
+import { FluidAd } from "./fluid-ad";
 
 /**
- * Demo do hero: a frase que o dono escreveu no cadastro é digitada e vira uma peça de feed.
- * Negócios, ofertas e preços são FICTÍCIOS e rotulados como exemplo ilustrativo.
- * Roda sozinha entre os exemplos até a pessoa escolher um; com movimento reduzido, mostra o estado final.
+ * Demo do hero: a frase que o dono escreveu no cadastro é digitada e vira uma peça de feed,
+ * desenhada pelo mesmo renderizador do editor. Negócios, ofertas e preços são FICTÍCIOS e rotulados
+ * como exemplo ilustrativo. Roda sozinha entre os exemplos até a pessoa escolher um; com movimento
+ * reduzido, mostra o estado final.
  */
-const examples: Array<{ id: string; label: string; owner: string; initials: string; note: string; ad: DemoAd }> = [
-  {
-    id: "padaria",
-    label: "Padaria",
-    owner: "Padaria Pão Quente",
-    initials: "PQ",
-    note: "Café da manhã completo por R$ 24,90: pão na chapa, café e suco natural. Pedido pelo WhatsApp até as 10h.",
-    ad: {
-      layout: "oferta",
-      headline: "Café da manhã completo",
-      detail: "Pão na chapa, café e suco natural",
-      price: "R$ 24,90",
-      cta: "Pedir no WhatsApp",
-      bg: "#f7dcc0",
-      ink: "#3b1a08",
-      shape: "#e9a76b",
-    },
-  },
-  {
-    id: "salao",
-    label: "Salão",
-    owner: "Studio Bela Rosa",
-    initials: "BR",
-    note: "Toda terça, escova com hidratação por R$ 89. Agendamento pelo WhatsApp, com horário marcado.",
-    ad: {
-      layout: "oferta",
-      headline: "Terça da escova",
-      detail: "Escova + hidratação, com hora marcada",
-      price: "R$ 89",
-      cta: "Agendar horário",
-      bg: "#f3d3e0",
-      ink: "#3a0f24",
-      shape: "#d98aaa",
-    },
-  },
-  {
-    id: "petshop",
-    label: "Pet shop",
-    owner: "Cão Feliz Pet",
-    initials: "CF",
-    note: "Banho e tosa para cães pequenos, R$ 60. A gente busca e leva de volta aqui no bairro.",
-    ad: {
-      layout: "oferta",
-      headline: "Banho e tosa com leva e traz",
-      detail: "Cães de porte pequeno",
-      price: "R$ 60",
-      cta: "Agendar banho",
-      bg: "#cfe9d8",
-      ink: "#0e3b24",
-      shape: "#7fc39b",
-    },
-  },
-  {
-    id: "oficina",
-    label: "Oficina",
-    owner: "Auto Center Silva",
-    initials: "AS",
-    note: "Troca de óleo com filtro a partir de R$ 149. Não precisa marcar hora, é só chegar.",
-    ad: {
-      layout: "oferta",
-      headline: "Troca de óleo sem marcar hora",
-      detail: "Óleo + filtro, é só chegar",
-      price: "a partir de R$ 149",
-      cta: "Chamar no WhatsApp",
-      bg: "#d6ddf0",
-      ink: "#0f1b3d",
-      shape: "#8ea0d6",
-    },
-  },
-];
+const examples = DEMO_BUSINESSES;
 
 const TYPE_MS = 26;
 const THINK_MS = 900;
@@ -189,19 +122,27 @@ export function HeroDemo() {
               <span
                 aria-hidden
                 className="grid size-9 place-items-center rounded-full text-xs font-bold text-white"
-                style={{ background: ex.ad.ink }}
+                style={{ background: ex.ad.colors.accent }}
               >
                 {ex.initials}
               </span>
               <div className="min-w-0 leading-tight">
-                <p className="truncate text-sm font-semibold">{ex.owner}</p>
+                <p className="truncate text-sm font-semibold">{ex.businessName}</p>
                 <p className="text-xs text-gv-mute">Patrocinado</p>
               </div>
             </div>
 
             <div className="relative">
               {showAd ? (
-                <AdPiece key={ex.id} ad={ex.ad} animate={!still} />
+                <div key={ex.id} className={still ? undefined : "lp-in"}>
+                  <FluidAd
+                    format="feed"
+                    content={ex.ad}
+                    businessName={ex.businessName}
+                    priceLabel={ex.priceLabel}
+                    imageSrc={ex.photo ?? null}
+                  />
+                </div>
               ) : (
                 <div aria-hidden className="relative aspect-[4/5] animate-pulse bg-[#efe8e6]">
                   <div className="absolute top-7 left-7 h-6 w-3/5 rounded bg-[#e2d8d5]" />
