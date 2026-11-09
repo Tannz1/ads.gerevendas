@@ -376,7 +376,8 @@ export function Regiao({ t }: { t: Tela }) {
 
 export function Investimento({ t }: { t: Tela }) {
   const vinte = t.f >= t.d * 0.25;
-  const total = Math.round(interpolate(t.f, [t.d * 0.3, t.d * 0.6], [70, 140], clamp));
+  // O total muda logo depois do clique em R$ 20 (R$ 10 × 7 = R$ 70 → R$ 20 × 7 = R$ 140).
+  const total = Math.round(interpolate(t.f, [t.d * 0.25, t.d * 0.32], [70, 140], clamp));
   return (
     <>
       <Top step={5} title="Quanto quer investir?" />
@@ -478,9 +479,9 @@ export function Resultados({ t }: { t: Tela }) {
       <Top title="Seu anúncio em números" />
       <div className="mt-3 grid grid-cols-3 gap-1.5 text-center">
         {[
-          [`R$ ${Math.round(120 * p)}`, "Investido"],
-          [`${Math.round(18 * p)}`, "Conversas"],
-          [p < 0.05 ? "—" : `R$ ${reais(6.67)}`, "Por conversa"],
+          [`R$ ${reais(86.4 * p)}`, "Investido"],
+          [`${Math.round(27 * p)}`, "Conversas"],
+          [p < 0.05 ? "—" : `R$ ${reais(3.2)}`, "Por conversa"],
         ].map(([v, k]) => (
           <div key={k} className="rounded-xl border border-gv-line px-1 py-2.5">
             <p className="text-[14px] leading-tight font-bold">{v}</p>

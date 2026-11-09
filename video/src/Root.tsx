@@ -3,6 +3,8 @@ import { Composition } from "remotion";
 import { Apresentacao } from "./Apresentacao";
 import apresentacao from "./timeline-apresentacao.json";
 import uso from "./timeline-uso.json";
+import { ReelsDinamico } from "./dinamico/ReelsDinamico";
+import dinamico from "./timeline-dinamico.json";
 import { Uso } from "./uso/Uso";
 
 const FPS = 30;
@@ -16,6 +18,15 @@ const DUR_USO = Math.ceil(uso.duracao * FPS);
 export function Root() {
   return (
     <>
+      {/* Reels dinâmico: cortes rápidos, música, efeitos e ilustrações 3D. */}
+      <Composition
+        id="ReelsDinamico"
+        component={ReelsDinamico}
+        width={1080}
+        height={1920}
+        fps={FPS}
+        durationInFrames={Math.ceil((dinamico.duracao + 1.2) * FPS)}
+      />
       {/* Reels vertical: o app em uso, como gravação de tela. */}
       <Composition
         id="ReelsUso"

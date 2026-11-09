@@ -105,7 +105,9 @@ export function ScrollTour() {
                   </span>
                   <span className="text-[14px] font-semibold text-lp-cinza">Passo {i + 1} de 8</span>
                 </p>
-                <h3 className="lp-letreiro mt-3 text-[clamp(1.45rem,4.5vw,2.1rem)] leading-[1.08]">{e.titulo}</h3>
+                <h3 className="mt-3 text-[clamp(1.45rem,4.5vw,2.1rem)] leading-[1.08] font-bold tracking-[-0.035em] text-lp-verde">
+                  {e.titulo}
+                </h3>
                 <p className="mt-2.5 max-w-md text-[17px] leading-relaxed text-lp-cinza">{e.texto}</p>
               </div>
               {/* Celular: a tela vem logo abaixo do texto */}
@@ -156,16 +158,19 @@ export function ScrollTour() {
 
 export function ScrollTourSection() {
   return (
-    <section id="como-funciona" aria-labelledby="tour-titulo" className="scroll-mt-16 bg-white">
+    <section id="como-funciona" aria-labelledby="tour-titulo" className="scroll-mt-16 bg-lp-menta">
       <div className="mx-auto max-w-[1180px] px-5 py-14 sm:px-8 lg:py-20">
-        <h2 id="tour-titulo" className="lp-letreiro max-w-3xl text-[clamp(1.9rem,6vw,3.1rem)] leading-[1.04]">
+        <h2
+          id="tour-titulo"
+          className="mx-auto max-w-3xl text-center text-[clamp(1.9rem,6vw,3.1rem)] leading-[1.04] font-bold tracking-[-0.035em] text-lp-verde"
+        >
           Veja o app por dentro, do primeiro toque ao WhatsApp
         </h2>
-        <p className="mt-3 max-w-xl text-[17px] leading-relaxed text-lp-cinza">
+        <p className="mx-auto mt-3 max-w-xl text-center text-[17px] leading-relaxed text-lp-cinza">
           Desça a página: cada passo mostra a tela do jeito que ela é no app.
         </p>
         <ScrollTour />
-        <p className="mt-8 text-[14px] text-lp-cinza">
+        <p className="mt-8 text-center text-[14px] text-lp-cinza">
           Telas do app com uma padaria fictícia. Os números são ilustrativos.
         </p>
       </div>

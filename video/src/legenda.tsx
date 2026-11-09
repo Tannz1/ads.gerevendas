@@ -120,3 +120,51 @@ export function LegendaDinamica({
     </div>
   );
 }
+
+/**
+ * Legenda de Reels: uma palavra por vez, grande e sem tarja. Branca com contorno e sombra para ler sobre
+ * qualquer fundo; entra com um pequeno "soco" de escala. Palavras longas (6+ letras) ganham destaque verde.
+ */
+export function LegendaPalavra({
+  cena,
+  t,
+  bottom,
+  fontSize,
+}: {
+  cena: Cena;
+  t: number;
+  bottom: number;
+  fontSize: number;
+}) {
+  const palavras = frasesDa(cena).flatMap(palavrasDa);
+  const w = palavras.find((p) => t >= p.ini - 0.03 && t < p.fim + 0.03);
+  if (!w) return null;
+  const pop = interpolate(t, [w.ini - 0.03, w.ini + 0.05, w.ini + 0.14], [0.6, 1.12, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+    easing: Easing.out(Easing.cubic),
+  });
+  const limpa = w.texto.replace(/[^\p{L}\p{N}$,]/gu, "");
+  const destaque = limpa.replace(/\W/g, "").length >= 6 || /\d/.test(limpa);
+  return (
+    <div style={{ position: "absolute", left: 40, right: 40, bottom, display: "flex", justifyContent: "center" }}>
+      <span
+        style={{
+          fontFamily: "Inter",
+          fontSize,
+          fontWeight: 900,
+          letterSpacing: "-0.02em",
+          textTransform: "uppercase",
+          color: destaque ? "#5ee06f" : "#ffffff",
+          WebkitTextStroke: `${Math.round(fontSize / 9)}px #0b2a16`,
+          paintOrder: "stroke fill",
+          textShadow: "0 8px 24px rgba(0,0,0,0.45)",
+          transform: `scale(${pop})`,
+          display: "inline-block",
+        }}
+      >
+        {limpa}
+      </span>
+    </div>
+  );
+}

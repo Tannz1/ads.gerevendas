@@ -33,8 +33,8 @@ const INSTRUCOES =
   roteiro.instrucoes ??
   "Fale em português do Brasil com sotaque brasileiro natural, como um amigo explicando algo pelo celular. " +
     "Tom caloroso, simpático e confiante, ritmo de conversa, com pequenas pausas naturais. Nada de tom de locutor nem robótico.";
-const PAUSA_FRASE = 0.25;
-const PAUSA_CENA = 0.5;
+const PAUSA_FRASE = roteiro.pausaFrase ?? 0.25;
+const PAUSA_CENA = roteiro.pausaCena ?? 0.5;
 
 const tmp = mkdtempSync(path.join(tmpdir(), "voz-"));
 const frases = roteiro.cenas.flatMap((c) =>
@@ -56,7 +56,13 @@ async function pedir(texto) {
         language_code: "pt",
         // Ajustes da amostra aprovada (multilingual v2): natural, sem exagero.
         ...(modelo === "eleven_multilingual_v2" && {
-          voice_settings: { stability: 0.45, similarity_boost: 0.8, style: 0.3, use_speaker_boost: true },
+          voice_settings: {
+            stability: 0.45,
+            similarity_boost: 0.8,
+            style: 0.3,
+            use_speaker_boost: true,
+            speed: roteiro.velocidade ?? 1,
+          },
         }),
       }),
     });
@@ -131,7 +137,7 @@ const duracao = t + 1.2;
 // Junta tudo numa faixa só: cada frase no seu tempo (adelay) e soma (amix).
 const entradas = frases.flatMap((f) => ["-i", f.arquivo]);
 const atrasos = frases.map((f, i) => `[${i}]adelay=${Math.round(f.ini * 1000)}:all=1[a${i}]`).join(";");
-const mix = `${frases.map((_, i) => `[a${i}]`).join("")}amix=inputs=${frases.length}:normalize=0,apad=whole_dur=${duracao.toFixed(2)}[out]`;
+const mix = `${frases.map((_, i) => `[a${i}]`).join("")}amix=inputs=${frases.length}:normalize=0,apad=whole_dur=${duracao.toFixed(2)},loudnorm=I=-14:TP=-1.5,aresample=44100[out]`;
 const saida = fileURLToPath(new URL(`../public/${nome}.mp3`, import.meta.url));
 execFileSync(FFMPEG, [
   "-v",

@@ -2,7 +2,6 @@ import type { Viewport } from "next";
 import localFont from "next/font/local";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { BrandLogo } from "@/components/marketing/brand-logo";
 import { BrandMark } from "@/components/marketing/brand-mark";
 import { Carousel } from "@/components/marketing/carousel";
 import { BAKERY, BAKERY_ROUND } from "@/components/marketing/demo-ads";
@@ -11,7 +10,7 @@ import { ScrollTourSection } from "@/components/marketing/scroll-tour";
 import { TEMPLATE_LABELS } from "@/contracts/creatives";
 import { cn } from "@/lib/cn";
 
-// Sora: fonte da marca Gere Vendas (texto corrido). Os títulos usam Archivo largo (letreiro), já no layout raiz.
+// Sora: fonte da marca Gere Vendas. Arquivo local (OFL), sem depender do Google Fonts no build.
 const sora = localFont({
   src: "./fonts/sora-latin.woff2",
   variable: "--font-sora",
@@ -23,12 +22,21 @@ export const viewport: Viewport = { themeColor: "#ffffff" };
 
 const CRM_URL = "https://www.gerevendascrm.com.br/";
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const img3d = (nome: string) => `${base}/lp/3d/${nome}.webp`;
 
 /**
- * LP "o balcão do bairro" para o dono de negócio local, que lê no celular e já tentou anunciar.
- * Linguagem visual do comércio de rua: título em letreiro de fachada e a etiqueta amarela de preço
- * (o único elemento chamativo). Só fatos do produto: sem depoimentos nem números inventados.
+ * LP do GereVendas Ads. Referência visual pedida pelo cliente: o site da Nio (fundo lima claro com curvas,
+ * ilustrações 3D de pelúcia, cartões de oferta com faixa no cabeçalho, CTA rosa e grade de benefícios).
+ * Público: dono de negócio local, no celular. Só fatos do produto: sem depoimentos nem números inventados.
  */
+
+const incluso = [
+  "Cinco versões do anúncio a cada produto",
+  "A foto do seu produto em todas as versões",
+  "Campanha no Instagram e no Facebook",
+  "Clientes chamando no seu WhatsApp",
+  "Resultados: investido, conversas e custo por conversa",
+];
 
 const faq = [
   {
@@ -63,17 +71,108 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
-        <Pains />
+        <Recursos />
         <ScrollTourSection />
-        <Video />
+        <PorQue />
         <Vitrine />
-        <Comparison />
-        <Pricing />
+        <Video />
+        <Preco />
+        <Comparacao />
         <Faq />
-        <FinalCta />
+        <Fechamento />
       </main>
       <Footer />
     </div>
+  );
+}
+
+/* ---------------------------------------------------------------- peças comuns */
+
+function Logo({ claro = false }: { claro?: boolean }) {
+  return (
+    <span className={cn("flex items-center gap-2", claro ? "text-white" : "text-lp-verde")}>
+      <BrandMark className="h-8 w-auto" />
+      <span
+        className={cn(
+          "rounded-md px-1.5 py-0.5 text-xs leading-none font-bold",
+          claro ? "bg-white text-lp-verde" : "bg-lp-vivo text-white",
+        )}
+      >
+        Ads
+      </span>
+    </span>
+  );
+}
+
+/** Botão principal (rosa) ou secundário (verde-escuro), sempre em pílula. */
+function Botao({
+  children,
+  tom = "rosa",
+  className,
+  href = "/entrar",
+}: {
+  children: ReactNode;
+  tom?: "rosa" | "verde" | "branco";
+  className?: string;
+  href?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "inline-flex h-14 items-center justify-center rounded-full px-8 text-[17px] font-bold whitespace-nowrap transition-colors",
+        tom === "rosa" && "bg-lp-rosa text-white hover:bg-lp-rosa-escuro",
+        tom === "verde" && "bg-lp-verde text-white hover:bg-lp-verde-escuro",
+        tom === "branco" && "bg-white text-lp-verde hover:bg-lp-menta",
+        className,
+      )}
+    >
+      {children}
+    </Link>
+  );
+}
+
+function Titulo({ id, children, className }: { id?: string; children: ReactNode; className?: string }) {
+  return (
+    <h2
+      id={id}
+      className={cn(
+        "text-center text-[clamp(1.9rem,6vw,2.9rem)] leading-[1.08] font-bold tracking-[-0.035em] text-lp-verde",
+        className,
+      )}
+    >
+      {children}
+    </h2>
+  );
+}
+
+function Check({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 24 24"
+      className={cn("size-5 shrink-0", className)}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="m8 12.5 2.5 2.5L16 9.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+/** Ilustração 3D decorativa (pelúcia verde, fundo transparente). */
+function Ilustra({ nome, className, prioridade = false }: { nome: string; className?: string; prioridade?: boolean }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element -- ilustração estática da LP, já otimizada (WebP)
+    <img
+      src={img3d(nome)}
+      alt=""
+      aria-hidden
+      loading={prioridade ? "eager" : "lazy"}
+      className={cn("pointer-events-none drop-shadow-[0_24px_30px_rgb(11_59_30/0.25)] select-none", className)}
+    />
   );
 }
 
@@ -81,25 +180,38 @@ export default function Home() {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-30 border-b border-lp-linha bg-white/92 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-[1180px] items-center justify-between gap-4 px-5 sm:px-8">
-        <BrandLogo />
-        <nav aria-label="Principal" className="hidden items-center gap-8 text-[15px] font-medium text-lp-cinza lg:flex">
-          <a href="#como-funciona" className="hover:text-lp-tinta">
+    <header className="sticky top-0 z-30 border-b border-lp-linha/70 bg-white/95 backdrop-blur">
+      <div className="mx-auto flex h-[72px] max-w-[1240px] items-center justify-between gap-4 px-5 sm:px-8">
+        <Link href="/" aria-label="GereVendas Ads, início">
+          <Logo />
+        </Link>
+        <nav
+          aria-label="Principal"
+          className="hidden items-center gap-8 text-[15px] font-semibold text-lp-cinza lg:flex"
+        >
+          <a href="#como-funciona" className="hover:text-lp-verde">
             Como funciona
           </a>
-          <a href="#preco" className="hover:text-lp-tinta">
+          <a href="#preco" className="hover:text-lp-verde">
             Preço
           </a>
-          <a href="#duvidas" className="hover:text-lp-tinta">
+          <a href="#duvidas" className="hover:text-lp-verde">
             Dúvidas
           </a>
         </nav>
-        <div className="flex items-center gap-2 sm:gap-5">
-          <Link href="/entrar" className="hidden text-[15px] font-semibold text-lp-cinza hover:text-lp-tinta sm:block">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <Link
+            href="/entrar"
+            className="hidden h-11 items-center rounded-full border-2 border-lp-verde px-5 text-[15px] font-bold text-lp-verde hover:bg-lp-menta sm:inline-flex"
+          >
             Entrar
           </Link>
-          <CtaLink size="sm">Criar meu anúncio</CtaLink>
+          <Link
+            href="/entrar"
+            className="inline-flex h-11 items-center rounded-full bg-lp-verde px-5 text-[15px] font-bold text-white hover:bg-lp-verde-escuro"
+          >
+            Criar meu anúncio
+          </Link>
         </div>
       </div>
     </header>
@@ -108,120 +220,241 @@ function Header() {
 
 function Hero() {
   return (
-    <section className="bg-white">
-      <div className="mx-auto grid max-w-[1180px] grid-cols-1 items-center gap-10 px-5 pt-8 pb-12 sm:px-8 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14 lg:pt-14 lg:pb-16">
-        <div>
-          <h1 className="lp-letreiro text-[clamp(2.6rem,10vw,5rem)] leading-[0.98] text-balance">
+    <section className="relative overflow-hidden bg-lp-claro">
+      {/* Curva branca grande ao fundo, como na referência */}
+      <div
+        aria-hidden
+        className="absolute -top-[30%] left-1/2 h-[140%] w-[160%] -translate-x-1/2 rounded-[50%] bg-lp-menta"
+      />
+      <div className="relative mx-auto max-w-[1240px] px-5 pt-10 pb-14 sm:px-8 lg:pt-14 lg:pb-20">
+        <div className="relative mx-auto max-w-3xl text-center">
+          <Ilustra nome="megafone" prioridade className="absolute top-2 -left-44 hidden w-44 -rotate-12 lg:block" />
+          <Ilustra nome="conversa" prioridade className="absolute top-0 -right-44 hidden w-40 rotate-6 lg:block" />
+          <h1 className="text-[clamp(2.4rem,9vw,4.2rem)] leading-[1.02] font-bold tracking-[-0.045em] text-lp-verde">
             Seu produto é bom. Falta gente ver.
           </h1>
-          <p className="mt-5 max-w-[31rem] text-[18px] leading-relaxed text-lp-cinza sm:text-[20px]">
-            Mande a foto do produto e o GereVendas Ads coloca o seu anúncio no Instagram e no Facebook para quem está
-            perto. Quem se interessa chama você direto no WhatsApp.
+          <p className="mx-auto mt-4 max-w-2xl text-[clamp(1.1rem,3.6vw,1.45rem)] leading-snug font-semibold text-[#1d8a3a]">
+            Anúncios no Instagram e no Facebook que levam clientes direto para o seu WhatsApp
           </p>
-          <div className="mt-7 flex flex-col gap-4 sm:flex-row sm:items-center">
-            <CtaLink size="lg" className="w-full sm:w-auto">
-              Criar meu anúncio
-            </CtaLink>
-            <a
-              href="#video"
-              className="inline-flex items-center justify-center gap-2 text-[16px] font-semibold text-lp-tinta underline decoration-lp-verde decoration-2 underline-offset-4 hover:text-lp-verde"
-            >
-              Ver o app em 2 minutos
-            </a>
-          </div>
-          <div className="mt-8 flex flex-wrap items-center gap-x-4 gap-y-2">
-            <span className="lp-etiqueta text-[18px] font-bold">R$ 199 por mês</span>
-            <span className="text-[15px] text-lp-cinza">sem fidelidade e só roda com o seu ok</span>
-          </div>
         </div>
 
-        <HeroVisual />
+        <div className="mt-6 grid grid-cols-1 items-center gap-2 lg:mt-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-8">
+          <Ilustra
+            nome="dona"
+            prioridade
+            className="mx-auto -mb-2 w-[min(46vw,190px)] lg:mb-0 lg:w-full lg:max-w-[320px]"
+          />
+          <CartaoPlano />
+          <div className="hidden lg:block">
+            <ul className="grid gap-4">
+              {[
+                ["Pronto em minutos", "Foto, preço e valor. Sem arte, sem texto."],
+                ["Só roda com o seu ok", "O anúncio nasce pausado e tem teto de gasto."],
+                ["Clientes no WhatsApp", "Quem se interessa chama você direto."],
+              ].map(([t, d]) => (
+                <li key={t} className="rounded-3xl bg-white/80 p-5 shadow-[0_10px_30px_-18px_rgb(11_59_30/0.35)]">
+                  <p className="flex items-center gap-2 text-[17px] font-bold text-lp-verde">
+                    <Check className="text-lp-vivo" />
+                    {t}
+                  </p>
+                  <p className="mt-1 text-[15px] text-lp-cinza">{d}</p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
     </section>
   );
 }
 
-/** A dona do negócio recebendo a conversa que o anúncio trouxe. Pessoa, negócio e conversa são ilustrativos. */
-function HeroVisual() {
+/** Cartão de oferta no formato da referência: faixa no topo, o que vem incluso, preço e botão rosa. */
+function CartaoPlano({ comLink = true }: { comLink?: boolean }) {
   return (
-    <figure className="mx-auto w-full max-w-[460px] lg:mr-0 lg:ml-auto">
-      <div className="relative rounded-[28px] bg-lp-claro p-3 sm:p-4">
-        {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática da LP, já otimizada */}
-        <img
-          src={`${base}/lp/dona-padaria.jpg`}
-          alt="Dona de padaria sorrindo enquanto olha o celular no balcão"
-          width={880}
-          height={1320}
-          fetchPriority="high"
-          className="aspect-[4/5] w-full rounded-[20px] object-cover"
-        />
-        <div className="absolute top-[12%] -left-2 w-[70%] max-w-[280px] rounded-2xl bg-white p-3 shadow-[0_18px_40px_-18px_rgb(16_35_26/0.45)] sm:-left-6">
-          <div className="flex items-center gap-2.5">
-            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-[#25d366] text-white">
-              <WhatsIcon className="size-4" />
-            </span>
-            <p className="text-[13px] leading-tight font-bold">
-              Nova mensagem
-              <span className="block text-[12px] font-normal text-lp-cinza">WhatsApp, agora</span>
-            </p>
-          </div>
-          <p className="mt-2 rounded-xl bg-[#e7fbe3] px-3 py-2 text-[14px] leading-snug">
-            Oi! Vi o anúncio. Ainda tem o café da manhã completo?
-          </p>
-        </div>
-        <div className="absolute -right-2 bottom-[9%] flex w-[64%] max-w-[260px] items-center gap-3 rounded-2xl bg-white p-2.5 shadow-[0_18px_40px_-18px_rgb(16_35_26/0.45)] sm:-right-6">
-          <div className="w-12 shrink-0 overflow-hidden rounded-lg">
-            <FluidAd
-              format="feed"
-              content={BAKERY.ad}
-              businessName={BAKERY.businessName}
-              priceLabel={BAKERY.priceLabel}
-              imageSrc={BAKERY.photo ?? null}
-            />
-          </div>
-          <p className="min-w-0 text-[13px] leading-tight font-bold">
-            <span className="flex items-center gap-1.5 text-[12px] font-semibold text-lp-verde">
-              <span className="size-1.5 rounded-full bg-lp-verde" />
-              Anúncio no ar
-            </span>
-            <span className="mt-0.5 block truncate">{BAKERY.ad.headline}</span>
-          </p>
-        </div>
-      </div>
-      <figcaption className="mt-3 text-center text-[13px] text-lp-cinza lg:text-right">
-        Exemplo ilustrativo, com negócio fictício
-      </figcaption>
-    </figure>
+    <div className="mx-auto w-full max-w-[400px] rounded-[28px] bg-gradient-to-b from-white to-[#eef6e2] p-4 shadow-[0_24px_60px_-30px_rgb(11_59_30/0.5)] ring-1 ring-lp-linha">
+      <p className="flex items-center justify-between rounded-xl bg-lp-verde px-4 py-2.5 text-[15px] font-bold text-white">
+        Plano GereVendas Ads
+        <span className="rounded-full bg-lp-vivo px-2.5 py-0.5 text-[12px]">Piloto</span>
+      </p>
+      <ul className="mt-4 grid gap-2.5 rounded-2xl bg-white p-4 text-[15px] ring-1 ring-lp-linha">
+        {incluso.map((i) => (
+          <li key={i} className="flex gap-2.5">
+            <Check className="text-lp-vivo" />
+            {i}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-5 text-center">
+        <span className="align-top text-[18px] font-bold">R$ </span>
+        <span className="text-[52px] leading-none font-bold tracking-[-0.04em]">199</span>
+        <span className="text-[18px] font-semibold">/mês</span>
+      </p>
+      <p className="text-center text-[14px] text-lp-cinza">sem fidelidade · verba dos anúncios à parte</p>
+      <Botao className="mt-4 w-full">Criar meu anúncio</Botao>
+      {comLink && (
+        <a
+          href="#preco"
+          className="mt-3 block text-center text-[15px] font-semibold text-lp-verde underline underline-offset-4"
+        >
+          Detalhes do plano
+        </a>
+      )}
+    </div>
   );
 }
 
-/* ---------------------------------------------------------------- dor */
+/* ---------------------------------------------------------------- recursos */
 
-function Pains() {
-  const falas = [
-    "Posto todo dia e quase ninguém vê.",
-    "Já impulsionei, gastei e não chegou nenhum cliente.",
-    "Não tenho tempo pra aprender o Gerenciador de Anúncios.",
+function Recursos() {
+  const itens = [
+    {
+      t: "Foto vira anúncio",
+      d: "Tire a foto do produto no celular. Ela vai para todas as versões do anúncio.",
+      i: (
+        <path d="M4 8a2 2 0 0 1 2-2h1.5L9 4h6l1.5 2H18a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2zm8 9a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z" />
+      ),
+    },
+    {
+      t: "Cinco versões",
+      d: "A IA cria cinco anúncios, cada um chamando o cliente de um jeito.",
+      i: <path d="M4 5h11v14H4zm4-2h12v14" />,
+    },
+    {
+      t: "Clientes no WhatsApp",
+      d: "Um toque no anúncio e a conversa começa no número do seu negócio.",
+      i: <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />,
+    },
+    {
+      t: "Resultados claros",
+      d: "Quanto investiu, quantas conversas e quanto custou cada uma.",
+      i: <path d="M4 20h16M7 16V9m5 7V4m5 12v-5" />,
+    },
   ];
   return (
-    <section aria-labelledby="dor-titulo" className="bg-lp-claro">
-      <div className="mx-auto max-w-[1180px] px-5 py-14 sm:px-8 lg:py-20">
-        <h2 id="dor-titulo" className="lp-letreiro text-[clamp(1.9rem,6vw,3.1rem)] leading-[1.04]">
-          Soa familiar?
-        </h2>
-        <ul className="mt-8 grid grid-cols-1 gap-x-10 gap-y-6 md:grid-cols-3">
-          {falas.map((f) => (
-            <li
-              key={f}
-              className="border-l-4 border-lp-verde pl-5 text-[clamp(1.2rem,3.6vw,1.45rem)] leading-snug font-semibold"
-            >
-              “{f}”
+    <section aria-labelledby="recursos-titulo" className="bg-white">
+      <div className="mx-auto max-w-[1240px] px-5 py-14 sm:px-8 lg:py-20">
+        <Titulo id="recursos-titulo">Tudo o que você precisa, num app só</Titulo>
+        <p className="mx-auto mt-3 max-w-xl text-center text-[17px] text-lp-cinza">
+          Sem agência, sem designer e sem curso de tráfego.
+        </p>
+        <ul className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {itens.map((x) => (
+            <li key={x.t} className="rounded-[24px] bg-lp-menta p-6 ring-1 ring-lp-linha">
+              <span className="grid size-12 place-items-center rounded-full bg-lp-claro text-lp-verde">
+                <svg
+                  aria-hidden
+                  viewBox="0 0 24 24"
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  {x.i}
+                </svg>
+              </span>
+              <h3 className="mt-4 text-[19px] font-bold text-lp-verde">{x.t}</h3>
+              <p className="mt-1.5 text-[15px] leading-relaxed text-lp-cinza">{x.d}</p>
             </li>
           ))}
         </ul>
-        <p className="mt-10 max-w-3xl text-[18px] leading-relaxed sm:text-[20px]">
-          Não é falta de produto bom. É falta da pessoa certa ver. O GereVendas Ads mostra o seu produto para quem está
-          perto e quer comprar, e leva essa pessoa direto para o seu WhatsApp.
+        <div className="mt-10 text-center">
+          <Botao tom="verde">Criar meu anúncio</Botao>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------------- por que */
+
+function PorQue() {
+  return (
+    <section aria-labelledby="porque-titulo" className="relative overflow-hidden bg-lp-claro">
+      <div
+        aria-hidden
+        className="absolute top-16 left-1/2 h-[120%] w-[150%] -translate-x-1/2 rounded-[50%] bg-lp-menta"
+      />
+      <div className="relative mx-auto max-w-[1240px] px-5 py-14 sm:px-8 lg:py-20">
+        <Titulo id="porque-titulo">Por que escolher o GereVendas Ads</Titulo>
+        <div className="mt-10 grid grid-cols-1 gap-3 md:grid-cols-3">
+          <TextoVerde
+            t="Você manda no dinheiro"
+            d="A partir de R$ 10 por dia, com teto fechado. O anúncio nasce pausado e você pausa quando quiser."
+          />
+          <IlustraVerde nome="megafone" />
+          <TextoVerde
+            t="A IA não inventa"
+            d="Preço, desconto e entrega só entram no anúncio se você escreveu. Você aprova antes de publicar."
+          />
+          <IlustraVerde nome="sacola" />
+          <TextoVerde
+            t="Feito para o bairro"
+            d="O anúncio aparece para quem está perto: na sua cidade ou na cidade e região."
+          />
+          <IlustraVerde nome="celular" />
+        </div>
+        <div className="mt-10 text-center">
+          <Botao tom="verde">Criar meu anúncio</Botao>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function TextoVerde({ t, d }: { t: string; d: string }) {
+  return (
+    <div className="flex min-h-[190px] flex-col justify-center rounded-[22px] bg-gradient-to-br from-[#1f6b35] to-lp-verde p-6 text-white">
+      <h3 className="text-[21px] leading-snug font-bold">{t}</h3>
+      <p className="mt-2 text-[15px] leading-relaxed text-white/85">{d}</p>
+    </div>
+  );
+}
+
+function IlustraVerde({ nome }: { nome: string }) {
+  return (
+    <div
+      aria-hidden
+      className="relative hidden min-h-[190px] overflow-visible rounded-[22px] bg-gradient-to-br from-[#5ee06f] to-lp-vivo md:block"
+    >
+      <Ilustra nome={nome} className="absolute -top-6 left-1/2 w-44 -translate-x-1/2" />
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- vitrine */
+
+function Vitrine() {
+  return (
+    <section aria-labelledby="vitrine-titulo" className="bg-white">
+      <div className="mx-auto max-w-[1240px] px-5 py-14 sm:px-8 lg:py-20">
+        <Titulo id="vitrine-titulo">Uma foto, cinco anúncios diferentes</Titulo>
+        <p className="mx-auto mt-3 max-w-xl text-center text-[17px] text-lp-cinza">
+          Elas rodam juntas e a Meta mostra mais a que traz mais conversas.
+        </p>
+        <div className="mt-10">
+          <Carousel label="Exemplos de versões do anúncio" desktopFrom="lg" gridClassName="lg:grid-cols-5 lg:gap-5">
+            {BAKERY_ROUND.map(({ ad }, i) => (
+              <div key={ad.template}>
+                <div className="overflow-hidden rounded-[20px] shadow-[0_20px_40px_-24px_rgb(11_59_30/0.55)]">
+                  <FluidAd
+                    format="feed"
+                    content={ad}
+                    businessName={BAKERY.businessName}
+                    priceLabel={BAKERY.priceLabel}
+                    imageSrc={BAKERY.photo ?? null}
+                  />
+                </div>
+                <p className="mt-3 text-center text-[15px] font-semibold text-lp-verde">
+                  Versão {i + 1}: {TEMPLATE_LABELS[ad.template]}
+                </p>
+              </div>
+            ))}
+          </Carousel>
+        </div>
+        <p className="mt-6 text-center text-[14px] text-lp-cinza">
+          Exemplo ilustrativo: padaria fictícia, só para mostrar o formato.
         </p>
       </div>
     </section>
@@ -232,18 +465,19 @@ function Pains() {
 
 function Video() {
   return (
-    <section id="video" aria-labelledby="video-titulo" className="scroll-mt-16 bg-lp-claro">
-      <div className="mx-auto grid max-w-[1180px] grid-cols-1 items-center gap-8 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-12 lg:py-20">
-        <div>
-          <h2 id="video-titulo" className="lp-letreiro text-[clamp(1.9rem,6vw,3.1rem)] leading-[1.04]">
-            Prefere ver funcionando?
+    <section id="video" aria-labelledby="video-titulo" className="scroll-mt-20 bg-lp-claro">
+      <div className="mx-auto grid max-w-[1240px] grid-cols-1 items-center gap-8 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-12 lg:py-20">
+        <div className="text-center lg:text-left">
+          <h2
+            id="video-titulo"
+            className="text-[clamp(1.9rem,6vw,2.9rem)] leading-[1.08] font-bold tracking-[-0.035em] text-lp-verde"
+          >
+            Veja funcionando em 2 minutos
           </h2>
-          <p className="mt-3 max-w-md text-[17px] leading-relaxed text-lp-cinza">
-            Em 2 minutos, o caminho inteiro: da foto do produto até a conversa no WhatsApp, com a tela do app.
+          <p className="mt-3 text-[17px] leading-relaxed text-lp-cinza">
+            Da foto do produto até a conversa no WhatsApp, com a tela do app.
           </p>
-          <CtaLink size="lg" className="mt-7 hidden lg:inline-flex">
-            Criar meu anúncio
-          </CtaLink>
+          <Botao className="mt-7 hidden lg:inline-flex">Criar meu anúncio</Botao>
         </div>
         <figure>
           {/* No celular, a versão vertical (texto maior); no computador, a horizontal. Só carregam no play. */}
@@ -252,7 +486,7 @@ function Video() {
             preload="none"
             playsInline
             poster={`${base}/lp/apresentacao-vertical-capa.jpg`}
-            className="mx-auto aspect-[9/16] w-full max-w-[380px] rounded-[24px] bg-lp-tinta lg:hidden"
+            className="mx-auto aspect-[9/16] w-full max-w-[380px] rounded-[28px] bg-lp-verde lg:hidden"
           >
             <source src={`${base}/lp/apresentacao-vertical.mp4`} type="video/mp4" />
           </video>
@@ -261,56 +495,76 @@ function Video() {
             preload="none"
             playsInline
             poster={`${base}/lp/apresentacao-capa.jpg`}
-            className="hidden aspect-video w-full rounded-[24px] bg-lp-tinta lg:block"
+            className="hidden aspect-video w-full rounded-[28px] bg-lp-verde lg:block"
           >
             <source src={`${base}/lp/apresentacao.mp4`} type="video/mp4" />
           </video>
-          <figcaption className="mt-3 text-center text-[14px] text-lp-cinza lg:text-left">
-            Negócio e números de exemplo.
-          </figcaption>
+          <figcaption className="mt-3 text-center text-[14px] text-lp-cinza">Negócio e números de exemplo.</figcaption>
         </figure>
       </div>
     </section>
   );
 }
 
-/* ---------------------------------------------------------------- vitrine */
+/* ---------------------------------------------------------------- preço */
 
-function Vitrine() {
+function Preco() {
+  const verba = [
+    ["Teste de 1 semana", "R$ 10 por dia", "7 dias", "70"],
+    ["Uma semana forte", "R$ 20 por dia", "7 dias", "140"],
+    ["O mês inteiro", "R$ 10 por dia", "30 dias", "300"],
+  ];
+  const controle = [
+    "O anúncio nasce pausado",
+    "O gasto nunca passa do que você escolheu",
+    "Preço e promoção só se você escreveu",
+    "Pausa com um toque",
+  ];
   return (
-    <section aria-labelledby="vitrine-titulo" className="bg-white">
-      <div className="mx-auto max-w-[1180px] px-5 py-14 sm:px-8 lg:py-20">
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)] lg:items-end lg:gap-12">
-          <h2 id="vitrine-titulo" className="lp-letreiro text-[clamp(1.9rem,6vw,3.1rem)] leading-[1.04]">
-            Uma foto, cinco anúncios diferentes
-          </h2>
-          <p className="text-[17px] leading-relaxed text-lp-cinza">
-            Cada versão chama o cliente de um jeito. Elas rodam juntas e a Meta mostra mais a que traz mais conversas.
-          </p>
+    <section id="preco" aria-labelledby="preco-titulo" className="scroll-mt-20 bg-white">
+      <div className="mx-auto max-w-[1240px] px-5 py-14 sm:px-8 lg:py-20">
+        <Titulo id="preco-titulo">Quanto custa, sem letra miúda</Titulo>
+        <p className="mx-auto mt-3 max-w-2xl text-center text-[17px] leading-relaxed text-lp-cinza">
+          A mensalidade é da ferramenta. A verba dos anúncios não está incluída na mensalidade: você escolhe o valor a
+          cada anúncio e paga à parte.
+        </p>
+        <div className="mt-10 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.6fr)] lg:gap-8">
+          <CartaoPlano comLink={false} />
+          <div>
+            <p className="text-center text-[18px] font-bold text-lp-verde lg:text-left">Exemplos de verba</p>
+            <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+              {verba.map(([t, dia, dias, total]) => (
+                <li
+                  key={t}
+                  className="rounded-[24px] bg-gradient-to-b from-white to-[#eef6e2] p-3 ring-1 ring-lp-linha"
+                >
+                  <p className="rounded-xl bg-lp-claro px-3 py-2 text-[14px] font-bold text-lp-verde">{t}</p>
+                  <p className="mt-4 text-center text-[15px] text-lp-cinza">
+                    {dia}
+                    <br />
+                    por {dias}
+                  </p>
+                  <p className="mt-2 text-center">
+                    <span className="align-top text-[15px] font-bold">R$ </span>
+                    <span className="text-[36px] leading-none font-bold tracking-[-0.04em]">{total}</span>
+                  </p>
+                  <p className="mb-2 text-center text-[13px] text-lp-cinza">no total</p>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-6 rounded-[24px] bg-lp-verde p-6 text-white">
+              <p className="text-[22px] font-bold">Nenhum real sai sem o seu ok.</p>
+              <ul className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                {controle.map((c) => (
+                  <li key={c} className="flex gap-2.5 text-[15px]">
+                    <Check className="text-lp-vivo" />
+                    {c}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
-        <div className="mt-9">
-          <Carousel label="Exemplos de versões do anúncio" desktopFrom="lg" gridClassName="lg:grid-cols-5 lg:gap-5">
-            {BAKERY_ROUND.map(({ ad }, i) => (
-              <div key={ad.template}>
-                <div className="overflow-hidden rounded-2xl">
-                  <FluidAd
-                    format="feed"
-                    content={ad}
-                    businessName={BAKERY.businessName}
-                    priceLabel={BAKERY.priceLabel}
-                    imageSrc={BAKERY.photo ?? null}
-                  />
-                </div>
-                <p className="mt-3 text-center text-[15px] font-semibold lg:text-left">
-                  {i + 1}. {TEMPLATE_LABELS[ad.template]}
-                </p>
-              </div>
-            ))}
-          </Carousel>
-          {/* Prateleira da vitrine */}
-          <div aria-hidden className="mt-4 hidden h-2.5 rounded-full bg-lp-verde lg:block" />
-        </div>
-        <p className="mt-5 text-[14px] text-lp-cinza">Padaria fictícia, só para mostrar o formato.</p>
       </div>
     </section>
   );
@@ -348,50 +602,44 @@ const COMPARA = {
   ],
 };
 
-function Comparison() {
+function Comparacao() {
   const [agencia, sozinho, nos] = COMPARA.colunas;
   return (
-    <section aria-labelledby="comparar-titulo" className="bg-lp-claro">
-      <div className="mx-auto max-w-[1180px] px-5 py-14 sm:px-8 lg:py-20">
-        <h2 id="comparar-titulo" className="lp-letreiro max-w-3xl text-[clamp(1.9rem,6vw,3.1rem)] leading-[1.04]">
-          Sem agência e sem curso de tráfego
-        </h2>
-
-        {/* Computador: tabela */}
-        <table className="mt-9 hidden w-full border-collapse overflow-hidden rounded-2xl bg-white text-left md:table">
+    <section aria-labelledby="comparar-titulo" className="bg-lp-menta">
+      <div className="mx-auto max-w-[1100px] px-5 py-14 sm:px-8 lg:py-20">
+        <Titulo id="comparar-titulo">Sem agência e sem curso de tráfego</Titulo>
+        <table className="mt-10 hidden w-full overflow-hidden rounded-[24px] bg-white text-left ring-1 ring-lp-linha md:table">
           <thead>
-            <tr className="border-b border-lp-linha">
-              <th scope="col" className="w-[24%] p-4" />
-              <th scope="col" className="p-4 text-[16px] font-semibold text-lp-cinza">
+            <tr>
+              <th scope="col" className="w-[26%] p-4" />
+              <th scope="col" className="p-4 text-[15px] font-semibold text-lp-cinza">
                 {agencia.nome}
               </th>
-              <th scope="col" className="p-4 text-[16px] font-semibold text-lp-cinza">
+              <th scope="col" className="p-4 text-[15px] font-semibold text-lp-cinza">
                 {sozinho.nome}
               </th>
-              <th scope="col" className="bg-lp-verde p-4 text-[17px] font-bold text-white">
+              <th scope="col" className="bg-lp-verde p-4 text-[16px] font-bold text-white">
                 {nos.nome}
               </th>
             </tr>
           </thead>
           <tbody>
             {COMPARA.linhas.map((l, i) => (
-              <tr key={l} className="border-b border-lp-linha last:border-0">
+              <tr key={l} className="border-t border-lp-linha">
                 <th scope="row" className="p-4 text-[15px] font-semibold">
                   {l}
                 </th>
                 <td className="p-4 text-[15px] text-lp-cinza">{agencia.valores[i]}</td>
                 <td className="p-4 text-[15px] text-lp-cinza">{sozinho.valores[i]}</td>
-                <td className="bg-lp-verde/8 p-4 text-[15px] font-semibold text-lp-verde-escuro">{nos.valores[i]}</td>
+                <td className="bg-lp-claro p-4 text-[15px] font-semibold text-lp-verde">{nos.valores[i]}</td>
               </tr>
             ))}
           </tbody>
         </table>
-
-        {/* Celular: uma pergunta por bloco, GereVendas Ads em destaque */}
         <dl className="mt-8 grid gap-3 md:hidden">
           {COMPARA.linhas.map((l, i) => (
-            <div key={l} className="rounded-2xl bg-white p-4">
-              <dt className="text-[15px] font-bold">{l}</dt>
+            <div key={l} className="rounded-[20px] bg-white p-4 ring-1 ring-lp-linha">
+              <dt className="text-[15px] font-bold text-lp-verde">{l}</dt>
               <dd className="mt-2 grid gap-1 text-[15px]">
                 <span className="text-lp-cinza">
                   {agencia.nome}: {agencia.valores[i]}
@@ -399,106 +647,13 @@ function Comparison() {
                 <span className="text-lp-cinza">
                   {sozinho.nome}: {sozinho.valores[i]}
                 </span>
-                <span className="font-semibold text-lp-verde-escuro">
+                <span className="font-semibold text-lp-verde">
                   {nos.nome}: {nos.valores[i]}
                 </span>
               </dd>
             </div>
           ))}
         </dl>
-        <CtaLink size="lg" className="mt-9 w-full sm:w-auto">
-          Criar meu anúncio
-        </CtaLink>
-      </div>
-    </section>
-  );
-}
-
-/* ---------------------------------------------------------------- preço */
-
-function Pricing() {
-  const incluso = [
-    "Cinco versões do anúncio a cada produto, para feed e stories",
-    "A foto do seu produto em todas as versões",
-    "Campanha montada no Instagram e no Facebook",
-    "Clientes chamando direto no seu WhatsApp",
-    "Investido, conversas e custo por conversa",
-    "Registro das vendas que vieram das conversas",
-  ];
-  const verba = [
-    ["Teste de 1 semana", "R$ 10 por dia, 7 dias", "R$ 70"],
-    ["Uma semana forte", "R$ 20 por dia, 7 dias", "R$ 140"],
-    ["O mês inteiro", "R$ 10 por dia, 30 dias", "R$ 300"],
-  ];
-  const controle = [
-    ["O anúncio nasce pausado", "Nada é gasto até você confirmar."],
-    ["O gasto tem teto", "Nunca passa do total que você escolheu."],
-    ["A IA não inventa", "Preço e promoção só se você escreveu."],
-    ["Pausa com um toque", "Sem ligar para ninguém."],
-  ];
-  return (
-    <section id="preco" aria-labelledby="preco-titulo" className="scroll-mt-16 bg-white">
-      <div className="mx-auto max-w-[1180px] px-5 py-14 sm:px-8 lg:py-20">
-        <h2 id="preco-titulo" className="lp-letreiro max-w-3xl text-[clamp(1.9rem,6vw,3.1rem)] leading-[1.04]">
-          Quanto custa, sem letra miúda
-        </h2>
-
-        <div className="mt-9 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-14">
-          <div>
-            <p className="text-[17px] font-semibold">A ferramenta</p>
-            <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
-              <span className="lp-etiqueta text-[clamp(1.8rem,7vw,2.6rem)] leading-none font-bold">R$ 199</span>
-              <span className="text-[17px] text-lp-cinza">por mês, sem fidelidade</span>
-            </p>
-            <ul className="mt-6 grid gap-2.5 text-[16px]">
-              {incluso.map((item) => (
-                <li key={item} className="flex gap-3">
-                  <span aria-hidden className="mt-2 size-2 shrink-0 rounded-full bg-lp-verde" />
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <p className="text-[17px] font-semibold">A verba dos anúncios</p>
-            <p className="mt-2 text-[16px] leading-relaxed text-lp-cinza">
-              A verba dos anúncios não está incluída na mensalidade: você escolhe o valor a cada anúncio e paga à parte.
-              Por exemplo:
-            </p>
-            <ul className="mt-5 grid gap-3">
-              {verba.map(([titulo, conta, total]) => (
-                <li
-                  key={titulo}
-                  className="flex items-center justify-between gap-4 border-b border-lp-linha pb-3 last:border-0"
-                >
-                  <span>
-                    <span className="block text-[16px] font-semibold">{titulo}</span>
-                    <span className="text-[15px] text-lp-cinza">{conta}</span>
-                  </span>
-                  <span className="lp-etiqueta shrink-0 text-[18px] font-bold">{total}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-
-        {/* O dinheiro sob controle */}
-        <div className="mt-12 rounded-[24px] bg-lp-verde p-6 text-white sm:p-9">
-          <p className="lp-letreiro text-[clamp(1.6rem,5vw,2.4rem)] leading-[1.05]">Nenhum real sai sem o seu ok.</p>
-          <ul className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {controle.map(([t, d]) => (
-              <li key={t}>
-                <p className="text-[17px] font-bold">{t}</p>
-                <p className="mt-1 text-[15px] leading-relaxed text-white/80">{d}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <CtaLink size="lg" className="mt-9 w-full sm:w-auto">
-          Quero começar agora
-        </CtaLink>
       </div>
     </section>
   );
@@ -508,15 +663,13 @@ function Pricing() {
 
 function Faq() {
   return (
-    <section id="duvidas" aria-labelledby="duvidas-titulo" className="scroll-mt-16 bg-lp-claro">
-      <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-6 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,0.75fr)_minmax(0,1.25fr)] lg:gap-12 lg:py-20">
-        <h2 id="duvidas-titulo" className="lp-letreiro text-[clamp(1.9rem,6vw,3.1rem)] leading-[1.04]">
-          Dúvidas comuns
-        </h2>
-        <div className="divide-y divide-lp-linha border-y border-lp-linha">
+    <section id="duvidas" aria-labelledby="duvidas-titulo" className="scroll-mt-20 bg-white">
+      <div className="mx-auto max-w-[860px] px-5 py-14 sm:px-8 lg:py-20">
+        <Titulo id="duvidas-titulo">Antes de você perguntar</Titulo>
+        <div className="mt-10 grid gap-3">
           {faq.map((f) => (
-            <details key={f.q} className="lp-faq group">
-              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-4 text-[17px] font-semibold">
+            <details key={f.q} className="lp-faq group rounded-[20px] bg-lp-menta px-5 ring-1 ring-lp-linha">
+              <summary className="flex min-h-16 cursor-pointer list-none items-center justify-between gap-4 py-4 text-[17px] font-bold text-lp-verde">
                 {f.q}
                 <span
                   aria-hidden
@@ -525,7 +678,7 @@ function Faq() {
                   +
                 </span>
               </summary>
-              <p className="max-w-2xl pb-5 text-[16px] leading-relaxed text-lp-cinza">{f.a}</p>
+              <p className="pb-5 text-[16px] leading-relaxed text-lp-cinza">{f.a}</p>
             </details>
           ))}
         </div>
@@ -536,39 +689,24 @@ function Faq() {
 
 /* ---------------------------------------------------------------- fechamento */
 
-function FinalCta() {
-  const passos = [
-    ["Crie sua conta", "Nome, cidade e o WhatsApp do negócio."],
-    ["Conecte a sua Página", "Facebook e Instagram, com cada passo explicado."],
-    ["Mande a primeira foto", "Preço, região e valor. Confira e confirme."],
-  ];
+function Fechamento() {
   return (
-    <section className="bg-lp-verde text-white">
-      <div className="mx-auto grid max-w-[1180px] grid-cols-1 gap-10 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:gap-14 lg:py-20">
-        <div>
-          <h2 className="lp-letreiro text-[clamp(2rem,7vw,3.6rem)] leading-[1.02]">
+    <section className="relative overflow-hidden bg-lp-claro">
+      <div
+        aria-hidden
+        className="absolute -bottom-1/2 left-1/2 h-[120%] w-[140%] -translate-x-1/2 rounded-[50%] bg-lp-menta"
+      />
+      <div className="relative mx-auto grid max-w-[1100px] grid-cols-1 items-center gap-6 px-5 py-14 sm:px-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:py-20">
+        <div className="text-center lg:text-left">
+          <h2 className="text-[clamp(2rem,7vw,3.4rem)] leading-[1.04] font-bold tracking-[-0.04em] text-lp-verde">
             O seu cliente já está no Instagram. Falta ele ver você.
           </h2>
-          <Link
-            href="/entrar"
-            className="mt-8 inline-flex h-14 w-full items-center justify-center rounded-2xl bg-white px-7 text-[17px] font-bold whitespace-nowrap text-lp-verde-escuro transition-colors hover:bg-lp-claro sm:w-auto"
-          >
-            Criar meu anúncio
-          </Link>
+          <p className="mt-4 text-[17px] text-lp-cinza">
+            Crie a conta, conecte a sua Página e mande a primeira foto. R$ 199 por mês, sem fidelidade.
+          </p>
+          <Botao className="mt-7 w-full sm:w-auto">Criar meu anúncio</Botao>
         </div>
-        <ol className="grid gap-5">
-          {passos.map(([t, d], i) => (
-            <li key={t} className="flex gap-4">
-              <span className="grid size-10 shrink-0 place-items-center rounded-full bg-white text-[17px] font-bold text-lp-verde">
-                {i + 1}
-              </span>
-              <span>
-                <span className="block text-[18px] font-bold">{t}</span>
-                <span className="text-[16px] text-white/80">{d}</span>
-              </span>
-            </li>
-          ))}
-        </ol>
+        <Ilustra nome="sacola" className="mx-auto w-[min(60vw,300px)]" />
       </div>
     </section>
   );
@@ -576,61 +714,41 @@ function FinalCta() {
 
 function Footer() {
   return (
-    <footer className="bg-lp-verde-escuro text-white/75">
-      <div className="mx-auto flex max-w-[1180px] flex-col gap-6 px-5 py-10 sm:px-8 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-2 text-white">
-          <BrandMark className="h-7 w-auto" />
-          <span className="rounded-md bg-white px-1.5 py-0.5 text-xs leading-none font-bold text-lp-verde">Ads</span>
+    <footer className="bg-lp-verde text-white/80">
+      <div className="mx-auto grid max-w-[1240px] grid-cols-1 gap-8 px-5 py-12 sm:px-8 md:grid-cols-[1.4fr_1fr_1fr]">
+        <div>
+          <Logo claro />
+          <p className="mt-4 max-w-xs text-[14px] leading-relaxed">Um produto Gere Vendas para quem vende no bairro.</p>
         </div>
-        <nav aria-label="Rodapé" className="flex flex-wrap gap-x-6 gap-y-2 text-[15px]">
-          <Link href="/entrar" className="hover:text-white">
-            Entrar
-          </Link>
+        <nav aria-label="Produto" className="grid content-start gap-2.5 text-[15px]">
+          <p className="font-bold text-white">Produto</p>
+          <a href="#como-funciona" className="hover:text-white">
+            Como funciona
+          </a>
           <a href="#preco" className="hover:text-white">
             Preço
           </a>
+          <a href="#duvidas" className="hover:text-white">
+            Dúvidas
+          </a>
+        </nav>
+        <nav aria-label="Conta" className="grid content-start gap-2.5 text-[15px]">
+          <p className="font-bold text-white">Conta</p>
+          <Link href="/entrar" className="hover:text-white">
+            Entrar
+          </Link>
+          <Link href="/entrar" className="hover:text-white">
+            Criar meu anúncio
+          </Link>
           <a href={CRM_URL} className="hover:text-white">
             Conheça o Gere Vendas CRM
           </a>
         </nav>
       </div>
-      <div className="mx-auto max-w-[1180px] border-t border-white/15 px-5 py-5 text-[13px] sm:px-8">
-        © 2026 GereVendas Ads. Publicação na Meta sujeita à revisão e às políticas da plataforma.
+      <div className="mx-auto max-w-[1240px] border-t border-white/15 px-5 py-5 text-[13px] sm:px-8">
+        © 2026 GereVendas Ads. Publicação na Meta sujeita à revisão e às políticas da plataforma. Exemplos com negócio
+        fictício.
       </div>
     </footer>
-  );
-}
-
-/* ---------------------------------------------------------------- peças pequenas */
-
-function CtaLink({ size, className, children }: { size: "sm" | "lg"; className?: string; children: ReactNode }) {
-  return (
-    <Link
-      href="/entrar"
-      className={cn(
-        "inline-flex items-center justify-center rounded-2xl bg-lp-verde font-bold whitespace-nowrap text-white transition-colors hover:bg-lp-verde-escuro",
-        size === "sm" ? "h-10 px-4 text-[14px]" : "h-14 px-7 text-[17px]",
-        className,
-      )}
-    >
-      {children}
-    </Link>
-  );
-}
-
-function WhatsIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      aria-hidden
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
-    </svg>
   );
 }

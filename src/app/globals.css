@@ -64,13 +64,17 @@
   --color-gv-mute: #56665c;
   --color-gv-paper: #f6faf7;
   --color-gv-line: #e1ebe4;
-  /* LP "o balcão do bairro" */
-  --color-lp-verde: #0e7a3c;
-  --color-lp-verde-escuro: #0a5a2c;
-  --color-lp-claro: #e8f5ec;
-  --color-lp-tinta: #10231a;
-  --color-lp-cinza: #56665c;
-  --color-lp-linha: #dce7df;
+  /* LP (referência visual: site da Nio): verde-escuro, verde vivo, lima claro e CTA rosa */
+  --color-lp-verde: #0b3b1e;
+  --color-lp-verde-escuro: #072a14;
+  --color-lp-vivo: #2bc94a;
+  --color-lp-claro: #e6f5d8;
+  --color-lp-menta: #f4fbef;
+  --color-lp-tinta: #0f2a18;
+  --color-lp-cinza: #4f6b57;
+  --color-lp-linha: #d9ead0;
+  --color-lp-rosa: #f2385e;
+  --color-lp-rosa-escuro: #d92a50;
   --color-lp-amarelo: #ffd43b;
   --shadow-card: 0 1px 3px 0 rgb(16 24 40 / 0.05), 0 1px 2px -1px rgb(16 24 40 / 0.05);
   --shadow-lift: 0 4px 6px -1px rgb(16 24 40 / 0.05), 0 12px 24px -4px rgb(16 24 40 / 0.08);
@@ -98,17 +102,7 @@ body {
   }
 }
 
-/*
- * LP "o balcão do bairro": títulos em letreiro de fachada (Archivo largo) e a etiqueta amarela de preço,
- * a mesma cor das etiquetas de mercado. A etiqueta é o único elemento chamativo da página.
- */
-.lp-letreiro {
-  font-family: var(--font-sign), system-ui, sans-serif;
-  font-variation-settings: "wdth" 116;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-}
-
+/* Etiqueta amarela de preço (preços e valores da LP). */
 .lp-etiqueta {
   position: relative;
   display: inline-flex;
