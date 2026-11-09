@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrandLogo } from "@/components/marketing/brand-logo";
+import { Carousel } from "@/components/marketing/carousel";
 import { BAKERY, BAKERY_ROUND } from "@/components/marketing/demo-ads";
 import { FluidAd } from "@/components/marketing/fluid-ad";
 import { Storyboard } from "@/components/marketing/storyboard";
@@ -300,28 +301,27 @@ function Showcase() {
         <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-gv-mute">
           Elas rodam juntas e a Meta mostra mais a que traz mais conversas. Você não precisa escolher.
         </p>
-        <ul
-          tabIndex={0}
-          aria-label="Exemplos de versões do anúncio"
-          className="-mx-5 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-4 focus-visible:outline-2 focus-visible:outline-gv-green sm:-mx-8 sm:px-8 lg:mx-0 lg:grid lg:grid-cols-5 lg:overflow-visible lg:px-0"
-        >
-          {BAKERY_ROUND.map(({ ad }) => (
-            <li key={ad.template} className="w-[62vw] max-w-[260px] shrink-0 snap-start lg:w-auto lg:max-w-none">
-              <div className="overflow-hidden rounded-2xl shadow-[0_20px_36px_-22px_rgb(6_40_20/0.55)]">
-                <FluidAd
-                  format="feed"
-                  content={ad}
-                  businessName={BAKERY.businessName}
-                  priceLabel={BAKERY.priceLabel}
-                  imageSrc={BAKERY.photo ?? null}
-                />
+        <div className="mt-8">
+          <Carousel label="Exemplos de versões do anúncio" desktopFrom="lg" gridClassName="lg:grid-cols-5 lg:gap-5">
+            {BAKERY_ROUND.map(({ ad }, i) => (
+              <div key={ad.template}>
+                <div className="overflow-hidden rounded-2xl shadow-[0_20px_36px_-22px_rgb(6_40_20/0.55)]">
+                  <FluidAd
+                    format="feed"
+                    content={ad}
+                    businessName={BAKERY.businessName}
+                    priceLabel={BAKERY.priceLabel}
+                    imageSrc={BAKERY.photo ?? null}
+                  />
+                </div>
+                <p className="mt-3 text-center text-[15px] font-semibold lg:text-left">
+                  Versão {i + 1}: {TEMPLATE_LABELS[ad.template]}
+                </p>
               </div>
-              <p className="mt-3 text-[15px] font-semibold">{TEMPLATE_LABELS[ad.template]}</p>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-2 text-[14px] text-gv-mute lg:hidden">Arraste para o lado para ver todas →</p>
-        <p className="mt-4 text-[14px] text-gv-mute">Padaria fictícia, só para mostrar o formato.</p>
+            ))}
+          </Carousel>
+        </div>
+        <p className="mt-6 text-[14px] text-gv-mute">Padaria fictícia, só para mostrar o formato.</p>
       </div>
     </section>
   );

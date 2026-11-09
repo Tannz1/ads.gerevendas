@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { Carousel } from "./carousel";
 import { BAKERY, BAKERY_ROUND } from "./demo-ads";
 import { FluidAd } from "./fluid-ad";
 
@@ -73,28 +74,25 @@ export function Storyboard() {
           </p>
         </div>
 
-        <ol
-          tabIndex={0}
-          aria-label="Passo a passo no app"
-          className="-mx-5 mt-10 flex snap-x snap-mandatory scroll-px-5 gap-5 overflow-x-auto px-5 pb-6 focus-visible:outline-2 focus-visible:outline-gv-green sm:-mx-8 sm:px-8 md:mx-0 md:grid md:snap-none md:grid-cols-2 md:gap-x-6 md:gap-y-14 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-4"
-        >
-          {steps.map((s, i) => (
-            <li key={s.title} className="w-[68vw] max-w-[260px] shrink-0 snap-start md:w-auto md:max-w-none">
-              <Phone>{s.screen}</Phone>
-              <div className="mx-auto mt-5 flex max-w-[260px] gap-3">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-gv-green text-sm font-bold text-white">
-                  {i + 1}
-                </span>
-                <div>
-                  <h3 className="font-bold tracking-[-0.01em]">{s.title}</h3>
-                  <p className="mt-1 text-[15px] leading-relaxed text-gv-mute">{s.text}</p>
+        <div className="mt-10">
+          <Carousel label="Passo a passo no app" gridClassName="md:grid-cols-2 md:gap-x-6 md:gap-y-14 lg:grid-cols-4">
+            {steps.map((s, i) => (
+              <div key={s.title}>
+                <Phone>{s.screen}</Phone>
+                <div className="mx-auto mt-5 flex max-w-[260px] gap-3">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-gv-green text-sm font-bold text-white">
+                    {i + 1}
+                  </span>
+                  <div>
+                    <h3 className="text-[17px] font-bold tracking-[-0.01em]">{s.title}</h3>
+                    <p className="mt-1 text-[15px] leading-relaxed text-gv-mute">{s.text}</p>
+                  </div>
                 </div>
               </div>
-            </li>
-          ))}
-        </ol>
-        <p className="mt-2 text-[14px] text-gv-mute md:hidden">Arraste para o lado para ver os 8 passos →</p>
-        <p className="mt-4 text-[14px] text-gv-mute">
+            ))}
+          </Carousel>
+        </div>
+        <p className="mt-6 text-[14px] text-gv-mute">
           Telas simplificadas do app com uma padaria fictícia. Os números da última tela são ilustrativos.
         </p>
       </div>
