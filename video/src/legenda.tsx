@@ -130,11 +130,15 @@ export function LegendaPalavra({
   t,
   bottom,
   fontSize,
+  left = 40,
+  right = 40,
 }: {
   cena: Cena;
   t: number;
   bottom: number;
   fontSize: number;
+  left?: number;
+  right?: number;
 }) {
   const palavras = frasesDa(cena).flatMap(palavrasDa);
   const w = palavras.find((p) => t >= p.ini - 0.03 && t < p.fim + 0.03);
@@ -147,7 +151,7 @@ export function LegendaPalavra({
   const limpa = w.texto.replace(/[^\p{L}\p{N}$,]/gu, "");
   const destaque = limpa.replace(/\W/g, "").length >= 6 || /\d/.test(limpa);
   return (
-    <div style={{ position: "absolute", left: 40, right: 40, bottom, display: "flex", justifyContent: "center" }}>
+    <div style={{ position: "absolute", left, right, bottom, display: "flex", justifyContent: "center" }}>
       <span
         style={{
           fontFamily: "Inter",

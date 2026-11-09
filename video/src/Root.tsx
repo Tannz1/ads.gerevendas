@@ -1,11 +1,15 @@
 import "./style.css";
 import { Composition } from "remotion";
+import { z } from "zod";
 import { Apresentacao } from "./Apresentacao";
 import apresentacao from "./timeline-apresentacao.json";
 import uso from "./timeline-uso.json";
 import { ReelsDinamico } from "./dinamico/ReelsDinamico";
 import dinamico from "./timeline-dinamico.json";
 import { Uso } from "./uso/Uso";
+import { volumesSchema } from "./trilha";
+
+const schemaNovo = volumesSchema.extend({ novo: z.boolean() });
 
 const FPS = 30;
 const DUR_APRESENTACAO = Math.ceil(apresentacao.duracao * FPS);
@@ -26,6 +30,8 @@ export function Root() {
         height={1920}
         fps={FPS}
         durationInFrames={Math.ceil((dinamico.duracao + 1.2) * FPS)}
+        schema={volumesSchema}
+        defaultProps={{ volumeVoz: 90, volumeMusica: 30, volumeEfeitos: 20 }}
       />
       {/* Reels vertical: o app em uso, como gravação de tela. */}
       <Composition
@@ -35,7 +41,13 @@ export function Root() {
         height={1920}
         fps={FPS}
         durationInFrames={DUR_USO}
-        defaultProps={{ novo: false }}
+        schema={schemaNovo}
+        defaultProps={{
+          novo: false,
+          volumeVoz: 100,
+          volumeMusica: 30,
+          volumeEfeitos: 20,
+        }}
       />
       <Composition
         id="ReelsUsoNovo"
@@ -44,7 +56,8 @@ export function Root() {
         height={1920}
         fps={FPS}
         durationInFrames={DUR_USO}
-        defaultProps={{ novo: true }}
+        schema={schemaNovo}
+        defaultProps={{ novo: true, volumeVoz: 100, volumeMusica: 30, volumeEfeitos: 20 }}
       />
 
       {/* Apresentação na vertical, para quem assiste no celular. */}
@@ -55,7 +68,8 @@ export function Root() {
         height={1920}
         fps={FPS}
         durationInFrames={DUR_APRESENTACAO}
-        defaultProps={{ novo: false }}
+        schema={schemaNovo}
+        defaultProps={{ novo: false, volumeVoz: 100, volumeMusica: 30, volumeEfeitos: 20 }}
       />
       <Composition
         id="ApresentacaoVerticalNova"
@@ -64,7 +78,13 @@ export function Root() {
         height={1920}
         fps={FPS}
         durationInFrames={DUR_APRESENTACAO}
-        defaultProps={{ novo: true }}
+        schema={schemaNovo}
+        defaultProps={{
+          novo: true,
+          volumeVoz: 100,
+          volumeMusica: 30,
+          volumeEfeitos: 20,
+        }}
       />
 
       {/* Apresentação horizontal, para a LP no computador. */}
@@ -75,7 +95,8 @@ export function Root() {
         height={1080}
         fps={FPS}
         durationInFrames={DUR_APRESENTACAO}
-        defaultProps={{ novo: false }}
+        schema={schemaNovo}
+        defaultProps={{ novo: false, volumeVoz: 100, volumeMusica: 30, volumeEfeitos: 20 }}
       />
       <Composition
         id="ApresentacaoNova"
@@ -84,7 +105,8 @@ export function Root() {
         height={1080}
         fps={FPS}
         durationInFrames={DUR_APRESENTACAO}
-        defaultProps={{ novo: true }}
+        schema={schemaNovo}
+        defaultProps={{ novo: true, volumeVoz: 100, volumeMusica: 30, volumeEfeitos: 20 }}
       />
     </>
   );

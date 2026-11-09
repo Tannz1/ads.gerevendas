@@ -14,7 +14,8 @@ import { BrandMark } from "@/components/marketing/brand-mark";
 import { Inicio, Investimento, Oferta, Previa, Produto, Publicacao, Regiao, Resultados, type Tela } from "./uso/telas";
 import { EstiloProvider, useEstilo } from "./estilo";
 import type { Cena } from "./kit";
-import { LegendaDinamica } from "./legenda";
+import { LegendaPalavra } from "./legenda";
+import { soco, TrilhaFundo, Voz, VolumesProvider, type Volumes } from "./trilha";
 import { Ad, BigPhone, PHOTOS, ROUND, usePreload } from "./shared";
 import timeline from "./timeline-apresentacao.json";
 
@@ -92,11 +93,13 @@ const PASSOS: Record<string, { n: number; nome: string; itens: string[]; tela: (
 };
 
 /** `novo`: cursor do mouse e legenda dinâmica. Sem ele, o visual clássico. */
-export function Apresentacao({ novo = false }: { novo?: boolean }) {
+export function Apresentacao({ novo = false, ...volumes }: { novo?: boolean } & Partial<Volumes>) {
   return (
-    <EstiloProvider novo={novo}>
-      <ApresentacaoConteudo />
-    </EstiloProvider>
+    <VolumesProvider volumes={volumes}>
+      <EstiloProvider novo={novo}>
+        <ApresentacaoConteudo />
+      </EstiloProvider>
+    </VolumesProvider>
   );
 }
 
@@ -106,19 +109,27 @@ function ApresentacaoConteudo() {
   return (
     <AbsoluteFill style={{ fontFamily: "Sora", color: INK }}>
       <Background />
-      <Audio src={staticFile("apresentacao.mp3")} />
+      <Voz arquivo="apresentacao.mp3" />
+      <TrilhaFundo cortes={CENAS.slice(1).map((c) => c.ini)} />
       {CENAS.map((c, i) => {
         const from = Math.round(c.ini * fps);
         const until = i === CENAS.length - 1 ? Math.round(timeline.duracao * fps) : Math.round(c.fim * fps);
         return (
           <Sequence key={c.id} from={from} durationInFrames={Math.max(1, until - from)} name={c.id}>
-            <Scene cena={c} />
+            <Soco>
+              <Scene cena={c} />
+            </Soco>
           </Sequence>
         );
       })}
       <TopBar />
     </AbsoluteFill>
   );
+}
+
+function Soco({ children }: { children: ReactNode }) {
+  const frame = useCurrentFrame();
+  return <AbsoluteFill style={{ transform: `scale(${soco(frame)})` }}>{children}</AbsoluteFill>;
 }
 
 /* ---------------------------------------------------------------- moldura */
@@ -214,12 +225,12 @@ function TopBar() {
 function useShow(delay = 0) {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
-  const enter = interpolate(frame, [delay, delay + 18], [0, 1], {
+  const enter = interpolate(frame, [delay / 2, delay / 2 + 8], [0, 1], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: ease,
   });
-  const exit = interpolate(frame, [durationInFrames - 10, durationInFrames], [1, 0], {
+  const exit = interpolate(frame, [durationInFrames - 4, durationInFrames], [1, 0], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
   });
@@ -629,74 +640,19 @@ function End() {
 
 /* ---------------------------------------------------------------- legenda por frase */
 
+/** Legenda de Reels: uma palavra por vez, grande e sem tarja. */
 function Subtitle({ cena, lado }: { cena: Cena; lado: "esquerda" | "centro" }) {
   const v = useVertical();
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const t = cena.ini + frame / fps;
-  const { novo } = useEstilo();
-  if (novo) {
-    return (
-      <LegendaDinamica
-        cena={cena}
-        t={t}
-        left={lado === "esquerda" ? 160 : v ? 70 : 0}
-        right={lado === "esquerda" ? 860 : v ? 70 : 0}
-        bottom={v ? 150 : 70}
-        align={lado === "esquerda" ? "left" : "center"}
-        fontSize={v ? 46 : 34}
-        padding={v ? "20px 32px" : "14px 26px"}
-        radius={v ? 24 : 16}
-      />
-    );
-  }
-  // Frases: quebra nas pontuações fortes; mostra a frase que está sendo dita.
-  const frases: { texto: string; ini: number; fim: number }[] = [];
-  let atual: typeof cena.palavras = [];
-  for (const w of cena.palavras) {
-    atual.push(w);
-    if (/[.!?:]$/.test(w.texto)) {
-      frases.push({ texto: atual.map((x) => x.texto).join(" "), ini: atual[0].ini, fim: w.fim });
-      atual = [];
-    }
-  }
-  if (atual.length)
-    frases.push({ texto: atual.map((x) => x.texto).join(" "), ini: atual[0].ini, fim: atual.at(-1)!.fim });
-  const frase = frases.find((f) => t < f.fim + 0.25) ?? frases.at(-1);
-  if (!frase) return null;
-  const o = interpolate(t, [frase.ini - 0.15, frase.ini], [0, 1], {
-    extrapolateLeft: "clamp",
-    extrapolateRight: "clamp",
-  });
   return (
-    <div
-      style={{
-        position: "absolute",
-        left: lado === "esquerda" ? 160 : v ? 70 : 0,
-        right: lado === "esquerda" ? 860 : v ? 70 : 0,
-        bottom: v ? 150 : 70,
-        display: "flex",
-        justifyContent: lado === "esquerda" ? "flex-start" : "center",
-        opacity: o,
-      }}
-    >
-      <p
-        style={{
-          margin: 0,
-          maxWidth: 1400,
-          background: "rgba(19,32,26,0.86)",
-          color: "#fff",
-          borderRadius: v ? 24 : 16,
-          padding: v ? "20px 32px" : "14px 26px",
-          fontFamily: "Inter",
-          fontSize: v ? 44 : 32,
-          fontWeight: 500,
-          lineHeight: 1.35,
-          textAlign: lado === "esquerda" ? "left" : "center",
-        }}
-      >
-        {frase.texto}
-      </p>
-    </div>
+    <LegendaPalavra
+      cena={cena}
+      t={cena.ini + frame / fps}
+      left={lado === "esquerda" ? 120 : 40}
+      right={lado === "esquerda" ? 900 : 40}
+      bottom={v ? 170 : 80}
+      fontSize={v ? 92 : 76}
+    />
   );
 }

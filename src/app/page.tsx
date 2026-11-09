@@ -7,6 +7,7 @@ import { Carousel } from "@/components/marketing/carousel";
 import { BAKERY, BAKERY_ROUND } from "@/components/marketing/demo-ads";
 import { FluidAd } from "@/components/marketing/fluid-ad";
 import { ScrollTourSection } from "@/components/marketing/scroll-tour";
+import { Phone, ScreenPreview } from "@/components/marketing/storyboard";
 import { TEMPLATE_LABELS } from "@/contracts/creatives";
 import { cn } from "@/lib/cn";
 
@@ -208,7 +209,7 @@ function Header() {
           </Link>
           <Link
             href="/entrar"
-            className="inline-flex h-11 items-center rounded-full bg-lp-verde px-5 text-[15px] font-bold text-white hover:bg-lp-verde-escuro"
+            className="inline-flex h-11 items-center rounded-full bg-lp-verde px-4 text-[14px] font-bold whitespace-nowrap text-white hover:bg-lp-verde-escuro sm:px-5 sm:text-[15px]"
           >
             Criar meu anúncio
           </Link>
@@ -221,47 +222,70 @@ function Header() {
 function Hero() {
   return (
     <section className="relative overflow-hidden bg-lp-claro">
-      {/* Curva branca grande ao fundo, como na referência */}
+      {/* Curva clara grande ao fundo, como na referência */}
       <div
         aria-hidden
-        className="absolute -top-[30%] left-1/2 h-[140%] w-[160%] -translate-x-1/2 rounded-[50%] bg-lp-menta"
+        className="absolute top-[38%] left-1/2 h-[120%] w-[170%] -translate-x-1/2 rounded-[50%] bg-lp-menta"
       />
-      <div className="relative mx-auto max-w-[1240px] px-5 pt-10 pb-14 sm:px-8 lg:pt-14 lg:pb-20">
-        <div className="relative mx-auto max-w-3xl text-center">
-          <Ilustra nome="megafone" prioridade className="absolute top-2 -left-44 hidden w-44 -rotate-12 lg:block" />
-          <Ilustra nome="conversa" prioridade className="absolute top-0 -right-44 hidden w-40 rotate-6 lg:block" />
-          <h1 className="text-[clamp(2.4rem,9vw,4.2rem)] leading-[1.02] font-bold tracking-[-0.045em] text-lp-verde">
+      <div className="relative mx-auto max-w-[1240px] px-5 pt-10 sm:px-8 lg:pt-16">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="mx-auto inline-flex items-center gap-2 rounded-full bg-white px-4 py-1.5 text-[14px] font-semibold text-lp-verde shadow-[0_6px_20px_-12px_rgb(11_59_30/0.4)]">
+            <span className="size-2 rounded-full bg-lp-vivo" />
+            Anúncios para quem vende no bairro
+          </p>
+          <h1 className="mt-5 text-[clamp(2.5rem,9.5vw,4.6rem)] leading-[1] font-bold tracking-[-0.045em] text-lp-verde">
             Seu produto é bom. Falta gente ver.
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-[clamp(1.1rem,3.6vw,1.45rem)] leading-snug font-semibold text-[#1d8a3a]">
-            Anúncios no Instagram e no Facebook que levam clientes direto para o seu WhatsApp
+          <p className="mx-auto mt-5 max-w-2xl text-[clamp(1.1rem,3.6vw,1.4rem)] leading-snug text-lp-cinza">
+            Mande a foto do produto e o app cria o anúncio no Instagram e no Facebook. Quem se interessa chama você
+            direto no WhatsApp.
           </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Botao className="w-full sm:w-auto">Criar meu anúncio</Botao>
+            <a
+              href="#como-funciona"
+              className="inline-flex h-14 w-full items-center justify-center rounded-full border-2 border-lp-verde bg-white px-8 text-[17px] font-bold text-lp-verde hover:bg-lp-menta sm:w-auto"
+            >
+              Ver o app por dentro
+            </a>
+          </div>
+          <p className="mt-4 text-[14px] text-lp-cinza">Sem fidelidade · O anúncio só roda com o seu ok</p>
         </div>
 
-        <div className="mt-6 grid grid-cols-1 items-center gap-2 lg:mt-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)_minmax(0,1fr)] lg:gap-8">
+        {/* O app no centro, a dona ao lado e o que acontece em volta */}
+        <div className="relative mx-auto mt-10 h-[420px] max-w-[880px] sm:h-[500px] lg:mt-14 lg:h-[600px]">
+          <Ilustra nome="megafone" prioridade className="absolute top-6 left-0 hidden w-36 -rotate-12 lg:block" />
+          <Ilustra nome="conversa" prioridade className="absolute top-0 right-2 hidden w-32 rotate-6 lg:block" />
+
+          <div className="absolute top-0 left-1/2 w-[230px] -translate-x-1/2 sm:w-[260px] lg:w-[280px]">
+            <Phone>
+              <ScreenPreview />
+            </Phone>
+          </div>
+
           <Ilustra
             nome="dona"
             prioridade
-            className="mx-auto -mb-2 w-[min(46vw,190px)] lg:mb-0 lg:w-full lg:max-w-[320px]"
+            className="absolute bottom-0 left-[-28px] w-[118px] sm:left-[6%] sm:w-[200px] lg:left-[10%] lg:w-[250px]"
           />
-          <CartaoPlano />
-          <div className="hidden lg:block">
-            <ul className="grid gap-4">
-              {[
-                ["Pronto em minutos", "Foto, preço e valor. Sem arte, sem texto."],
-                ["Só roda com o seu ok", "O anúncio nasce pausado e tem teto de gasto."],
-                ["Clientes no WhatsApp", "Quem se interessa chama você direto."],
-              ].map(([t, d]) => (
-                <li key={t} className="rounded-3xl bg-white/80 p-5 shadow-[0_10px_30px_-18px_rgb(11_59_30/0.35)]">
-                  <p className="flex items-center gap-2 text-[17px] font-bold text-lp-verde">
-                    <Check className="text-lp-vivo" />
-                    {t}
-                  </p>
-                  <p className="mt-1 text-[15px] text-lp-cinza">{d}</p>
-                </li>
-              ))}
-            </ul>
+
+          <div className="absolute top-[34%] right-[-8px] w-[150px] rounded-2xl bg-white p-3 text-left shadow-[0_18px_40px_-20px_rgb(11_59_30/0.55)] sm:top-[22%] sm:right-[6%] sm:w-[220px] lg:right-[9%]">
+            <p className="flex items-center gap-2 text-[12px] font-semibold text-lp-cinza">
+              <span className="grid size-5 place-items-center rounded-full bg-[#25d366] text-white">
+                <svg aria-hidden viewBox="0 0 24 24" className="size-3" fill="currentColor">
+                  <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+                </svg>
+              </span>
+              WhatsApp · agora
+            </p>
+            <p className="mt-1.5 text-[13px] leading-snug font-semibold text-lp-tinta sm:text-[14px]">
+              Oi! Vi o anúncio do café da manhã. Ainda tem hoje?
+            </p>
           </div>
+
+          <p className="absolute right-2 bottom-16 hidden rounded-full bg-lp-verde px-4 py-2 text-[13px] font-bold text-white shadow-[0_14px_30px_-16px_rgb(11_59_30/0.7)] sm:right-[12%] sm:block sm:text-[14px]">
+            5 versões prontas com a sua foto
+          </p>
         </div>
       </div>
     </section>
@@ -269,7 +293,7 @@ function Hero() {
 }
 
 /** Cartão de oferta no formato da referência: faixa no topo, o que vem incluso, preço e botão rosa. */
-function CartaoPlano({ comLink = true }: { comLink?: boolean }) {
+function CartaoPlano() {
   return (
     <div className="mx-auto w-full max-w-[400px] rounded-[28px] bg-gradient-to-b from-white to-[#eef6e2] p-4 shadow-[0_24px_60px_-30px_rgb(11_59_30/0.5)] ring-1 ring-lp-linha">
       <p className="flex items-center justify-between rounded-xl bg-lp-verde px-4 py-2.5 text-[15px] font-bold text-white">
@@ -291,14 +315,6 @@ function CartaoPlano({ comLink = true }: { comLink?: boolean }) {
       </p>
       <p className="text-center text-[14px] text-lp-cinza">sem fidelidade · verba dos anúncios à parte</p>
       <Botao className="mt-4 w-full">Criar meu anúncio</Botao>
-      {comLink && (
-        <a
-          href="#preco"
-          className="mt-3 block text-center text-[15px] font-semibold text-lp-verde underline underline-offset-4"
-        >
-          Detalhes do plano
-        </a>
-      )}
     </div>
   );
 }
@@ -529,7 +545,7 @@ function Preco() {
           cada anúncio e paga à parte.
         </p>
         <div className="mt-10 grid grid-cols-1 items-start gap-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.6fr)] lg:gap-8">
-          <CartaoPlano comLink={false} />
+          <CartaoPlano />
           <div>
             <p className="text-center text-[18px] font-bold text-lp-verde lg:text-left">Exemplos de verba</p>
             <ul className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-3">

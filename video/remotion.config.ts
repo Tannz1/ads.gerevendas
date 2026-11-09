@@ -5,6 +5,10 @@ import webpack from "webpack";
 
 Config.setVideoImageFormat("jpeg");
 Config.setJpegQuality(92);
+// Usa a placa de vídeo para montar os quadros (WebGL/CSS via ANGLE) e 6 quadros em paralelo.
+// Vale para o terminal e para o botão Render do Studio (depois de reabrir o Studio).
+Config.setChromiumOpenGlRenderer("angle");
+Config.setConcurrency(6);
 Config.overrideWebpackConfig((current) => {
   const withTailwind = enableTailwind(current);
   return {
