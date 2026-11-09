@@ -1,260 +1,190 @@
 {
   "voz": "eleven:oArP4WehPe3qjqvCwHNo:eleven_multilingual_v2",
-  "duracao": 147.17573600000003,
+  "duracao": 45.873875,
   "cenas": [
     {
       "id": "intro",
       "ini": 0.3,
-      "fim": 14.721134,
+      "fim": 3.876553,
       "palavras": [
         {
-          "texto": "Oi!",
+          "texto": "Transforme a foto do seu produto em clientes no WhatsApp.",
           "ini": 0.3,
-          "fim": 0.950159
-        },
-        {
-          "texto": "Deixa eu te mostrar rapidinho como funciona o GereVendas Ads.",
-          "ini": 1.200159,
-          "fim": 5.147551
-        },
-        {
-          "texto": "A ideia é simples: você tira uma foto do seu produto, e ela vira um anúncio no Instagram e no Facebook, que manda clientes direto pro seu WhatsApp.",
-          "ini": 5.397551,
-          "fim": 14.221134
+          "fim": 3.736553
         }
       ]
     },
     {
       "id": "visao",
-      "ini": 14.721134,
-      "fim": 21.276123000000002,
+      "ini": 3.876553,
+      "fim": 6.756507999999999,
       "palavras": [
         {
           "texto": "São oito passos, tudo pelo celular.",
-          "ini": 14.721134,
-          "fim": 17.461089
-        },
-        {
-          "texto": "Pra ficar fácil, vou usar uma padaria de exemplo.",
-          "ini": 17.711089,
-          "fim": 20.776123000000002
+          "ini": 3.876553,
+          "fim": 6.616508
         }
       ]
     },
     {
       "id": "inicio",
-      "ini": 21.276123000000002,
-      "fim": 31.192585000000005,
+      "ini": 6.756507999999999,
+      "fim": 8.289705,
       "palavras": [
         {
-          "texto": "Quando você abre o app, cai na tela inicial.",
-          "ini": 21.276123000000002,
-          "fim": 23.644558000000004
-        },
-        {
-          "texto": "Tem um botão bem grande: criar meu anúncio.",
-          "ini": 23.894558000000004,
-          "fim": 26.913152000000004
-        },
-        {
-          "texto": "E os anúncios que já estão rodando ficam ali embaixo.",
-          "ini": 27.163152000000004,
-          "fim": 30.692585000000005
+          "texto": "Toque em criar meu anúncio.",
+          "ini": 6.756507999999999,
+          "fim": 8.149704999999999
         }
       ]
     },
     {
       "id": "produto",
-      "ini": 31.192585000000005,
-      "fim": 40.180249,
+      "ini": 8.289705,
+      "fim": 10.9839,
       "palavras": [
         {
-          "texto": "Primeiro, o produto.",
-          "ini": 31.192585000000005,
-          "fim": 32.539342000000005
-        },
-        {
-          "texto": "Você tira a foto, ou pega uma da galeria, e escreve o nome.",
-          "ini": 32.789342000000005,
-          "fim": 36.736734000000006
-        },
-        {
-          "texto": "No nosso exemplo, o café da manhã completo.",
-          "ini": 36.986734000000006,
-          "fim": 39.680249
+          "texto": "Tire a foto do produto e escreva o nome.",
+          "ini": 8.289705,
+          "fim": 10.8439
         }
       ]
     },
     {
       "id": "oferta",
-      "ini": 40.180249,
-      "fim": 58.752336,
+      "ini": 10.9839,
+      "fim": 15.522811,
       "palavras": [
         {
-          "texto": "Depois vem a oferta.",
-          "ini": 40.180249,
-          "fim": 41.759206000000006
+          "texto": "Coloque o preço e o que destacar.",
+          "ini": 10.9839,
+          "fim": 13.305895
         },
         {
-          "texto": "Você coloca o preço e escolhe o que quer destacar: parcelamento, desconto ou entrega.",
-          "ini": 42.009206000000006,
-          "fim": 50.18263
-        },
-        {
-          "texto": "E pode ficar tranquilo: a inteligência artificial só usa o que você escreveu.",
-          "ini": 50.43263,
-          "fim": 55.77322
-        },
-        {
-          "texto": "Ela não inventa preço nem promoção.",
-          "ini": 56.02322,
-          "fim": 58.252336
+          "texto": "A IA só usa o que você escreveu.",
+          "ini": 13.385895,
+          "fim": 15.382811
         }
       ]
     },
     {
       "id": "previa",
-      "ini": 58.752336,
-      "fim": 72.151791,
+      "ini": 15.522811,
+      "fim": 19.179365,
       "palavras": [
         {
-          "texto": "Aí vem a parte legal.",
-          "ini": 58.752336,
-          "fim": 60.238413
+          "texto": "Chegam cinco versões com a sua foto.",
+          "ini": 15.522811,
+          "fim": 17.751927000000002
         },
         {
-          "texto": "Em poucos minutos, o app cria cinco versões do anúncio com a sua foto, cada uma chamando o cliente de um jeito.",
-          "ini": 60.488413,
-          "fim": 68.011678
-        },
-        {
-          "texto": "Se quiser mudar alguma coisa, é só mexer antes de aprovar.",
-          "ini": 68.261678,
-          "fim": 71.651791
+          "texto": "Confira e aprove.",
+          "ini": 17.831927,
+          "fim": 19.039365
         }
       ]
     },
     {
       "id": "regiao",
-      "ini": 72.151791,
-      "fim": 80.221496,
+      "ini": 19.179365,
+      "fim": 22.663038,
       "palavras": [
         {
-          "texto": "Depois você escolhe onde o anúncio aparece: só na sua cidade, ou na cidade e na região.",
-          "ini": 72.151791,
-          "fim": 79.721496
+          "texto": "Escolha onde aparecer: na sua cidade ou na região.",
+          "ini": 19.179365,
+          "fim": 22.523038
         }
       ]
     },
     {
       "id": "investimento",
-      "ini": 80.221496,
-      "fim": 88.373242,
+      "ini": 22.663038,
+      "fim": 26.133831,
       "palavras": [
         {
-          "texto": "E quanto quer investir por dia, e por quantos dias.",
-          "ini": 80.221496,
-          "fim": 83.658049
+          "texto": "Defina quanto investir por dia.",
+          "ini": 22.663038,
+          "fim": 24.520634
         },
         {
-          "texto": "O total aparece na tela antes de você seguir.",
-          "ini": 83.908049,
-          "fim": 86.508684
-        },
-        {
-          "texto": "Sem surpresa.",
-          "ini": 86.758684,
-          "fim": 87.873242
+          "texto": "O total aparece na hora.",
+          "ini": 24.600634,
+          "fim": 25.993831
         }
       ]
     },
     {
       "id": "publicacao",
-      "ini": 88.373242,
-      "fim": 103.240975,
+      "ini": 26.133831,
+      "fim": 28.815146,
       "palavras": [
         {
-          "texto": "Na publicação, você confere tudo: a região, a duração, o valor, e o destino, que é o seu WhatsApp.",
-          "ini": 88.373242,
-          "fim": 96.77886600000001
+          "texto": "Confira e publique.",
+          "ini": 26.133831,
+          "fim": 27.248389
         },
         {
-          "texto": "O anúncio é criado pausado, e só começa a rodar quando você confirmar.",
-          "ini": 97.02886600000001,
-          "fim": 102.740975
+          "texto": "Só roda com o seu ok.",
+          "ini": 27.328388999999998,
+          "fim": 28.675145999999998
         }
       ]
     },
     {
       "id": "resultados",
-      "ini": 103.240975,
-      "fim": 119.10174600000002,
+      "ini": 28.815146,
+      "fim": 33.366937,
       "palavras": [
         {
-          "texto": "Com o anúncio no ar, você acompanha tudo na tela de resultados: quanto investiu, quantas conversas chegaram, e quanto custou cada uma.",
-          "ini": 103.240975,
-          "fim": 113.31843500000001
-        },
-        {
-          "texto": "Se uma conversa virou venda, você anota ali mesmo.",
-          "ini": 113.56843500000001,
-          "fim": 116.72634900000001
-        },
-        {
-          "texto": "E dá pra pausar quando quiser.",
-          "ini": 116.97634900000001,
-          "fim": 118.60174600000002
+          "texto": "Depois, veja quanto investiu, quantas conversas chegaram e quanto custou cada uma.",
+          "ini": 28.815146,
+          "fim": 33.226937
         }
       ]
     },
     {
       "id": "resumo",
-      "ini": 119.10174600000002,
-      "fim": 128.39668900000004,
+      "ini": 33.366937,
+      "fim": 36.698411,
       "palavras": [
         {
-          "texto": "Então, resumindo: você manda a foto, escolhe o preço, a região e o valor, e aprova.",
-          "ini": 119.10174600000002,
-          "fim": 124.99961400000002
+          "texto": "Foto, preço, região e valor.",
+          "ini": 33.366937,
+          "fim": 35.085214
         },
         {
-          "texto": "O resto, o GereVendas Ads faz pra você.",
-          "ini": 125.24961400000002,
-          "fim": 127.89668900000002
+          "texto": "O resto é com a gente.",
+          "ini": 35.165214,
+          "fim": 36.558411
         }
       ]
     },
     {
       "id": "preco",
-      "ini": 128.39668900000004,
-      "fim": 140.66378600000004,
+      "ini": 36.698411,
+      "fim": 42.676959,
       "palavras": [
         {
-          "texto": "No piloto, são cento e noventa e nove reais por mês, sem fidelidade.",
-          "ini": 128.39668900000004,
-          "fim": 133.92303800000005
+          "texto": "Cento e noventa e nove reais por mês, sem fidelidade.",
+          "ini": 36.698411,
+          "fim": 40.134964
         },
         {
-          "texto": "A verba dos anúncios é à parte, e quem decide o valor é você.",
-          "ini": 134.17303800000005,
-          "fim": 140.16378600000004
+          "texto": "A verba dos anúncios é à parte, você escolhe.",
+          "ini": 40.214963999999995,
+          "fim": 42.536958999999996
         }
       ]
     },
     {
       "id": "fim",
-      "ini": 140.66378600000004,
-      "fim": 146.77573600000005,
+      "ini": 42.676959,
+      "fim": 45.47387499999999,
       "palavras": [
         {
-          "texto": "Bora começar?",
-          "ini": 140.66378600000004,
-          "fim": 141.77834400000003
-        },
-        {
-          "texto": "Entra no GereVendas Ads e cria o seu primeiro anúncio hoje mesmo.",
-          "ini": 142.02834400000003,
-          "fim": 145.97573600000004
+          "texto": "Crie o seu primeiro anúncio hoje.",
+          "ini": 42.676959,
+          "fim": 44.673874999999995
         }
       ]
     }

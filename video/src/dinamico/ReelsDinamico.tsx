@@ -14,6 +14,7 @@ import { BrandMark } from "@/components/marketing/brand-mark";
 import { EstiloProvider } from "../estilo";
 import type { Cena } from "../kit";
 import { LegendaPalavra } from "../legenda";
+import { Efeito, useVolumes, Voz, VolumesProvider, type Volumes } from "../trilha";
 import { Ad, BigPhone, ROUND, usePreload } from "../shared";
 import timeline from "../timeline-dinamico.json";
 import { Investimento, Oferta, Produto, Publicacao, Regiao, type Tela } from "../uso/telas";
@@ -31,18 +32,30 @@ const AMARELO = "#ffd43b";
 const FPS = 30;
 
 const img3d = (n: string) => staticFile(`3d/${n}.png`);
-const SFX = (n: string) => staticFile(`sfx-${n}.mp3`);
 
 /** Cenas de "texto gigante" (sem celular, sem legenda: o próprio texto é a fala). */
 const SLAM = new Set(["gancho", "gancho2", "dor", "solucao", "oferta", "cta"]);
 
-export function ReelsDinamico() {
+export function ReelsDinamico(props: Partial<Volumes>) {
   usePreload();
+  return (
+    <VolumesProvider volumes={props}>
+      <ReelsConteudo />
+    </VolumesProvider>
+  );
+}
+
+function MusicaReels() {
+  const { musica } = useVolumes();
+  return <Audio src={staticFile("musica-reels.mp3")} volume={0.16 * musica} />;
+}
+
+function ReelsConteudo() {
   return (
     <EstiloProvider novo>
       <AbsoluteFill style={{ fontFamily: "Sora", background: MENTA }}>
-        <Audio src={staticFile("musica-reels.mp3")} volume={0.16} />
-        <Audio src={staticFile("dinamico.mp3")} />
+        <MusicaReels />
+        <Voz arquivo="dinamico.mp3" />
         {CENAS.map((c, i) => {
           const from = Math.round(c.ini * FPS);
           const ate = i === CENAS.length - 1 ? Math.round((timeline.duracao + 1.2) * FPS) : Math.round(c.fim * FPS);
@@ -50,10 +63,10 @@ export function ReelsDinamico() {
             <Sequence key={c.id} from={from} durationInFrames={Math.max(1, ate - from)} name={c.id}>
               <Cena cena={c} />
               {/* Whoosh em cada corte; impacto nas cenas de texto gigante */}
-              {i > 0 && <Audio src={SFX("whoosh")} volume={0.14} />}
+              {i > 0 && <Efeito nome="whoosh" volume={0.14} />}
               {SLAM.has(c.id) && (
                 <Sequence from={3}>
-                  <Audio src={SFX("impacto")} volume={0.12} />
+                  <Efeito nome="impacto" volume={0.12} />
                 </Sequence>
               )}
             </Sequence>
@@ -182,7 +195,7 @@ function Sticker({
   return (
     <>
       <Sequence from={delay} layout="none">
-        <Audio src={SFX("pop")} volume={0.2} />
+        <Efeito nome="pop" volume={0.2} />
       </Sequence>
       <Img
         src={img3d(nome)}
@@ -459,7 +472,7 @@ function WhatsApp() {
           return (
             <div key={m}>
               <Sequence from={d} layout="none">
-                <Audio src={SFX("notificacao")} volume={0.22} />
+                <Efeito nome="notificacao" volume={0.22} />
               </Sequence>
               <div
                 style={{

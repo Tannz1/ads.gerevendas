@@ -4,8 +4,9 @@ import { BrandMark } from "@/components/marketing/brand-mark";
 import { Phone } from "@/components/marketing/storyboard";
 import { EstiloProvider, useEstilo } from "../estilo";
 import type { Cena } from "../kit";
-import { LegendaDinamica } from "../legenda";
+import { LegendaPalavra } from "../legenda";
 import { usePreload } from "../shared";
+import { soco, TrilhaFundo, Voz, VolumesProvider, type Volumes } from "../trilha";
 import timeline from "../timeline-uso.json";
 import { Inicio, Investimento, Oferta, Previa, Produto, Publicacao, Regiao, Resultados, type Tela } from "./telas";
 
@@ -31,11 +32,13 @@ const PASSOS: Record<string, { titulo: string; tela: (t: Tela) => ReactNode }> =
 };
 
 /** `novo`: cursor do mouse e legenda dinâmica. Sem ele, o visual clássico. */
-export function Uso({ novo = false }: { novo?: boolean }) {
+export function Uso({ novo = false, ...volumes }: { novo?: boolean } & Partial<Volumes>) {
   return (
-    <EstiloProvider novo={novo}>
-      <UsoConteudo />
-    </EstiloProvider>
+    <VolumesProvider volumes={volumes}>
+      <EstiloProvider novo={novo}>
+        <UsoConteudo />
+      </EstiloProvider>
+    </VolumesProvider>
   );
 }
 
@@ -58,7 +61,7 @@ function UsoConteudo() {
   // Troca de tela dentro do celular: desliza da direita, como navegar no app.
   const entra = interpolate(t.f, [0, 9], [0, 1], { ...clamp, easing: ease });
   const celular = interpolate(frame - Math.round((CENAS.at(-1)?.ini ?? 0) * fps), [0, 12], [1, 0], clamp);
-  const zoom = 1 + interpolate(t.f, [0, t.d], [0, 0.03], clamp);
+  const zoom = (1 + interpolate(t.f, [0, t.d], [0, 0.03], clamp)) * soco(t.f);
 
   return (
     <AbsoluteFill
@@ -69,7 +72,8 @@ function UsoConteudo() {
           "radial-gradient(800px 700px at 85% 10%, rgba(34,197,94,0.14), transparent 70%), radial-gradient(700px 600px at 0% 100%, rgba(26,138,60,0.1), transparent 70%), #f6faf7",
       }}
     >
-      <Audio src={staticFile("uso.mp3")} />
+      <Voz arquivo="uso.mp3" />
+      <TrilhaFundo cortes={CENAS.slice(1).map((c) => c.ini)} />
 
       {/* Título curto do passo */}
       {passo && (
@@ -189,66 +193,7 @@ function EndCard({ f }: { f: number }) {
   );
 }
 
-/** Legenda por frase, discreta, na base. */
+/** Legenda de Reels: uma palavra por vez, grande e sem tarja. */
 function Subtitle({ cena, seg }: { cena: Cena; seg: number }) {
-  const { novo } = useEstilo();
-  if (novo) {
-    return (
-      <LegendaDinamica
-        cena={cena}
-        t={seg}
-        left={70}
-        right={70}
-        bottom={120}
-        align="center"
-        fontSize={42}
-        padding="18px 30px"
-        radius={22}
-      />
-    );
-  }
-  const frases: { texto: string; ini: number; fim: number }[] = [];
-  let atual: Cena["palavras"] = [];
-  for (const w of cena.palavras) {
-    atual.push(w);
-    if (/[.!?:]$/.test(w.texto)) {
-      frases.push({ texto: atual.map((x) => x.texto).join(" "), ini: atual[0].ini, fim: w.fim });
-      atual = [];
-    }
-  }
-  if (atual.length)
-    frases.push({ texto: atual.map((x) => x.texto).join(" "), ini: atual[0].ini, fim: atual.at(-1)!.fim });
-  const frase = frases.find((f) => seg < f.fim + 0.25) ?? frases.at(-1);
-  if (!frase) return null;
-  const o = interpolate(seg, [frase.ini - 0.15, frase.ini], [0, 1], clamp);
-  return (
-    <div
-      style={{
-        position: "absolute",
-        left: 70,
-        right: 70,
-        bottom: 120,
-        display: "flex",
-        justifyContent: "center",
-        opacity: o,
-      }}
-    >
-      <p
-        style={{
-          margin: 0,
-          background: "rgba(19,32,26,0.88)",
-          color: "#fff",
-          borderRadius: 22,
-          padding: "18px 30px",
-          fontFamily: "Inter",
-          fontSize: 40,
-          fontWeight: 600,
-          lineHeight: 1.3,
-          textAlign: "center",
-        }}
-      >
-        {frase.texto}
-      </p>
-    </div>
-  );
+  return <LegendaPalavra cena={cena} t={seg} bottom={130} fontSize={90} />;
 }

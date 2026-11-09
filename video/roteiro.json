@@ -42,13 +42,16 @@
       },
       {
         "id": "resultados",
-        "texto": "E acompanha as conversas chegando no WhatsApp."
+        "texto": "E as conversas chegam no WhatsApp."
       },
       {
         "id": "fim",
         "texto": "Simples assim. Link na bio."
       }
-    ]
+    ],
+    "velocidade": 1.12,
+    "pausaFrase": 0.08,
+    "pausaCena": 0.14
   },
   "apresentacao": {
     "voz": {
@@ -61,15 +64,15 @@
     "cenas": [
       {
         "id": "intro",
-        "texto": "Veja como o GereVendas Ads transforma a foto do seu produto em clientes no seu WhatsApp."
+        "texto": "Transforme a foto do seu produto em clientes no WhatsApp."
       },
       {
         "id": "visao",
-        "texto": "São oito passos rápidos, tudo pelo celular."
+        "texto": "São oito passos, tudo pelo celular."
       },
       {
         "id": "inicio",
-        "texto": "Na tela inicial, toque em criar meu anúncio."
+        "texto": "Toque em criar meu anúncio."
       },
       {
         "id": "produto",
@@ -77,11 +80,11 @@
       },
       {
         "id": "oferta",
-        "texto": "Coloque o preço e escolha o que destacar. A IA só usa o que você escreveu."
+        "texto": "Coloque o preço e o que destacar. A IA só usa o que você escreveu."
       },
       {
         "id": "previa",
-        "texto": "Em minutos, chegam cinco versões do anúncio com a sua foto. É só conferir e aprovar."
+        "texto": "Chegam cinco versões com a sua foto. Confira e aprove."
       },
       {
         "id": "regiao",
@@ -89,15 +92,15 @@
       },
       {
         "id": "investimento",
-        "texto": "Defina quanto investir por dia e por quantos dias. O total aparece na hora."
+        "texto": "Defina quanto investir por dia. O total aparece na hora."
       },
       {
         "id": "publicacao",
-        "texto": "Confira o resumo e publique. O anúncio nasce pausado e só roda com o seu ok."
+        "texto": "Confira e publique. Só roda com o seu ok."
       },
       {
         "id": "resultados",
-        "texto": "Depois, acompanhe quanto investiu, quantas conversas chegaram e quanto custou cada uma."
+        "texto": "Depois, veja quanto investiu, quantas conversas chegaram e quanto custou cada uma."
       },
       {
         "id": "resumo",
@@ -105,13 +108,16 @@
       },
       {
         "id": "preco",
-        "texto": "Cento e noventa e nove reais por mês, sem fidelidade. A verba dos anúncios, você escolhe."
+        "texto": "Cento e noventa e nove reais por mês, sem fidelidade. A verba dos anúncios é à parte, você escolhe."
       },
       {
         "id": "fim",
         "texto": "Crie o seu primeiro anúncio hoje."
       }
-    ]
+    ],
+    "velocidade": 1.12,
+    "pausaFrase": 0.08,
+    "pausaCena": 0.14
   },
   "dinamico": {
     "velocidade": 1.12,
