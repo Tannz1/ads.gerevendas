@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { Carousel } from "./carousel";
 import { BAKERY, BAKERY_ROUND } from "./demo-ads";
 import { FluidAd } from "./fluid-ad";
 
@@ -57,43 +58,41 @@ const steps: Array<{ title: string; text: string; screen: ReactNode }> = [
 
 export function Storyboard() {
   return (
-    <section id="como-funciona" aria-labelledby="como-funciona-titulo" className="scroll-mt-20 bg-gv-paper">
-      <div className="mx-auto max-w-[1240px] px-4 py-24 sm:px-8 lg:py-32">
+    <section id="como-funciona" aria-labelledby="como-funciona-titulo" className="scroll-mt-20 bg-white">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
         <div className="max-w-2xl">
           <p className="font-semibold text-gv-green">Anúncios simples para negócios locais</p>
           <h2
             id="como-funciona-titulo"
-            className="mt-3 text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.06] font-bold tracking-[-0.04em]"
+            className="mt-3 text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]"
           >
             Da foto ao cliente no WhatsApp
           </h2>
-          <p className="mt-5 text-lg leading-relaxed text-gv-mute">
+          <p className="mt-4 text-[17px] leading-relaxed text-gv-mute">
             Oito telas no celular, do jeito que estão no app. Você vê exatamente o que vai ao ar antes de gastar
             qualquer real.
           </p>
         </div>
 
-        <ol
-          tabIndex={0}
-          aria-label="Passo a passo no app"
-          className="-mx-4 mt-14 flex snap-x snap-mandatory scroll-px-4 gap-5 overflow-x-auto px-4 pb-6 focus-visible:outline-2 focus-visible:outline-gv-green md:mx-0 md:grid md:snap-none md:grid-cols-2 md:gap-x-6 md:gap-y-14 md:overflow-visible md:px-0 md:pb-0 lg:grid-cols-4"
-        >
-          {steps.map((s, i) => (
-            <li key={s.title} className="w-[236px] shrink-0 snap-start md:w-auto">
-              <Phone>{s.screen}</Phone>
-              <div className="mx-auto mt-5 flex max-w-[260px] gap-3">
-                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-gv-green text-sm font-bold text-white">
-                  {i + 1}
-                </span>
-                <div>
-                  <h3 className="font-bold tracking-[-0.01em]">{s.title}</h3>
-                  <p className="mt-1 text-[15px] leading-relaxed text-gv-mute">{s.text}</p>
+        <div className="mt-10">
+          <Carousel label="Passo a passo no app" gridClassName="md:grid-cols-2 md:gap-x-6 md:gap-y-14 lg:grid-cols-4">
+            {steps.map((s, i) => (
+              <div key={s.title}>
+                <Phone>{s.screen}</Phone>
+                <div className="mx-auto mt-5 flex max-w-[260px] gap-3">
+                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-gv-green text-sm font-bold text-white">
+                    {i + 1}
+                  </span>
+                  <div>
+                    <h3 className="text-[17px] font-bold tracking-[-0.01em]">{s.title}</h3>
+                    <p className="mt-1 text-[15px] leading-relaxed text-gv-mute">{s.text}</p>
+                  </div>
                 </div>
               </div>
-            </li>
-          ))}
-        </ol>
-        <p className="mt-8 text-sm text-gv-mute">
+            ))}
+          </Carousel>
+        </div>
+        <p className="mt-6 text-[14px] text-gv-mute">
           Telas simplificadas do app com uma padaria fictícia. Os números da última tela são ilustrativos.
         </p>
       </div>
@@ -103,7 +102,7 @@ export function Storyboard() {
 
 /* ---------------------------------------------------------------- moldura e peças */
 
-function Phone({ children }: { children: ReactNode }) {
+export function Phone({ children }: { children: ReactNode }) {
   return (
     <div
       aria-hidden
@@ -181,7 +180,7 @@ function Check() {
 
 /* ---------------------------------------------------------------- telas */
 
-function ScreenHome() {
+export function ScreenHome() {
   return (
     <>
       <div className="rounded-2xl bg-gv-green p-3 text-white">
@@ -211,7 +210,7 @@ function ScreenHome() {
   );
 }
 
-function ScreenProduct() {
+export function ScreenProduct() {
   return (
     <>
       <Top step={1} title="O que você quer vender?" />
@@ -231,7 +230,7 @@ function ScreenProduct() {
   );
 }
 
-function ScreenOffer() {
+export function ScreenOffer() {
   return (
     <>
       <Top step={2} title="Qual é a sua oferta?" />
@@ -266,7 +265,7 @@ function ScreenOffer() {
   );
 }
 
-function ScreenPreview() {
+export function ScreenPreview() {
   return (
     <>
       <Top step={3} title="Olha como ficou!" />
@@ -282,7 +281,7 @@ function ScreenPreview() {
   );
 }
 
-function ScreenRegion() {
+export function ScreenRegion() {
   return (
     <>
       <Top step={4} title="Onde estão seus clientes?" />
@@ -306,7 +305,7 @@ function ScreenRegion() {
   );
 }
 
-function ScreenBudget() {
+export function ScreenBudget() {
   return (
     <>
       <Top step={5} title="Quanto quer investir?" />
@@ -337,7 +336,7 @@ function ScreenBudget() {
   );
 }
 
-function ScreenPublish() {
+export function ScreenPublish() {
   return (
     <>
       <Top step={6} title="Tudo pronto!" />
@@ -374,7 +373,7 @@ function ScreenPublish() {
   );
 }
 
-function ScreenResults() {
+export function ScreenResults() {
   return (
     <>
       <Top title="Seu anúncio em números" />

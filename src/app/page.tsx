@@ -3,11 +3,11 @@ import localFont from "next/font/local";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { BrandLogo } from "@/components/marketing/brand-logo";
+import { Carousel } from "@/components/marketing/carousel";
 import { BAKERY, BAKERY_ROUND } from "@/components/marketing/demo-ads";
 import { FluidAd } from "@/components/marketing/fluid-ad";
-import { HeroDemo } from "@/components/marketing/hero-demo";
 import { Storyboard } from "@/components/marketing/storyboard";
-import { TEMPLATE_LABELS, type CreativeContent } from "@/contracts/creatives";
+import { TEMPLATE_LABELS } from "@/contracts/creatives";
 import { cn } from "@/lib/cn";
 
 // Sora: fonte da marca Gere Vendas (site do CRM). Arquivo local, OFL, para o build não depender do Google Fonts.
@@ -18,50 +18,35 @@ const sora = localFont({
   display: "swap",
 });
 
-export const viewport: Viewport = { themeColor: "#06130b" };
+export const viewport: Viewport = { themeColor: "#ffffff" };
 
 const CRM_URL = "https://www.gerevendascrm.com.br/";
+const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
-/** Peça da padaria FICTÍCIA desenhada pelo renderizador real do editor. */
-function BakeryAd({ ad, stories = false }: { ad: CreativeContent; stories?: boolean }) {
-  return (
-    <FluidAd
-      format={stories ? "stories" : "feed"}
-      content={ad}
-      businessName={BAKERY.businessName}
-      priceLabel={BAKERY.priceLabel}
-      imageSrc={BAKERY.photo ?? null}
-    />
-  );
-}
-
-const segments = [
-  "Padaria",
-  "Salão de beleza",
-  "Barbearia",
-  "Pet shop",
-  "Oficina",
-  "Lanchonete",
-  "Doceria",
-  "Açougue",
-  "Hortifrúti",
-  "Loja de roupas",
-  "Ótica",
-  "Academia",
-  "Assistência técnica",
-  "Estúdio de estética",
-];
+/**
+ * LP comercial para o dono de negócio local: lê no celular, tem pouco tempo e já tentou anunciar.
+ * Ordem: a dor, a saída em 3 passos (com vídeo), as telas, o controle do dinheiro, o preço e dúvidas.
+ */
 
 const included = [
+  "Sem fidelidade: você usa enquanto fizer sentido",
   "Cinco versões do anúncio a cada produto, para feed e stories",
   "A foto do seu produto em todas as versões",
-  "Editor para ajustar título, texto, preço, cor e foto",
-  "Campanha montada no Facebook e no Instagram",
+  "Campanha montada no Instagram e no Facebook",
+  "Clientes chamando direto no seu WhatsApp",
   "Painel com investimento, conversas e custo por conversa",
   "Registro das vendas que vieram das conversas",
 ];
 
 const faq = [
+  {
+    q: "Tem fidelidade ou multa para sair?",
+    a: "Não. São R$ 199 por mês no piloto, sem fidelidade. Você usa enquanto fizer sentido para o seu negócio.",
+  },
+  {
+    q: "Funciona para o meu tipo de negócio?",
+    a: "Funciona melhor para quem vende no bairro e atende pelo WhatsApp: comércio, alimentação, beleza, pet, oficina e serviços. Se o cliente pode te chamar para comprar ou agendar, faz sentido.",
+  },
   {
     q: "Preciso entender de tráfego pago?",
     a: "Não. Você manda a foto do produto, diz o preço e escolhe a região e o valor por dia. Os textos, as versões do anúncio e a campanha saem dessas respostas.",
@@ -72,19 +57,19 @@ const faq = [
   },
   {
     q: "A IA pode inventar promoção, preço ou depoimento?",
-    a: "Não. Ela só usa o que você escreveu: preço, parcelamento, desconto ou entrega entram no anúncio só se você informou. Você revisa cada peça antes de publicar e pode mudar qualquer texto.",
+    a: "Não. Ela só usa o que você escreveu: preço, parcelamento, desconto ou entrega entram no anúncio só se você informou. E você revisa tudo antes de publicar.",
   },
   {
     q: "Quanto vou gastar com os anúncios?",
-    a: "Você escolhe o valor por dia e por quantos dias cada campanha roda. Essa verba é cobrada à parte da mensalidade e o gasto nunca passa do total que você confirmou.",
+    a: "Você escolhe o valor por dia (a partir de R$ 10) e por quantos dias. Essa verba é cobrada à parte da mensalidade e o gasto nunca passa do total que você confirmou.",
   },
   {
-    q: "Posso usar fotos do meu negócio?",
-    a: "Deve. O anúncio começa pela foto do seu produto, em JPG ou PNG de até 5 MB. Pode ser do celular mesmo.",
+    q: "A foto pode ser do celular?",
+    a: "Pode. O anúncio começa pela foto do seu produto, em JPG ou PNG de até 5 MB. Boa luz e o produto em destaque já bastam.",
   },
   {
     q: "Quando o anúncio começa a aparecer?",
-    a: "A campanha é criada pausada. Depois que você confirma o valor e a verba é paga, ela é ativada e passa pela revisão da Meta, que avalia todo anúncio antes de mostrar.",
+    a: "O anúncio é criado pausado. Depois que você confirma o valor e a verba é paga, ele é ativado e passa pela revisão da Meta, que avalia todo anúncio antes de mostrar.",
   },
 ];
 
@@ -92,21 +77,21 @@ export default function Home() {
   return (
     <div className={cn(sora.variable, "overflow-x-clip bg-white font-lp text-gv-ink")}>
       <Header />
-
       <main>
         <Hero />
-        <Segments />
-        <PhotoStart />
-        <Compare />
+        <Pains />
+        <Benefits />
+        <HowItWorks />
+        <ForWho />
         <Storyboard />
         <Showcase />
+        <Comparison />
         <Control />
-        <Results />
         <Pricing />
+        <GetStarted />
         <Faq />
         <FinalCta />
       </main>
-
       <Footer />
     </div>
   );
@@ -116,28 +101,22 @@ export default function Home() {
 
 function Header() {
   return (
-    <header className="sticky top-0 z-30 border-b border-white/8 bg-gv-night/95 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-[1240px] items-center justify-between gap-4 px-4 sm:h-[72px] sm:px-8">
-        <BrandLogo tone="light" />
-        <nav aria-label="Principal" className="hidden items-center gap-7 text-[14.5px] text-[#d6e6dc] lg:flex">
-          <a href="#como-funciona" className="hover:text-white">
+    <header className="sticky top-0 z-30 border-b border-gv-line/80 bg-white/90 backdrop-blur">
+      <div className="mx-auto flex h-16 max-w-[1200px] items-center justify-between gap-4 px-5 sm:px-8">
+        <BrandLogo />
+        <nav aria-label="Principal" className="hidden items-center gap-8 text-[15px] font-medium text-gv-mute lg:flex">
+          <a href="#como-funciona" className="hover:text-gv-ink">
             Como funciona
           </a>
-          <a href="#exemplos" className="hover:text-white">
-            Exemplos
-          </a>
-          <a href="#preco" className="hover:text-white">
+          <a href="#preco" className="hover:text-gv-ink">
             Preço
           </a>
-          <a href="#duvidas" className="hover:text-white">
+          <a href="#duvidas" className="hover:text-gv-ink">
             Dúvidas
           </a>
         </nav>
-        <div className="flex items-center gap-1 sm:gap-3">
-          <Link
-            href="/entrar"
-            className="hidden px-3 py-2 text-[14.5px] font-semibold text-[#d6e6dc] hover:text-white sm:block"
-          >
+        <div className="flex items-center gap-2 sm:gap-4">
+          <Link href="/entrar" className="hidden text-[15px] font-semibold text-gv-mute hover:text-gv-ink sm:block">
             Entrar
           </Link>
           <CtaLink size="sm">Criar meu anúncio</CtaLink>
@@ -149,158 +128,223 @@ function Header() {
 
 function Hero() {
   return (
-    <section className="lp-dark">
-      <div className="mx-auto grid max-w-[1240px] gap-12 px-4 pt-14 pb-20 sm:px-8 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:items-center lg:gap-14 lg:pt-20 lg:pb-28">
+    <section className="relative overflow-hidden bg-[#f3faf5]">
+      {/* Brilho suave do verde da marca, atrás da foto. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-40 right-[-10%] size-[720px] rounded-full bg-[radial-gradient(closest-side,rgb(34_197_94/0.22),transparent)]"
+      />
+      <div className="relative mx-auto grid max-w-[1200px] grid-cols-1 items-center gap-12 px-5 pt-10 pb-16 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16 lg:pt-16 lg:pb-24">
         <div>
-          <p className="inline-flex items-center gap-2.5 rounded-full border border-white/15 bg-white/5 px-3.5 py-1.5 text-[13px] font-semibold text-[#d6e6dc]">
+          <p className="inline-flex items-center gap-2 rounded-full bg-white px-3.5 py-1.5 text-[14px] font-semibold text-gv-green shadow-[0_4px_14px_-6px_rgb(6_40_20/0.25)]">
             <span aria-hidden className="size-2 rounded-full bg-gv-glow" />
-            Anúncios simples para negócios locais
+            Para quem vende no bairro
           </p>
-          <h1 className="mt-6 text-[clamp(2.5rem,5.2vw,4.25rem)] leading-[1.03] font-bold tracking-[-0.045em] text-balance">
-            Da foto ao cliente no WhatsApp.
+          <h1 className="mt-5 text-[clamp(2.6rem,9.5vw,4.6rem)] leading-[1] font-bold tracking-[-0.05em] text-balance text-gv-ink">
+            Seu produto é bom. <span className="text-gv-green">Falta gente ver.</span>
           </h1>
-          <p className="mt-6 max-w-[34rem] text-lg leading-relaxed text-[#b6c8bc] sm:text-xl">
-            Tire a foto do que você quer vender, diga o preço e escolha quanto investir. O anúncio vai para o Instagram
-            e o Facebook e os clientes chamam você direto no WhatsApp.
+          <p className="mt-6 max-w-[30rem] text-[18px] leading-relaxed text-gv-mute sm:text-[20px]">
+            Mande a foto do produto e o GereVendas Ads coloca o seu anúncio no Instagram e no Facebook para quem está
+            perto. Quem se interessa chama você direto no WhatsApp.
           </p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <CtaLink size="lg">Criar meu anúncio</CtaLink>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
+            <CtaLink size="lg" className="w-full sm:w-auto">
+              Criar meu anúncio agora
+            </CtaLink>
             <a
-              href="#como-funciona"
-              className="inline-flex h-13 items-center rounded-xl border border-white/20 bg-white/5 px-6 font-semibold text-white transition-colors hover:border-white/35 hover:bg-white/10"
+              href="#passos"
+              className="inline-flex h-12 items-center justify-center gap-2.5 text-[16px] font-semibold text-gv-ink hover:text-gv-green"
             >
-              Ver como funciona
+              <span className="grid size-10 place-items-center rounded-full bg-white shadow-[0_6px_16px_-8px_rgb(6_40_20/0.4)]">
+                <svg aria-hidden viewBox="0 0 24 24" className="ml-0.5 size-4 text-gv-green" fill="currentColor">
+                  <path d="M8 5.5v13l11-6.5z" />
+                </svg>
+              </span>
+              Ver em 2 minutos
             </a>
           </div>
-          <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-[#9fb3a6]">
-            <Tick>R$ 199 por mês no piloto</Tick>
-            <Tick>Pronto em poucos minutos</Tick>
-            <Tick>Só roda com o seu ok</Tick>
+          <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5 text-[15px] font-medium text-gv-ink/80">
+            {["R$ 199/mês no piloto", "Sem fidelidade", "Só roda com o seu ok"].map((t) => (
+              <li key={t} className="flex items-center gap-2">
+                <span className="text-gv-green">
+                  <CheckIcon />
+                </span>
+                {t}
+              </li>
+            ))}
           </ul>
         </div>
 
-        <HeroDemo />
+        <HeroVisual />
       </div>
     </section>
   );
 }
 
-function Segments() {
+/** A dona do negócio recebendo a conversa que o anúncio trouxe. Pessoa, negócio e conversa são ilustrativos. */
+function HeroVisual() {
   return (
-    <section aria-labelledby="para-quem" className="border-b border-gv-line bg-gv-paper">
-      <div className="mx-auto flex max-w-[1240px] flex-col gap-4 px-4 py-8 sm:px-8 lg:flex-row lg:items-center lg:gap-8">
-        <h2 id="para-quem" className="shrink-0 text-[15px] font-semibold text-gv-mute">
-          Feito para o comércio do bairro
+    <figure className="mx-auto w-full max-w-[460px] lg:mr-0 lg:ml-auto">
+      <div className="relative px-3 pt-6 pb-10 sm:px-6">
+        {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática da LP, já otimizada */}
+        <img
+          src={`${base}/lp/dona-padaria.jpg`}
+          alt="Dona de padaria sorrindo enquanto olha o celular no balcão"
+          width={880}
+          height={1320}
+          fetchPriority="high"
+          className="aspect-[4/5] w-full rounded-[32px] object-cover shadow-[0_40px_80px_-40px_rgb(6_40_20/0.55)]"
+        />
+
+        {/* Mensagem chegando no WhatsApp */}
+        <div className="absolute top-[14%] left-0 w-[68%] max-w-[280px] rounded-2xl bg-white p-3.5 shadow-[0_24px_48px_-20px_rgb(6_40_20/0.45)]">
+          <div className="flex items-center gap-2.5">
+            <span className="grid size-9 shrink-0 place-items-center rounded-full bg-[#25d366] text-white">
+              <WhatsIcon className="size-5" />
+            </span>
+            <div className="min-w-0 leading-tight">
+              <p className="text-[13px] font-bold">Nova mensagem</p>
+              <p className="text-[12px] text-gv-mute">WhatsApp · agora</p>
+            </div>
+          </div>
+          <p className="mt-2.5 rounded-xl bg-[#e7fbe3] px-3 py-2 text-[14px] leading-snug text-[#111b21]">
+            Oi! Vi o anúncio. Ainda tem o café da manhã completo?
+          </p>
+        </div>
+
+        {/* O anúncio que trouxe a conversa */}
+        <div className="absolute right-0 bottom-0 flex w-[66%] max-w-[270px] items-center gap-3 rounded-2xl bg-white p-2.5 shadow-[0_24px_48px_-20px_rgb(6_40_20/0.45)]">
+          <div className="w-14 shrink-0 overflow-hidden rounded-lg">
+            <FluidAd
+              format="feed"
+              content={BAKERY.ad}
+              businessName={BAKERY.businessName}
+              priceLabel={BAKERY.priceLabel}
+              imageSrc={BAKERY.photo ?? null}
+            />
+          </div>
+          <div className="min-w-0 leading-tight">
+            <p className="flex items-center gap-1.5 text-[12px] font-semibold text-gv-green">
+              <span className="size-1.5 rounded-full bg-gv-glow" />
+              Anúncio no ar
+            </p>
+            <p className="mt-0.5 truncate text-[13.5px] font-bold">{BAKERY.ad.headline}</p>
+            <p className="text-[12px] text-gv-mute">Instagram e Facebook</p>
+          </div>
+        </div>
+      </div>
+      <figcaption className="mt-3 text-center text-[13px] text-gv-mute lg:text-right">
+        Exemplo ilustrativo, com negócio fictício
+      </figcaption>
+    </figure>
+  );
+}
+
+/* ---------------------------------------------------------------- dor */
+
+function Pains() {
+  const pains = [
+    {
+      title: "Posta todo dia e quase ninguém vê",
+      text: "O alcance do perfil caiu e o post fica só para quem já te segue.",
+    },
+    {
+      title: "Já impulsionou e o dinheiro sumiu",
+      text: "Gastou, vieram curtidas de longe e nenhuma mensagem de cliente.",
+    },
+    {
+      title: "Não tem tempo para aprender anúncio",
+      text: "Arte, texto, público, orçamento… o Gerenciador de Anúncios assusta.",
+    },
+  ];
+  return (
+    <section aria-labelledby="dor-titulo" className="bg-white">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
+        <h2
+          id="dor-titulo"
+          className="max-w-2xl text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]"
+        >
+          Isso acontece com você?
         </h2>
-        <ul className="flex flex-wrap gap-2">
-          {segments.map((s) => (
-            <li key={s} className="rounded-full border border-gv-line bg-white px-3.5 py-1.5 text-sm font-medium">
-              {s}
+        <ul className="mt-8 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5">
+          {pains.map((p) => (
+            <li key={p.title} className="rounded-3xl border border-gv-line bg-gv-paper p-6">
+              <span aria-hidden className="grid size-10 place-items-center rounded-full bg-[#fde7e4] text-[#c0392b]">
+                <CrossIcon />
+              </span>
+              <h3 className="mt-4 text-[19px] leading-snug font-bold">{p.title}</h3>
+              <p className="mt-2 text-[16px] leading-relaxed text-gv-mute">{p.text}</p>
             </li>
           ))}
         </ul>
+        <p className="mt-8 max-w-2xl text-[19px] leading-relaxed font-semibold sm:text-xl">
+          Não é falta de produto bom. É falta da pessoa certa ver. O GereVendas Ads mostra o seu produto para quem está
+          perto e quer comprar, e leva essa pessoa direto para o seu WhatsApp.
+        </p>
       </div>
     </section>
   );
 }
 
-/* ---------------------------------------------------------------- começa pela foto */
+/* ---------------------------------------------------------------- como funciona */
 
-function PhotoStart() {
-  const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+function HowItWorks() {
+  const steps = [
+    { title: "Mande a foto", text: "Do celular mesmo. Diga o nome e o preço do produto." },
+    { title: "Escolha região e valor", text: "Na sua cidade ou na região, a partir de R$ 10 por dia." },
+    { title: "Receba clientes no WhatsApp", text: "Quem se interessa toca no anúncio e chama você." },
+  ];
   return (
-    <section aria-labelledby="foto-titulo" className="mx-auto max-w-[1240px] px-4 pt-24 sm:px-8 lg:pt-32">
-      <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-center lg:gap-16">
-        <figure className="relative">
-          {/* eslint-disable-next-line @next/next/no-img-element -- imagem estática da LP, já otimizada */}
-          <img
-            src={`${base}/lp/foto-do-produto.jpg`}
-            alt="Dona de padaria fotografando um bolo com o celular no balcão da loja"
-            width={1536}
-            height={1024}
-            loading="lazy"
-            className="aspect-[3/2] w-full rounded-[28px] object-cover shadow-[0_40px_80px_-40px_rgb(6_40_20/0.6)]"
-          />
-          <figcaption className="absolute bottom-4 left-4 inline-flex items-center gap-2 rounded-full bg-white/95 px-4 py-2 text-sm font-semibold shadow-lg">
-            <span className="size-2 rounded-full bg-gv-glow" />
-            Foto do celular serve
+    <section id="passos" aria-labelledby="passos-titulo" className="scroll-mt-20 bg-white">
+      <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-14 lg:py-24">
+        <div>
+          <p className="text-[15px] font-semibold text-gv-green">Simples assim</p>
+          <h2
+            id="passos-titulo"
+            className="mt-3 text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]"
+          >
+            Três passos e o anúncio está pronto
+          </h2>
+          <ol className="mt-8 grid gap-6">
+            {steps.map((s, i) => (
+              <li key={s.title} className="flex gap-4">
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-gv-green text-[17px] font-bold text-white">
+                  {i + 1}
+                </span>
+                <div>
+                  <h3 className="text-[19px] font-bold">{s.title}</h3>
+                  <p className="mt-1 text-[16px] leading-relaxed text-gv-mute">{s.text}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <figure>
+          {/* No celular, a versão vertical (texto maior); no computador, a horizontal. Só carrega no play. */}
+          <video
+            controls
+            preload="none"
+            playsInline
+            poster={`${base}/lp/apresentacao-vertical-capa.jpg`}
+            className="mx-auto aspect-[9/16] w-full max-w-[400px] rounded-3xl bg-gv-night shadow-[0_30px_60px_-30px_rgb(6_40_20/0.6)] lg:hidden"
+          >
+            <source src={`${base}/lp/apresentacao-vertical.mp4`} type="video/mp4" />
+          </video>
+          <video
+            controls
+            preload="none"
+            playsInline
+            poster={`${base}/lp/apresentacao-capa.jpg`}
+            className="hidden aspect-video w-full rounded-3xl bg-gv-night shadow-[0_30px_60px_-30px_rgb(6_40_20/0.6)] lg:block"
+          >
+            <source src={`${base}/lp/apresentacao.mp4`} type="video/mp4" />
+          </video>
+          <figcaption className="mt-3 text-center text-[14px] text-gv-mute lg:text-left">
+            Veja o app funcionando em 2 minutos. Negócio e números de exemplo.
           </figcaption>
         </figure>
-        <div>
-          <p className="font-semibold text-gv-green">Sem designer, sem agência</p>
-          <h2
-            id="foto-titulo"
-            className="mt-3 text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.06] font-bold tracking-[-0.04em]"
-          >
-            Tudo começa com uma foto do seu produto
-          </h2>
-          <p className="mt-6 text-lg leading-relaxed text-gv-mute">
-            Você fotografa o que quer vender, diz o preço e o que destacar. A gente transforma em cinco versões de
-            anúncio com a sua foto e coloca no Instagram e no Facebook, levando as pessoas direto para o seu WhatsApp.
-          </p>
-          <ul className="mt-8 grid gap-3 text-[17px]">
-            {["Foto e preço do produto", "Cinco versões prontas para aprovar", "Clientes chamando no WhatsApp"].map(
-              (t, i) => (
-                <li key={t} className="flex items-center gap-3">
-                  <span className="grid size-8 shrink-0 place-items-center rounded-full bg-gv-green text-sm font-bold text-white">
-                    {i + 1}
-                  </span>
-                  {t}
-                </li>
-              ),
-            )}
-          </ul>
-        </div>
       </div>
     </section>
-  );
-}
-
-/* ---------------------------------------------------------------- comparação */
-
-function Compare() {
-  return (
-    <section className="mx-auto max-w-[1240px] px-4 py-24 sm:px-8 lg:py-32">
-      <h2 className="max-w-3xl text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.06] font-bold tracking-[-0.04em]">
-        Anunciar no Instagram não precisa de agência nem de curso de tráfego.
-      </h2>
-      <div className="mt-14 grid gap-5 lg:grid-cols-3">
-        <CompareCard title="Contratar agência" verdict="Caro para um negócio pequeno">
-          Reunião, briefing, espera pela arte e um contrato mensal que pesa no caixa. Cada ajuste é um novo pedido.
-        </CompareCard>
-        <CompareCard title="Fazer sozinho" verdict="Horas de trabalho e medo de errar">
-          Arte no Canva, texto do zero e o Gerenciador de Anúncios cheio de opções. Um erro no orçamento sai do seu
-          bolso.
-        </CompareCard>
-        <div className="relative rounded-3xl bg-gv-night p-8 text-white shadow-[0_30px_60px_-30px_rgb(6_40_20/0.7)]">
-          <span className="absolute -top-3 left-8 rounded-full bg-gv-green px-3 py-1 text-xs font-bold">
-            Com o GereVendas Ads
-          </span>
-          <h3 className="text-xl font-bold">Você manda a foto, a IA monta</h3>
-          <p className="mt-3 leading-relaxed text-[#b6c8bc]">
-            A foto do produto, o preço e o que você quer destacar viram cinco anúncios e a campanha pronta no Facebook e
-            no Instagram, esperando o seu ok para gastar qualquer real.
-          </p>
-          <p className="mt-6 flex items-center gap-2 font-semibold text-gv-mint">
-            <CheckIcon />
-            R$ 199 por mês, sem fazer arte nem configurar campanha
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function CompareCard({ title, verdict, children }: { title: string; verdict: string; children: ReactNode }) {
-  return (
-    <div className="rounded-3xl border border-gv-line bg-gv-paper p-8">
-      <h3 className="text-xl font-bold">{title}</h3>
-      <p className="mt-3 leading-relaxed text-gv-mute">{children}</p>
-      <p className="mt-6 flex items-center gap-2 font-semibold text-gv-ink/70">
-        <CrossIcon />
-        {verdict}
-      </p>
-    </div>
   );
 }
 
@@ -308,34 +352,39 @@ function CompareCard({ title, verdict, children }: { title: string; verdict: str
 
 function Showcase() {
   return (
-    <section id="exemplos" className="scroll-mt-20">
-      <div className="mx-auto max-w-[1240px] px-4 py-24 sm:px-8 lg:py-32">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:items-end">
-          <h2 className="text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.06] font-bold tracking-[-0.04em]">
-            Uma rodada, cinco anúncios diferentes
-          </h2>
-          <p className="text-lg leading-relaxed text-gv-mute">
-            Você testa jeitos diferentes de chamar o cliente e descobre qual traz mais conversa. Todas saem no tamanho
-            do feed e dos stories.
-          </p>
-        </div>
-
-        <ul className="mt-14 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-5 lg:items-center">
-          {BAKERY_ROUND.map(({ ad, stories }) => (
-            <li key={ad.template} className={cn(stories && "md:row-span-2 lg:row-span-1")}>
-              <div className="overflow-hidden rounded-2xl shadow-[0_24px_40px_-24px_rgb(6_40_20/0.55)]">
-                <BakeryAd ad={ad} stories={stories} />
-              </div>
-              <p className="mt-3 text-sm font-semibold">
-                {TEMPLATE_LABELS[ad.template]}
-                <span className="font-normal text-gv-mute">{stories ? ", formato stories" : ", formato feed"}</span>
-              </p>
-            </li>
-          ))}
-        </ul>
-        <p className="mt-8 text-sm text-gv-mute">
-          Peças de uma padaria fictícia, para mostrar o formato. As suas usam os seus dados.
+    <section aria-labelledby="exemplos-titulo" className="bg-gv-paper">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
+        <p className="text-[15px] font-semibold text-gv-green">Cinco versões para cada produto</p>
+        <h2
+          id="exemplos-titulo"
+          className="mt-3 max-w-2xl text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]"
+        >
+          Cada versão chama o cliente de um jeito
+        </h2>
+        <p className="mt-4 max-w-xl text-[17px] leading-relaxed text-gv-mute">
+          Elas rodam juntas e a Meta mostra mais a que traz mais conversas. Você não precisa escolher.
         </p>
+        <div className="mt-8">
+          <Carousel label="Exemplos de versões do anúncio" desktopFrom="lg" gridClassName="lg:grid-cols-5 lg:gap-5">
+            {BAKERY_ROUND.map(({ ad }, i) => (
+              <div key={ad.template}>
+                <div className="overflow-hidden rounded-2xl shadow-[0_20px_36px_-22px_rgb(6_40_20/0.55)]">
+                  <FluidAd
+                    format="feed"
+                    content={ad}
+                    businessName={BAKERY.businessName}
+                    priceLabel={BAKERY.priceLabel}
+                    imageSrc={BAKERY.photo ?? null}
+                  />
+                </div>
+                <p className="mt-3 text-center text-[15px] font-semibold lg:text-left">
+                  Versão {i + 1}: {TEMPLATE_LABELS[ad.template]}
+                </p>
+              </div>
+            ))}
+          </Carousel>
+        </div>
+        <p className="mt-6 text-[14px] text-gv-mute">Padaria fictícia, só para mostrar o formato.</p>
       </div>
     </section>
   );
@@ -345,82 +394,57 @@ function Showcase() {
 
 function Control() {
   const points = [
-    {
-      title: "Toda campanha nasce pausada",
-      text: "Criamos a campanha no Facebook e no Instagram sem veicular. Nada é gasto até a ativação.",
-    },
-    {
-      title: "Teto de gasto fechado",
-      text: "Você define quanto por dia e por quantos dias. O gasto não passa do total que você confirmou.",
-    },
-    {
-      title: "A IA não inventa",
-      text: "Preço, promoção, depoimento e resultado só entram no anúncio se você informou.",
-    },
-    {
-      title: "Você pausa quando quiser",
-      text: "Um botão no painel interrompe a campanha. Sem ligar para ninguém.",
-    },
+    { title: "Nasce pausado", text: "Nada é gasto até você confirmar." },
+    { title: "Teto de gasto", text: "Nunca passa do total que você escolheu." },
+    { title: "A IA não inventa", text: "Preço e promoção só se você escreveu." },
+    { title: "Pausa com um toque", text: "Sem ligar para ninguém." },
   ];
-
   return (
     <section className="lp-dark">
-      <div className="mx-auto grid max-w-[1240px] gap-14 px-4 py-24 sm:px-8 lg:grid-cols-2 lg:items-center lg:py-32">
+      <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:items-center lg:gap-14 lg:py-24">
         <div>
-          <h2 className="text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.06] font-bold tracking-[-0.04em]">
+          <h2 className="text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]">
             Nenhum real sai sem o seu ok.
           </h2>
-          <ul className="mt-10 grid gap-7 sm:grid-cols-2">
+          <ul className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2">
             {points.map((p) => (
-              <li key={p.title}>
-                <p className="flex items-center gap-2 font-bold text-white">
-                  <span className="text-gv-mint">
-                    <CheckIcon />
-                  </span>
-                  {p.title}
-                </p>
-                <p className="mt-2 leading-relaxed text-[#b6c8bc]">{p.text}</p>
+              <li key={p.title} className="flex gap-3">
+                <span className="mt-0.5 text-gv-mint">
+                  <CheckIcon />
+                </span>
+                <div>
+                  <p className="text-[17px] font-bold text-white">{p.title}</p>
+                  <p className="mt-1 text-[16px] leading-relaxed text-[#b6c8bc]">{p.text}</p>
+                </div>
               </li>
             ))}
           </ul>
         </div>
 
-        <div aria-hidden className="mx-auto w-full max-w-md">
-          <div className="rounded-3xl bg-white p-7 text-gv-ink shadow-[0_40px_80px_-30px_rgb(0_0_0/0.8)]">
-            <div className="flex items-center gap-4">
-              <div className="w-14 shrink-0 overflow-hidden rounded-lg">
-                <BakeryAd ad={BAKERY.ad} />
-              </div>
-              <div className="min-w-0">
-                <p className="font-bold">Ativar &quot;Café da manhã completo&quot;?</p>
-                <p className="text-sm text-gv-mute">Facebook e Instagram</p>
-              </div>
-            </div>
-            <dl className="mt-6 grid grid-cols-3 gap-3 rounded-2xl bg-gv-paper p-4 text-sm">
-              <div>
-                <dt className="text-gv-mute">Por dia</dt>
-                <dd className="mt-0.5 text-lg font-bold">R$ 20</dd>
-              </div>
-              <div>
-                <dt className="text-gv-mute">Duração</dt>
-                <dd className="mt-0.5 text-lg font-bold">7 dias</dd>
-              </div>
-              <div>
-                <dt className="text-gv-mute">Máximo</dt>
-                <dd className="mt-0.5 text-lg font-bold text-gv-green">R$ 140</dd>
-              </div>
+        <div aria-hidden className="mx-auto w-full max-w-[420px]">
+          <div className="rounded-3xl bg-white p-5 text-gv-ink shadow-[0_40px_80px_-30px_rgb(0_0_0/0.8)] sm:p-7">
+            <p className="text-[17px] font-bold">Tudo pronto!</p>
+            <dl className="mt-4 divide-y divide-gv-line text-[15px]">
+              {[
+                ["Região", "Campinas"],
+                ["Duração", "7 dias"],
+                ["Por dia", "R$ 20"],
+                ["Destino", "seu WhatsApp"],
+              ].map(([k, v]) => (
+                <div key={k} className="flex justify-between gap-4 py-2.5">
+                  <dt className="font-semibold">{k}</dt>
+                  <dd className="text-gv-mute">{v}</dd>
+                </div>
+              ))}
             </dl>
-            <p className="mt-4 text-sm leading-relaxed text-gv-mute">
-              A verba é cobrada à parte da mensalidade. Dá para pausar a qualquer momento.
+            <div className="mt-4 flex items-baseline justify-between rounded-2xl bg-gv-paper px-4 py-3">
+              <span className="text-[15px] text-gv-mute">Total máximo</span>
+              <span className="text-2xl font-bold text-gv-green">R$ 140</span>
+            </div>
+            <p className="mt-4 rounded-2xl bg-gv-green py-3.5 text-center text-[16px] font-bold text-white">
+              Publicar anúncio
             </p>
-            <div className="mt-6 flex gap-3">
-              <span className="flex-1 rounded-xl border border-gv-line py-3 text-center text-sm font-semibold">
-                Voltar
-              </span>
-              <span className="flex-[1.6] rounded-xl bg-gv-green py-3 text-center text-sm font-bold text-white">
-                Confirmar R$ 20 por dia
-              </span>
-            </div>
+            <p className="mt-3 text-center text-[13px] text-gv-mute">O anúncio é criado pausado.</p>
           </div>
         </div>
       </div>
@@ -428,62 +452,281 @@ function Control() {
   );
 }
 
-/* ---------------------------------------------------------------- resultados */
+/* ---------------------------------------------------------------- benefícios */
 
-function Results() {
+function Benefits() {
+  const items = [
+    {
+      title: "Mais gente vendo o seu produto",
+      text: "O anúncio aparece para quem está perto do seu negócio, não só para quem já te segue.",
+      icon: <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zm10 3a3 3 0 100-6 3 3 0 000 6z" />,
+    },
+    {
+      title: "Clientes direto no WhatsApp",
+      text: "Um toque no anúncio e a conversa começa com você, no número do seu negócio.",
+      icon: <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />,
+    },
+    {
+      title: "Pronto em poucos minutos",
+      text: "Foto, preço e valor por dia. Sem fazer arte, sem escrever texto, sem configurar campanha.",
+      icon: <path d="M12 7v5l3 2m7-2a10 10 0 11-20 0 10 10 0 0120 0z" />,
+    },
+    {
+      title: "Você manda no dinheiro",
+      text: "A partir de R$ 10 por dia, com teto fechado. Nada roda sem o seu ok e você pausa quando quiser.",
+      icon: <path d="M12 2l8 4v6c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-4z" />,
+    },
+    {
+      title: "Tudo pelo celular",
+      text: "Do cadastro aos resultados, no mesmo app. Não precisa de computador.",
+      icon: <path d="M8 2h8a2 2 0 012 2v16a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2zm3 17h2" />,
+    },
+    {
+      title: "Você vê o que deu certo",
+      text: "Quanto investiu, quantas conversas chegaram e quanto custou cada uma. E registra as vendas.",
+      icon: <path d="M4 20h16M7 16V9m5 7V4m5 12v-5" />,
+    },
+  ];
   return (
-    <section className="bg-gv-paper">
-      <div className="mx-auto grid max-w-[1240px] gap-14 px-4 py-24 sm:px-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:items-center lg:py-32">
-        <div aria-hidden className="order-last lg:order-first">
-          <div className="rounded-3xl border border-gv-line bg-white p-6 shadow-[0_30px_60px_-34px_rgb(6_40_20/0.5)] sm:p-7">
-            <div className="grid grid-cols-3 gap-3">
-              <div className="col-span-3 rounded-2xl bg-gv-night p-5 text-white sm:col-span-1">
-                <p className="text-sm text-white/70">Investido</p>
-                <p className="mt-1 text-2xl font-bold">R$ 86,40</p>
-              </div>
-              <Metric label="Conversas" value="27" />
-              <Metric label="Por conversa" value="R$ 3,20" />
-            </div>
-            <div className="mt-4 flex items-center gap-4 rounded-2xl border border-gv-line p-4">
-              <div className="w-16 shrink-0 overflow-hidden rounded-lg">
-                <BakeryAd ad={BAKERY.ad} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-bold">Café da manhã completo</p>
-                <p className="mt-0.5 text-sm text-gv-mute">R$ 20 por dia, 7 dias</p>
-              </div>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e3f4ec] px-2.5 py-1 text-xs font-bold text-[#12795a]">
-                <span className="size-1.5 rounded-full bg-[#12795a]" />
-                Rodando
+    <section aria-labelledby="beneficios-titulo" className="bg-gv-paper">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
+        <p className="text-[15px] font-semibold text-gv-green">O que muda no seu negócio</p>
+        <h2
+          id="beneficios-titulo"
+          className="mt-3 max-w-2xl text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]"
+        >
+          Anunciar fica simples, barato e no seu controle
+        </h2>
+        <ul className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+          {items.map((b) => (
+            <li key={b.title} className="rounded-3xl border border-gv-line bg-white p-6">
+              <span className="grid size-12 place-items-center rounded-2xl bg-[#e4f6e9] text-gv-green">
+                <svg
+                  aria-hidden
+                  viewBox="0 0 24 24"
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  {b.icon}
+                </svg>
               </span>
-            </div>
-          </div>
-          <p className="mt-3 text-sm text-gv-mute">Números fictícios, só para mostrar o painel.</p>
-        </div>
-
-        <div>
-          <h2 className="text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.06] font-bold tracking-[-0.04em]">
-            Veja o que cada anúncio trouxe
-          </h2>
-          <p className="mt-6 max-w-lg text-lg leading-relaxed text-gv-mute">
-            No app, cada anúncio mostra quanto já foi investido, quantas conversas começou no WhatsApp e quanto custou
-            cada uma. Se uma conversa virou venda, você registra ali mesmo.
-          </p>
-          <CtaLink size="lg" className="mt-9">
-            Criar meu anúncio
-          </CtaLink>
-        </div>
+              <h3 className="mt-4 text-[19px] leading-snug font-bold">{b.title}</h3>
+              <p className="mt-2 text-[16px] leading-relaxed text-gv-mute">{b.text}</p>
+            </li>
+          ))}
+        </ul>
+        <CtaBand />
       </div>
     </section>
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+/** Chamada no meio da página: botão e as garantias, sempre iguais. */
+function CtaBand({ dark = false }: { dark?: boolean }) {
   return (
-    <div className="col-span-3 rounded-2xl border border-gv-line p-5 sm:col-span-1">
-      <p className="text-sm text-gv-mute">{label}</p>
-      <p className="mt-1 text-2xl font-bold">{value}</p>
+    <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
+      <CtaLink size="lg" className="w-full sm:w-auto">
+        Criar meu anúncio
+      </CtaLink>
+      <p className={cn("text-[15px]", dark ? "text-[#9fb3a6]" : "text-gv-mute")}>
+        R$ 199/mês no piloto · sem fidelidade · a verba você escolhe
+      </p>
     </div>
+  );
+}
+
+/* ---------------------------------------------------------------- para quem é */
+
+function ForWho() {
+  const segments = [
+    "Padaria e confeitaria",
+    "Salão e barbearia",
+    "Estética",
+    "Pet shop",
+    "Oficina e autopeças",
+    "Lanchonete e delivery",
+    "Loja de roupas",
+    "Ótica",
+    "Academia",
+    "Assistência técnica",
+    "Hortifrúti e mercado",
+    "Prestador de serviço",
+  ];
+  return (
+    <section aria-labelledby="quem-titulo" className="bg-gv-paper">
+      <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-8 px-5 py-16 sm:px-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14 lg:py-24">
+        <div>
+          <p className="text-[15px] font-semibold text-gv-green">Para quem é</p>
+          <h2
+            id="quem-titulo"
+            className="mt-3 text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]"
+          >
+            Feito para quem vende no bairro
+          </h2>
+          <p className="mt-4 text-[17px] leading-relaxed text-gv-mute">
+            Funciona melhor para quem atende pelo WhatsApp e tem um produto ou serviço com preço: o cliente vê o
+            anúncio, chama e você fecha a venda na conversa.
+          </p>
+        </div>
+        <ul className="flex flex-wrap content-start gap-2.5">
+          {segments.map((s) => (
+            <li
+              key={s}
+              className="rounded-full border border-gv-line bg-white px-4 py-2 text-[15px] font-medium text-gv-ink"
+            >
+              {s}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------------- comparação */
+
+function Comparison() {
+  const rows = [
+    "Quem faz o anúncio",
+    "Tempo até ficar pronto",
+    "Custo fixo",
+    "Precisa entender de tráfego",
+    "Controle do gasto",
+  ];
+  const cols = [
+    {
+      name: "Contratar agência",
+      values: ["A agência", "Dias de briefing e aprovação", "Contrato mensal de agência", "Não", "Depende da agência"],
+      best: false,
+    },
+    {
+      name: "Fazer sozinho",
+      values: ["Você", "Horas aprendendo", "Sem mensalidade, mas o seu tempo", "Sim", "Fácil errar no orçamento"],
+      best: false,
+    },
+    {
+      name: "GereVendas Ads",
+      values: [
+        "A IA, com a sua foto",
+        "Poucos minutos",
+        "R$ 199/mês, sem fidelidade",
+        "Não",
+        "Teto fechado e pausa em um toque",
+      ],
+      best: true,
+    },
+  ];
+  return (
+    <section aria-labelledby="comparar-titulo" className="bg-white">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
+        <p className="text-[15px] font-semibold text-gv-green">Compare</p>
+        <h2
+          id="comparar-titulo"
+          className="mt-3 max-w-2xl text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]"
+        >
+          Sem agência e sem curso de tráfego
+        </h2>
+        <ul className="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-5">
+          {cols.map((c) => (
+            <li
+              key={c.name}
+              className={cn(
+                "rounded-3xl p-6",
+                c.best
+                  ? "lp-dark order-first text-white shadow-[0_30px_60px_-30px_rgb(6_40_20/0.7)] lg:order-none"
+                  : "border border-gv-line bg-gv-paper",
+              )}
+            >
+              <p className="flex items-center justify-between gap-3 text-[19px] font-bold">
+                {c.name}
+                {c.best && (
+                  <span className="rounded-full bg-gv-green px-2.5 py-1 text-[12px] font-bold text-white">
+                    Mais simples
+                  </span>
+                )}
+              </p>
+              <dl className={cn("mt-4 divide-y", c.best ? "divide-white/10" : "divide-gv-line")}>
+                {rows.map((r, i) => (
+                  <div key={r} className="py-3">
+                    <dt className={cn("text-[13px] font-semibold", c.best ? "text-gv-mint" : "text-gv-mute")}>{r}</dt>
+                    <dd className="mt-0.5 text-[16px] font-medium">{c.values[i]}</dd>
+                  </div>
+                ))}
+              </dl>
+            </li>
+          ))}
+        </ul>
+        <CtaBand />
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------------- quanto custa */
+
+function CostExample() {
+  const examples = [
+    { label: "Teste de 1 semana", calc: "R$ 10 por dia × 7 dias", total: "R$ 70" },
+    { label: "Uma semana forte", calc: "R$ 20 por dia × 7 dias", total: "R$ 140" },
+    { label: "O mês inteiro", calc: "R$ 10 por dia × 30 dias", total: "R$ 300" },
+  ];
+  return (
+    <div className="mt-6 rounded-[28px] border border-gv-line bg-gv-paper p-6 sm:p-8">
+      <h3 className="text-[22px] font-bold tracking-[-0.02em]">Quanto custa de verdade</h3>
+      <p className="mt-2 max-w-2xl text-[16px] leading-relaxed text-gv-mute">
+        São duas partes: a mensalidade da ferramenta (R$ 199) e a verba dos anúncios. A verba dos anúncios não está
+        incluída na mensalidade: você escolhe o valor a cada anúncio e paga à parte. Exemplos de verba:
+      </p>
+      <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {examples.map((e) => (
+          <li key={e.label} className="rounded-2xl bg-white p-5">
+            <p className="text-[14px] font-semibold text-gv-green">{e.label}</p>
+            <p className="mt-1 text-[15px] text-gv-mute">{e.calc}</p>
+            <p className="mt-2 text-[28px] leading-none font-bold">{e.total}</p>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-4 text-[14px] text-gv-mute">O gasto nunca passa do total que você confirmou.</p>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- como começar */
+
+function GetStarted() {
+  const steps = [
+    { title: "Crie sua conta", text: "Cadastre o negócio: nome, cidade e o WhatsApp onde você atende." },
+    { title: "Conecte a sua Página", text: "Ligue a Página do Facebook e o Instagram. O app mostra cada passo." },
+    { title: "Mande a primeira foto", text: "Escolha o produto, o preço, a região e o valor. Confira e confirme." },
+  ];
+  return (
+    <section aria-labelledby="comecar-titulo" className="bg-gv-paper">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
+        <p className="text-[15px] font-semibold text-gv-green">Depois do clique</p>
+        <h2
+          id="comecar-titulo"
+          className="mt-3 max-w-2xl text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]"
+        >
+          Comece hoje em 3 etapas
+        </h2>
+        <ol className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5">
+          {steps.map((s, i) => (
+            <li key={s.title} className="rounded-3xl border border-gv-line bg-white p-6">
+              <span className="grid size-11 place-items-center rounded-full bg-gv-green text-[18px] font-bold text-white">
+                {i + 1}
+              </span>
+              <h3 className="mt-4 text-[19px] font-bold">{s.title}</h3>
+              <p className="mt-2 text-[16px] leading-relaxed text-gv-mute">{s.text}</p>
+            </li>
+          ))}
+        </ol>
+        <CtaBand />
+      </div>
+    </section>
   );
 }
 
@@ -491,25 +734,29 @@ function Metric({ label, value }: { label: string; value: string }) {
 
 function Pricing() {
   return (
-    <section id="preco" className="scroll-mt-20">
-      <div className="mx-auto max-w-[1240px] px-4 py-24 sm:px-8 lg:py-32">
-        <div className="grid overflow-hidden rounded-[32px] border border-gv-line lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-          <div className="lp-dark p-8 sm:p-12">
+    <section id="preco" className="scroll-mt-20 bg-white">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
+        <p className="text-[15px] font-semibold text-gv-green">Preço</p>
+        <h2 className="mt-3 max-w-2xl text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]">
+          Um preço só, sem fidelidade e sem surpresa
+        </h2>
+        <div className="mt-10 grid grid-cols-1 overflow-hidden rounded-[28px] border border-gv-line lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <div className="lp-dark p-7 sm:p-10">
             <p className="font-semibold text-gv-mint">Plano do piloto</p>
-            <p className="mt-4 flex items-baseline gap-2">
-              <span className="text-[clamp(3.4rem,8vw,5.5rem)] leading-none font-bold tracking-[-0.05em]">R$ 199</span>
+            <p className="mt-3 flex items-baseline gap-2">
+              <span className="text-[clamp(3.2rem,14vw,5rem)] leading-none font-bold tracking-[-0.05em]">R$ 199</span>
               <span className="text-lg font-semibold text-[#b6c8bc]">por mês</span>
             </p>
-            <p className="mt-5 max-w-sm leading-relaxed text-[#b6c8bc]">
-              Valor fixo pela ferramenta, sem contrato de agência e sem precisar de designer.
+            <p className="mt-4 max-w-sm text-[16px] leading-relaxed text-[#b6c8bc]">
+              Sem fidelidade, sem agência e sem designer. Você usa enquanto fizer sentido para o seu negócio.
             </p>
-            <CtaLink size="lg" className="mt-9 w-full sm:w-auto">
-              Criar meu anúncio
+            <CtaLink size="lg" className="mt-8 w-full sm:w-auto">
+              Quero começar agora
             </CtaLink>
           </div>
-          <div className="bg-white p-8 sm:p-12">
-            <h2 className="text-2xl font-bold tracking-[-0.02em] sm:text-3xl">O que entra na mensalidade</h2>
-            <ul className="mt-7 grid gap-4 text-[17px]">
+          <div className="bg-white p-7 sm:p-10">
+            <h3 className="text-2xl font-bold tracking-[-0.02em]">O que entra na mensalidade</h3>
+            <ul className="mt-6 grid gap-3.5 text-[16px]">
               {included.map((item) => (
                 <li key={item} className="flex items-start gap-3">
                   <span className="mt-0.5 text-gv-green">
@@ -519,11 +766,9 @@ function Pricing() {
                 </li>
               ))}
             </ul>
-            <p className="mt-8 rounded-2xl bg-gv-paper p-5 text-[15px] leading-relaxed text-gv-mute">
-              A verba dos anúncios não está incluída: você define o valor por dia de cada campanha e paga à parte.
-            </p>
           </div>
         </div>
+        <CostExample />
       </div>
     </section>
   );
@@ -533,13 +778,13 @@ function Pricing() {
 
 function Faq() {
   return (
-    <section id="duvidas" className="scroll-mt-20 bg-gv-paper">
-      <div className="mx-auto grid max-w-[1240px] gap-12 px-4 py-24 sm:px-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:py-32">
-        <h2 className="text-[clamp(2rem,4.2vw,3.4rem)] leading-[1.06] font-bold tracking-[-0.04em]">Dúvidas comuns</h2>
+    <section id="duvidas" className="scroll-mt-20 bg-white">
+      <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-8 px-5 py-16 sm:px-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-12 lg:py-24">
+        <h2 className="text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]">Dúvidas comuns</h2>
         <div className="divide-y divide-gv-line border-y border-gv-line">
           {faq.map((f) => (
             <details key={f.q} className="lp-faq group">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-lg font-semibold">
+              <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 py-5 text-[17px] font-semibold">
                 {f.q}
                 <span
                   aria-hidden
@@ -548,7 +793,7 @@ function Faq() {
                   +
                 </span>
               </summary>
-              <p className="max-w-2xl pb-6 leading-relaxed text-gv-mute">{f.a}</p>
+              <p className="max-w-2xl pb-5 text-[16px] leading-relaxed text-gv-mute">{f.a}</p>
             </details>
           ))}
         </div>
@@ -562,14 +807,15 @@ function Faq() {
 function FinalCta() {
   return (
     <section className="lp-dark">
-      <div className="mx-auto max-w-[1240px] px-4 py-28 text-center sm:px-8 lg:py-36">
-        <h2 className="mx-auto max-w-3xl text-[clamp(2.2rem,5vw,4.2rem)] leading-[1.04] font-bold tracking-[-0.045em]">
-          Mande a foto. O anúncio fica com a gente.
+      <div className="mx-auto max-w-[1200px] px-5 py-20 text-center sm:px-8 lg:py-28">
+        <h2 className="mx-auto max-w-3xl text-[clamp(2rem,7vw,3.8rem)] leading-[1.05] font-bold tracking-[-0.04em]">
+          O seu cliente já está no Instagram. Falta ele ver você.
         </h2>
-        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-[#b6c8bc]">
-          R$ 199 por mês no piloto. A campanha só vai ao ar com a sua confirmação.
+        <p className="mx-auto mt-5 max-w-xl text-[17px] leading-relaxed text-[#b6c8bc]">
+          Mande a foto do primeiro produto hoje. R$ 199 por mês no piloto, sem fidelidade, e o anúncio só vai ao ar com
+          a sua confirmação.
         </p>
-        <CtaLink size="lg" className="mt-10">
+        <CtaLink size="lg" className="mt-8 w-full sm:w-auto">
           Criar meu anúncio
         </CtaLink>
       </div>
@@ -580,12 +826,12 @@ function FinalCta() {
 function Footer() {
   return (
     <footer className="border-t border-white/6 bg-[#040c07] text-[#9fb3a6]">
-      <div className="mx-auto flex max-w-[1240px] flex-col gap-8 px-4 py-12 sm:px-8 md:flex-row md:items-start md:justify-between">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-8 px-5 py-12 sm:px-8 md:flex-row md:items-start md:justify-between">
         <div>
           <BrandLogo tone="light" />
           <p className="mt-4 max-w-xs text-sm leading-relaxed">Um produto Gere Vendas para quem vende no bairro.</p>
         </div>
-        <nav aria-label="Rodapé" className="flex flex-col gap-3 text-sm">
+        <nav aria-label="Rodapé" className="flex flex-col gap-3 text-[15px]">
           <Link href="/entrar" className="hover:text-gv-mint">
             Entrar
           </Link>
@@ -597,7 +843,7 @@ function Footer() {
           </a>
         </nav>
       </div>
-      <div className="mx-auto flex max-w-[1240px] flex-col gap-2 border-t border-white/6 px-4 py-6 text-[13px] sm:flex-row sm:justify-between sm:px-8">
+      <div className="mx-auto flex max-w-[1200px] flex-col gap-2 border-t border-white/6 px-5 py-6 text-[13px] sm:flex-row sm:justify-between sm:px-8">
         <p>© 2026 GereVendas Ads</p>
         <p>Publicação na Meta sujeita à revisão e às políticas da plataforma.</p>
       </div>
@@ -612,8 +858,8 @@ function CtaLink({ size, className, children }: { size: "sm" | "lg"; className?:
     <Link
       href="/entrar"
       className={cn(
-        "lp-btn-primary inline-flex items-center justify-center rounded-xl bg-gv-green font-bold whitespace-nowrap text-white transition-colors hover:bg-gv-green-strong",
-        size === "sm" ? "h-10 px-4 text-sm" : "h-13 px-7 text-base",
+        "lp-btn-primary inline-flex items-center justify-center rounded-2xl bg-gv-green font-bold whitespace-nowrap text-white transition-colors hover:bg-gv-green-strong",
+        size === "sm" ? "h-10 px-4 text-[14px]" : "h-14 px-7 text-[17px]",
         className,
       )}
     >
@@ -622,23 +868,12 @@ function CtaLink({ size, className, children }: { size: "sm" | "lg"; className?:
   );
 }
 
-function Tick({ children }: { children: ReactNode }) {
-  return (
-    <li className="flex items-center gap-2">
-      <span className="text-gv-mint">
-        <CheckIcon />
-      </span>
-      {children}
-    </li>
-  );
-}
-
 function CheckIcon() {
   return (
     <svg
       aria-hidden
       viewBox="0 0 24 24"
-      className="size-[18px] shrink-0"
+      className="size-[20px] shrink-0"
       fill="none"
       stroke="currentColor"
       strokeWidth="2.6"
@@ -658,11 +893,28 @@ function CrossIcon() {
       className="size-[18px] shrink-0"
       fill="none"
       stroke="currentColor"
-      strokeWidth="2.6"
+      strokeWidth="2.8"
       strokeLinecap="round"
       strokeLinejoin="round"
     >
       <path d="M18 6 6 18M6 6l12 12" />
+    </svg>
+  );
+}
+
+function WhatsIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      aria-hidden
+      viewBox="0 0 24 24"
+      className={className}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
     </svg>
   );
 }

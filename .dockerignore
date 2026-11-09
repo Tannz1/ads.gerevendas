@@ -12,3 +12,4 @@ supabase/.temp
 !README.md
 Dockerfile
 .dockerignore
+video

@@ -1,0 +1,116 @@
+{
+  "uso": {
+    "voz": {
+      "stability": 0.5,
+      "similarity_boost": 0.8,
+      "style": 0.25,
+      "use_speaker_boost": true,
+      "speed": 1.05
+    },
+    "cenas": [
+      {
+        "id": "intro",
+        "texto": "Olha como funciona o GereVendas Ads, do começo ao fim."
+      },
+      {
+        "id": "inicio",
+        "texto": "Na tela inicial, você toca em criar meu anúncio."
+      },
+      {
+        "id": "produto",
+        "texto": "Tira a foto do produto e escreve o nome."
+      },
+      {
+        "id": "oferta",
+        "texto": "Coloca o preço e escolhe o que destacar. A inteligência artificial usa só o que você escreveu."
+      },
+      {
+        "id": "previa",
+        "texto": "Em poucos minutos, chegam cinco versões do anúncio com a sua foto. Você passa, confere e aprova."
+      },
+      {
+        "id": "regiao",
+        "texto": "Escolhe onde mostrar: na sua cidade, ou na cidade e região."
+      },
+      {
+        "id": "investimento",
+        "texto": "Define quanto quer investir por dia, e por quantos dias."
+      },
+      {
+        "id": "publicacao",
+        "texto": "Confere o resumo e publica. O anúncio nasce pausado, e só roda com a sua confirmação."
+      },
+      {
+        "id": "resultados",
+        "texto": "Depois, é só acompanhar: quanto investiu, quantas conversas chegaram no WhatsApp e quanto custou cada uma."
+      },
+      {
+        "id": "fim",
+        "texto": "Simples assim. Link na bio."
+      }
+    ]
+  },
+  "apresentacao": {
+    "voz": {
+      "stability": 0.6,
+      "similarity_boost": 0.8,
+      "style": 0.15,
+      "use_speaker_boost": true,
+      "speed": 1
+    },
+    "cenas": [
+      {
+        "id": "intro",
+        "texto": "Olá! Este é o GereVendas Ads. Neste vídeo, você vai ver como transformar a foto de um produto em um anúncio no Instagram e no Facebook, que leva clientes direto para o seu WhatsApp."
+      },
+      {
+        "id": "visao",
+        "texto": "São oito passos, todos no celular. Para mostrar, vamos usar uma padaria de exemplo."
+      },
+      {
+        "id": "inicio",
+        "texto": "Ao entrar no app, você vê a tela inicial. Ela tem um botão principal: criar meu anúncio. Os anúncios que já estão rodando aparecem logo abaixo."
+      },
+      {
+        "id": "produto",
+        "texto": "O primeiro passo é o produto. Você tira uma foto, ou escolhe uma da galeria, e escreve o nome. Aqui, o café da manhã completo."
+      },
+      {
+        "id": "oferta",
+        "texto": "Depois, a oferta. Você informa o preço e escolhe o que quer destacar: parcelamento, desconto ou entrega. A inteligência artificial usa só o que você escreveu. Ela não inventa preço nem promoção."
+      },
+      {
+        "id": "previa",
+        "texto": "Em seguida, a prévia. O app cria cinco versões do anúncio com a sua foto, cada uma chamando o cliente de um jeito diferente. Se quiser, você muda o texto antes de aprovar."
+      },
+      {
+        "id": "regiao",
+        "texto": "Na região, você escolhe onde o anúncio vai aparecer: só na sua cidade, ou na cidade e região."
+      },
+      {
+        "id": "investimento",
+        "texto": "No investimento, você escolhe quanto quer gastar por dia, e por quantos dias. O total aparece na tela antes de seguir."
+      },
+      {
+        "id": "publicacao",
+        "texto": "Na publicação, você confere o resumo: a região, a duração, o valor e o destino, que é o seu WhatsApp. O anúncio é criado pausado, e só começa a rodar depois da sua confirmação."
+      },
+      {
+        "id": "resultados",
+        "texto": "Com o anúncio rodando, a tela de resultados mostra quanto você investiu, quantas conversas chegaram e quanto custou cada uma. Se uma conversa virou venda, você registra ali mesmo. E pode pausar quando quiser."
+      },
+      {
+        "id": "resumo",
+        "texto": "Resumindo: você manda a foto, define o preço, a região e o valor, e aprova. O resto, o GereVendas Ads faz por você."
+      },
+      {
+        "id": "preco",
+        "texto": "No piloto, o plano custa cento e noventa e nove reais por mês. A verba dos anúncios é à parte, no valor que você escolher."
+      },
+      {
+        "id": "fim",
+        "texto": "Para começar, é só entrar no GereVendas Ads e criar o seu primeiro anúncio."
+      }
+    ]
+  }
+}

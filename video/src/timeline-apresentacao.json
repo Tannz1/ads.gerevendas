@@ -1,0 +1,1762 @@
+{
+  "voz": "pNInz6obpgDQGcFmaJgB",
+  "duracao": 140.565,
+  "cenas": [
+    {
+      "id": "intro",
+      "ini": 0,
+      "fim": 12.806,
+      "palavras": [
+        {
+          "texto": "Olá!",
+          "ini": 0,
+          "fim": 0.569
+        },
+        {
+          "texto": "Este",
+          "ini": 0.894,
+          "fim": 1.242
+        },
+        {
+          "texto": "é",
+          "ini": 1.265,
+          "fim": 1.289
+        },
+        {
+          "texto": "o",
+          "ini": 1.335,
+          "fim": 1.358
+        },
+        {
+          "texto": "GereVendas",
+          "ini": 1.416,
+          "fim": 2.09
+        },
+        {
+          "texto": "Ads.",
+          "ini": 2.241,
+          "fim": 2.775
+        },
+        {
+          "texto": "Neste",
+          "ini": 2.984,
+          "fim": 3.32
+        },
+        {
+          "texto": "vídeo,",
+          "ini": 3.402,
+          "fim": 3.738
+        },
+        {
+          "texto": "você",
+          "ini": 3.762,
+          "fim": 3.971
+        },
+        {
+          "texto": "vai",
+          "ini": 4.04,
+          "fim": 4.168
+        },
+        {
+          "texto": "ver",
+          "ini": 4.226,
+          "fim": 4.389
+        },
+        {
+          "texto": "como",
+          "ini": 4.447,
+          "fim": 4.632
+        },
+        {
+          "texto": "transformar",
+          "ini": 4.667,
+          "fim": 5.329
+        },
+        {
+          "texto": "a",
+          "ini": 5.375,
+          "fim": 5.399
+        },
+        {
+          "texto": "foto",
+          "ini": 5.468,
+          "fim": 5.747
+        },
+        {
+          "texto": "de",
+          "ini": 5.782,
+          "fim": 5.828
+        },
+        {
+          "texto": "um",
+          "ini": 5.863,
+          "fim": 5.909
+        },
+        {
+          "texto": "produto",
+          "ini": 5.956,
+          "fim": 6.444
+        },
+        {
+          "texto": "em",
+          "ini": 6.49,
+          "fim": 6.56
+        },
+        {
+          "texto": "um",
+          "ini": 6.653,
+          "fim": 6.734
+        },
+        {
+          "texto": "anúncio",
+          "ini": 6.815,
+          "fim": 7.314
+        },
+        {
+          "texto": "no",
+          "ini": 7.372,
+          "fim": 7.465
+        },
+        {
+          "texto": "Instagram",
+          "ini": 7.523,
+          "fim": 8.15
+        },
+        {
+          "texto": "e",
+          "ini": 8.394,
+          "fim": 8.51
+        },
+        {
+          "texto": "no",
+          "ini": 8.568,
+          "fim": 8.638
+        },
+        {
+          "texto": "Facebook,",
+          "ini": 8.707,
+          "fim": 9.509
+        },
+        {
+          "texto": "que",
+          "ini": 9.683,
+          "fim": 9.787
+        },
+        {
+          "texto": "leva",
+          "ini": 9.857,
+          "fim": 10.066
+        },
+        {
+          "texto": "clientes",
+          "ini": 10.101,
+          "fim": 10.542
+        },
+        {
+          "texto": "direto",
+          "ini": 10.588,
+          "fim": 11.018
+        },
+        {
+          "texto": "para",
+          "ini": 11.076,
+          "fim": 11.25
+        },
+        {
+          "texto": "o",
+          "ini": 11.285,
+          "fim": 11.308
+        },
+        {
+          "texto": "seu",
+          "ini": 11.366,
+          "fim": 11.575
+        },
+        {
+          "texto": "WhatsApp.",
+          "ini": 11.645,
+          "fim": 12.481
+        }
+      ]
+    },
+    {
+      "id": "visao",
+      "ini": 12.806,
+      "fim": 19.446,
+      "palavras": [
+        {
+          "texto": "São",
+          "ini": 12.806,
+          "fim": 13.061
+        },
+        {
+          "texto": "oito",
+          "ini": 13.131,
+          "fim": 13.456
+        },
+        {
+          "texto": "passos,",
+          "ini": 13.537,
+          "fim": 14.164
+        },
+        {
+          "texto": "todos",
+          "ini": 14.292,
+          "fim": 14.675
+        },
+        {
+          "texto": "no",
+          "ini": 14.721,
+          "fim": 14.803
+        },
+        {
+          "texto": "celular.",
+          "ini": 14.838,
+          "fim": 15.592
+        },
+        {
+          "texto": "Para",
+          "ini": 15.975,
+          "fim": 16.184
+        },
+        {
+          "texto": "mostrar,",
+          "ini": 16.219,
+          "fim": 16.915
+        },
+        {
+          "texto": "vamos",
+          "ini": 17.066,
+          "fim": 17.322
+        },
+        {
+          "texto": "usar",
+          "ini": 17.38,
+          "fim": 17.612
+        },
+        {
+          "texto": "uma",
+          "ini": 17.647,
+          "fim": 17.763
+        },
+        {
+          "texto": "padaria",
+          "ini": 17.809,
+          "fim": 18.227
+        },
+        {
+          "texto": "de",
+          "ini": 18.274,
+          "fim": 18.355
+        },
+        {
+          "texto": "exemplo.",
+          "ini": 18.401,
+          "fim": 19.04
+        }
+      ]
+    },
+    {
+      "id": "inicio",
+      "ini": 19.446,
+      "fim": 30.661,
+      "palavras": [
+        {
+          "texto": "Ao",
+          "ini": 19.446,
+          "fim": 19.597
+        },
+        {
+          "texto": "entrar",
+          "ini": 19.632,
+          "fim": 19.945
+        },
+        {
+          "texto": "no",
+          "ini": 19.992,
+          "fim": 20.108
+        },
+        {
+          "texto": "app,",
+          "ini": 20.212,
+          "fim": 20.689
+        },
+        {
+          "texto": "você",
+          "ini": 20.886,
+          "fim": 21.118
+        },
+        {
+          "texto": "vê",
+          "ini": 21.223,
+          "fim": 21.35
+        },
+        {
+          "texto": "a",
+          "ini": 21.385,
+          "fim": 21.42
+        },
+        {
+          "texto": "tela",
+          "ini": 21.49,
+          "fim": 21.815
+        },
+        {
+          "texto": "inicial.",
+          "ini": 21.873,
+          "fim": 22.616
+        },
+        {
+          "texto": "Ela",
+          "ini": 22.918,
+          "fim": 23.115
+        },
+        {
+          "texto": "tem",
+          "ini": 23.161,
+          "fim": 23.278
+        },
+        {
+          "texto": "um",
+          "ini": 23.359,
+          "fim": 23.405
+        },
+        {
+          "texto": "botão",
+          "ini": 23.452,
+          "fim": 23.823
+        },
+        {
+          "texto": "principal:",
+          "ini": 23.858,
+          "fim": 24.764
+        },
+        {
+          "texto": "criar",
+          "ini": 25.065,
+          "fim": 25.6
+        },
+        {
+          "texto": "meu",
+          "ini": 25.692,
+          "fim": 25.901
+        },
+        {
+          "texto": "anúncio.",
+          "ini": 25.959,
+          "fim": 26.819
+        },
+        {
+          "texto": "Os",
+          "ini": 27.178,
+          "fim": 27.329
+        },
+        {
+          "texto": "anúncios",
+          "ini": 27.399,
+          "fim": 27.782
+        },
+        {
+          "texto": "que",
+          "ini": 27.817,
+          "fim": 27.898
+        },
+        {
+          "texto": "já",
+          "ini": 27.956,
+          "fim": 28.049
+        },
+        {
+          "texto": "estão",
+          "ini": 28.107,
+          "fim": 28.339
+        },
+        {
+          "texto": "rodando",
+          "ini": 28.374,
+          "fim": 28.804
+        },
+        {
+          "texto": "aparecem",
+          "ini": 28.827,
+          "fim": 29.303
+        },
+        {
+          "texto": "logo",
+          "ini": 29.35,
+          "fim": 29.617
+        },
+        {
+          "texto": "abaixo.",
+          "ini": 29.651,
+          "fim": 30.302
+        }
+      ]
+    },
+    {
+      "id": "produto",
+      "ini": 30.661,
+      "fim": 40.321,
+      "palavras": [
+        {
+          "texto": "O",
+          "ini": 30.661,
+          "fim": 30.72
+        },
+        {
+          "texto": "primeiro",
+          "ini": 30.789,
+          "fim": 31.114
+        },
+        {
+          "texto": "passo",
+          "ini": 31.172,
+          "fim": 31.602
+        },
+        {
+          "texto": "é",
+          "ini": 31.718,
+          "fim": 31.776
+        },
+        {
+          "texto": "o",
+          "ini": 31.846,
+          "fim": 31.869
+        },
+        {
+          "texto": "produto.",
+          "ini": 31.904,
+          "fim": 32.6
+        },
+        {
+          "texto": "Você",
+          "ini": 32.914,
+          "fim": 33.134
+        },
+        {
+          "texto": "tira",
+          "ini": 33.192,
+          "fim": 33.425
+        },
+        {
+          "texto": "uma",
+          "ini": 33.471,
+          "fim": 33.645
+        },
+        {
+          "texto": "foto,",
+          "ini": 33.727,
+          "fim": 34.319
+        },
+        {
+          "texto": "ou",
+          "ini": 34.458,
+          "fim": 34.609
+        },
+        {
+          "texto": "escolhe",
+          "ini": 34.667,
+          "fim": 35.143
+        },
+        {
+          "texto": "uma",
+          "ini": 35.236,
+          "fim": 35.468
+        },
+        {
+          "texto": "da",
+          "ini": 35.503,
+          "fim": 35.584
+        },
+        {
+          "texto": "galeria,",
+          "ini": 35.642,
+          "fim": 36.339
+        },
+        {
+          "texto": "e",
+          "ini": 36.49,
+          "fim": 36.606
+        },
+        {
+          "texto": "escreve",
+          "ini": 36.652,
+          "fim": 37.047
+        },
+        {
+          "texto": "o",
+          "ini": 37.059,
+          "fim": 37.082
+        },
+        {
+          "texto": "nome.",
+          "ini": 37.128,
+          "fim": 37.57
+        },
+        {
+          "texto": "Aqui,",
+          "ini": 37.837,
+          "fim": 38.406
+        },
+        {
+          "texto": "o",
+          "ini": 38.603,
+          "fim": 38.684
+        },
+        {
+          "texto": "café",
+          "ini": 38.731,
+          "fim": 38.963
+        },
+        {
+          "texto": "da",
+          "ini": 39.009,
+          "fim": 39.079
+        },
+        {
+          "texto": "manhã",
+          "ini": 39.125,
+          "fim": 39.369
+        },
+        {
+          "texto": "completo.",
+          "ini": 39.427,
+          "fim": 40.17
+        }
+      ]
+    },
+    {
+      "id": "oferta",
+      "ini": 40.321,
+      "fim": 55.658,
+      "palavras": [
+        {
+          "texto": "Depois,",
+          "ini": 40.321,
+          "fim": 40.681
+        },
+        {
+          "texto": "a",
+          "ini": 40.704,
+          "fim": 40.728
+        },
+        {
+          "texto": "oferta.",
+          "ini": 40.797,
+          "fim": 41.529
+        },
+        {
+          "texto": "Você",
+          "ini": 41.796,
+          "fim": 42.028
+        },
+        {
+          "texto": "informa",
+          "ini": 42.086,
+          "fim": 42.492
+        },
+        {
+          "texto": "o",
+          "ini": 42.527,
+          "fim": 42.55
+        },
+        {
+          "texto": "preço",
+          "ini": 42.608,
+          "fim": 43.026
+        },
+        {
+          "texto": "e",
+          "ini": 43.096,
+          "fim": 43.142
+        },
+        {
+          "texto": "escolhe",
+          "ini": 43.2,
+          "fim": 43.653
+        },
+        {
+          "texto": "o",
+          "ini": 43.723,
+          "fim": 43.781
+        },
+        {
+          "texto": "que",
+          "ini": 43.851,
+          "fim": 43.943
+        },
+        {
+          "texto": "quer",
+          "ini": 44.002,
+          "fim": 44.21
+        },
+        {
+          "texto": "destacar:",
+          "ini": 44.28,
+          "fim": 45.081
+        },
+        {
+          "texto": "parcelamento,",
+          "ini": 45.279,
+          "fim": 46.44
+        },
+        {
+          "texto": "desconto",
+          "ini": 46.614,
+          "fim": 47.415
+        },
+        {
+          "texto": "ou",
+          "ini": 47.612,
+          "fim": 47.786
+        },
+        {
+          "texto": "entrega.",
+          "ini": 47.844,
+          "fim": 48.576
+        },
+        {
+          "texto": "A",
+          "ini": 48.843,
+          "fim": 48.924
+        },
+        {
+          "texto": "inteligência",
+          "ini": 48.994,
+          "fim": 49.632
+        },
+        {
+          "texto": "artificial",
+          "ini": 49.656,
+          "fim": 50.48
+        },
+        {
+          "texto": "usa",
+          "ini": 50.724,
+          "fim": 51.107
+        },
+        {
+          "texto": "só",
+          "ini": 51.188,
+          "fim": 51.455
+        },
+        {
+          "texto": "o",
+          "ini": 51.502,
+          "fim": 51.525
+        },
+        {
+          "texto": "que",
+          "ini": 51.583,
+          "fim": 51.676
+        },
+        {
+          "texto": "você",
+          "ini": 51.711,
+          "fim": 51.978
+        },
+        {
+          "texto": "escreveu.",
+          "ini": 52.048,
+          "fim": 52.767
+        },
+        {
+          "texto": "Ela",
+          "ini": 53.081,
+          "fim": 53.313
+        },
+        {
+          "texto": "não",
+          "ini": 53.36,
+          "fim": 53.476
+        },
+        {
+          "texto": "inventa",
+          "ini": 53.522,
+          "fim": 53.94
+        },
+        {
+          "texto": "preço",
+          "ini": 53.998,
+          "fim": 54.358
+        },
+        {
+          "texto": "nem",
+          "ini": 54.404,
+          "fim": 54.521
+        },
+        {
+          "texto": "promoção.",
+          "ini": 54.567,
+          "fim": 55.333
+        }
+      ]
+    },
+    {
+      "id": "previa",
+      "ini": 55.658,
+      "fim": 68.371,
+      "palavras": [
+        {
+          "texto": "Em",
+          "ini": 55.658,
+          "fim": 55.809
+        },
+        {
+          "texto": "seguida,",
+          "ini": 55.867,
+          "fim": 56.564
+        },
+        {
+          "texto": "a",
+          "ini": 56.889,
+          "fim": 56.97
+        },
+        {
+          "texto": "prévia.",
+          "ini": 57.052,
+          "fim": 57.795
+        },
+        {
+          "texto": "O",
+          "ini": 58.178,
+          "fim": 58.271
+        },
+        {
+          "texto": "app",
+          "ini": 58.422,
+          "fim": 58.561
+        },
+        {
+          "texto": "cria",
+          "ini": 58.654,
+          "fim": 59.014
+        },
+        {
+          "texto": "cinco",
+          "ini": 59.072,
+          "fim": 59.35
+        },
+        {
+          "texto": "versões",
+          "ini": 59.385,
+          "fim": 59.884
+        },
+        {
+          "texto": "do",
+          "ini": 59.919,
+          "fim": 60.001
+        },
+        {
+          "texto": "anúncio",
+          "ini": 60.059,
+          "fim": 60.558
+        },
+        {
+          "texto": "com",
+          "ini": 60.604,
+          "fim": 60.744
+        },
+        {
+          "texto": "a",
+          "ini": 60.813,
+          "fim": 60.836
+        },
+        {
+          "texto": "sua",
+          "ini": 60.883,
+          "fim": 61.069
+        },
+        {
+          "texto": "foto,",
+          "ini": 61.138,
+          "fim": 61.73
+        },
+        {
+          "texto": "cada",
+          "ini": 61.905,
+          "fim": 62.206
+        },
+        {
+          "texto": "uma",
+          "ini": 62.322,
+          "fim": 62.531
+        },
+        {
+          "texto": "chamando",
+          "ini": 62.566,
+          "fim": 63.019
+        },
+        {
+          "texto": "o",
+          "ini": 63.089,
+          "fim": 63.112
+        },
+        {
+          "texto": "cliente",
+          "ini": 63.147,
+          "fim": 63.646
+        },
+        {
+          "texto": "de",
+          "ini": 63.704,
+          "fim": 63.751
+        },
+        {
+          "texto": "um",
+          "ini": 63.809,
+          "fim": 63.878
+        },
+        {
+          "texto": "jeito",
+          "ini": 63.936,
+          "fim": 64.238
+        },
+        {
+          "texto": "diferente.",
+          "ini": 64.285,
+          "fim": 65.051
+        },
+        {
+          "texto": "Se",
+          "ini": 65.376,
+          "fim": 65.515
+        },
+        {
+          "texto": "quiser,",
+          "ini": 65.562,
+          "fim": 65.945
+        },
+        {
+          "texto": "você",
+          "ini": 65.968,
+          "fim": 66.177
+        },
+        {
+          "texto": "muda",
+          "ini": 66.258,
+          "fim": 66.514
+        },
+        {
+          "texto": "o",
+          "ini": 66.549,
+          "fim": 66.572
+        },
+        {
+          "texto": "texto",
+          "ini": 66.641,
+          "fim": 67.001
+        },
+        {
+          "texto": "antes",
+          "ini": 67.059,
+          "fim": 67.315
+        },
+        {
+          "texto": "de",
+          "ini": 67.35,
+          "fim": 67.396
+        },
+        {
+          "texto": "aprovar.",
+          "ini": 67.431,
+          "fim": 68.127
+        }
+      ]
+    },
+    {
+      "id": "regiao",
+      "ini": 68.371,
+      "fim": 75.987,
+      "palavras": [
+        {
+          "texto": "Na",
+          "ini": 68.371,
+          "fim": 68.487
+        },
+        {
+          "texto": "região,",
+          "ini": 68.533,
+          "fim": 68.963
+        },
+        {
+          "texto": "você",
+          "ini": 68.986,
+          "fim": 69.195
+        },
+        {
+          "texto": "escolhe",
+          "ini": 69.276,
+          "fim": 69.729
+        },
+        {
+          "texto": "onde",
+          "ini": 69.822,
+          "fim": 70.205
+        },
+        {
+          "texto": "o",
+          "ini": 70.252,
+          "fim": 70.275
+        },
+        {
+          "texto": "anúncio",
+          "ini": 70.368,
+          "fim": 70.774
+        },
+        {
+          "texto": "vai",
+          "ini": 70.821,
+          "fim": 70.983
+        },
+        {
+          "texto": "aparecer:",
+          "ini": 71.018,
+          "fim": 71.784
+        },
+        {
+          "texto": "só",
+          "ini": 72.109,
+          "fim": 72.283
+        },
+        {
+          "texto": "na",
+          "ini": 72.353,
+          "fim": 72.423
+        },
+        {
+          "texto": "sua",
+          "ini": 72.458,
+          "fim": 72.643
+        },
+        {
+          "texto": "cidade,",
+          "ini": 72.678,
+          "fim": 73.386
+        },
+        {
+          "texto": "ou",
+          "ini": 73.56,
+          "fim": 73.735
+        },
+        {
+          "texto": "na",
+          "ini": 73.816,
+          "fim": 73.897
+        },
+        {
+          "texto": "cidade",
+          "ini": 73.944,
+          "fim": 74.571
+        },
+        {
+          "texto": "e",
+          "ini": 74.663,
+          "fim": 74.838
+        },
+        {
+          "texto": "região.",
+          "ini": 74.907,
+          "fim": 75.662
+        }
+      ]
+    },
+    {
+      "id": "investimento",
+      "ini": 75.987,
+      "fim": 84.52,
+      "palavras": [
+        {
+          "texto": "No",
+          "ini": 75.987,
+          "fim": 76.103
+        },
+        {
+          "texto": "investimento,",
+          "ini": 76.149,
+          "fim": 76.881
+        },
+        {
+          "texto": "você",
+          "ini": 76.904,
+          "fim": 77.113
+        },
+        {
+          "texto": "escolhe",
+          "ini": 77.194,
+          "fim": 77.636
+        },
+        {
+          "texto": "quanto",
+          "ini": 77.705,
+          "fim": 78.019
+        },
+        {
+          "texto": "quer",
+          "ini": 78.065,
+          "fim": 78.204
+        },
+        {
+          "texto": "gastar",
+          "ini": 78.263,
+          "fim": 78.611
+        },
+        {
+          "texto": "por",
+          "ini": 78.669,
+          "fim": 78.82
+        },
+        {
+          "texto": "dia,",
+          "ini": 78.913,
+          "fim": 79.365
+        },
+        {
+          "texto": "e",
+          "ini": 79.482,
+          "fim": 79.598
+        },
+        {
+          "texto": "por",
+          "ini": 79.667,
+          "fim": 79.795
+        },
+        {
+          "texto": "quantos",
+          "ini": 79.853,
+          "fim": 80.248
+        },
+        {
+          "texto": "dias.",
+          "ini": 80.306,
+          "fim": 80.898
+        },
+        {
+          "texto": "O",
+          "ini": 81.142,
+          "fim": 81.223
+        },
+        {
+          "texto": "total",
+          "ini": 81.339,
+          "fim": 81.676
+        },
+        {
+          "texto": "aparece",
+          "ini": 81.722,
+          "fim": 82.187
+        },
+        {
+          "texto": "na",
+          "ini": 82.245,
+          "fim": 82.338
+        },
+        {
+          "texto": "tela",
+          "ini": 82.419,
+          "fim": 82.837
+        },
+        {
+          "texto": "antes",
+          "ini": 82.953,
+          "fim": 83.348
+        },
+        {
+          "texto": "de",
+          "ini": 83.394,
+          "fim": 83.475
+        },
+        {
+          "texto": "seguir.",
+          "ini": 83.522,
+          "fim": 84.195
+        }
+      ]
+    },
+    {
+      "id": "publicacao",
+      "ini": 84.52,
+      "fim": 99.625,
+      "palavras": [
+        {
+          "texto": "Na",
+          "ini": 84.52,
+          "fim": 84.625
+        },
+        {
+          "texto": "publicação,",
+          "ini": 84.671,
+          "fim": 85.577
+        },
+        {
+          "texto": "você",
+          "ini": 85.682,
+          "fim": 85.902
+        },
+        {
+          "texto": "confere",
+          "ini": 85.972,
+          "fim": 86.413
+        },
+        {
+          "texto": "o",
+          "ini": 86.448,
+          "fim": 86.471
+        },
+        {
+          "texto": "resumo:",
+          "ini": 86.517,
+          "fim": 87.191
+        },
+        {
+          "texto": "a",
+          "ini": 87.423,
+          "fim": 87.481
+        },
+        {
+          "texto": "região,",
+          "ini": 87.551,
+          "fim": 88.166
+        },
+        {
+          "texto": "a",
+          "ini": 88.329,
+          "fim": 88.398
+        },
+        {
+          "texto": "duração,",
+          "ini": 88.468,
+          "fim": 89.211
+        },
+        {
+          "texto": "o",
+          "ini": 89.374,
+          "fim": 89.443
+        },
+        {
+          "texto": "valor",
+          "ini": 89.501,
+          "fim": 89.977
+        },
+        {
+          "texto": "e",
+          "ini": 90.198,
+          "fim": 90.314
+        },
+        {
+          "texto": "o",
+          "ini": 90.36,
+          "fim": 90.407
+        },
+        {
+          "texto": "destino,",
+          "ini": 90.476,
+          "fim": 91.266
+        },
+        {
+          "texto": "que",
+          "ini": 91.405,
+          "fim": 91.556
+        },
+        {
+          "texto": "é",
+          "ini": 91.637,
+          "fim": 91.696
+        },
+        {
+          "texto": "o",
+          "ini": 91.8,
+          "fim": 91.846
+        },
+        {
+          "texto": "seu",
+          "ini": 91.916,
+          "fim": 92.137
+        },
+        {
+          "texto": "WhatsApp.",
+          "ini": 92.218,
+          "fim": 92.973
+        },
+        {
+          "texto": "O",
+          "ini": 93.623,
+          "fim": 93.681
+        },
+        {
+          "texto": "anúncio",
+          "ini": 93.785,
+          "fim": 94.215
+        },
+        {
+          "texto": "é",
+          "ini": 94.273,
+          "fim": 94.285
+        },
+        {
+          "texto": "criado",
+          "ini": 94.319,
+          "fim": 94.795
+        },
+        {
+          "texto": "pausado,",
+          "ini": 94.877,
+          "fim": 95.747
+        },
+        {
+          "texto": "e",
+          "ini": 95.98,
+          "fim": 96.084
+        },
+        {
+          "texto": "só",
+          "ini": 96.142,
+          "fim": 96.247
+        },
+        {
+          "texto": "começa",
+          "ini": 96.316,
+          "fim": 96.734
+        },
+        {
+          "texto": "a",
+          "ini": 96.769,
+          "fim": 96.792
+        },
+        {
+          "texto": "rodar",
+          "ini": 96.85,
+          "fim": 97.28
+        },
+        {
+          "texto": "depois",
+          "ini": 97.35,
+          "fim": 97.756
+        },
+        {
+          "texto": "da",
+          "ini": 97.802,
+          "fim": 97.884
+        },
+        {
+          "texto": "sua",
+          "ini": 97.93,
+          "fim": 98.151
+        },
+        {
+          "texto": "confirmação.",
+          "ini": 98.197,
+          "fim": 99.149
+        }
+      ]
+    },
+    {
+      "id": "resultados",
+      "ini": 99.625,
+      "fim": 113.51,
+      "palavras": [
+        {
+          "texto": "Com",
+          "ini": 99.625,
+          "fim": 99.799
+        },
+        {
+          "texto": "o",
+          "ini": 99.892,
+          "fim": 99.927
+        },
+        {
+          "texto": "anúncio",
+          "ini": 99.997,
+          "fim": 100.403
+        },
+        {
+          "texto": "rodando,",
+          "ini": 100.438,
+          "fim": 101.123
+        },
+        {
+          "texto": "a",
+          "ini": 101.262,
+          "fim": 101.309
+        },
+        {
+          "texto": "tela",
+          "ini": 101.39,
+          "fim": 101.61
+        },
+        {
+          "texto": "de",
+          "ini": 101.645,
+          "fim": 101.703
+        },
+        {
+          "texto": "resultados",
+          "ini": 101.75,
+          "fim": 102.4
+        },
+        {
+          "texto": "mostra",
+          "ini": 102.47,
+          "fim": 102.853
+        },
+        {
+          "texto": "quanto",
+          "ini": 102.911,
+          "fim": 103.178
+        },
+        {
+          "texto": "você",
+          "ini": 103.224,
+          "fim": 103.433
+        },
+        {
+          "texto": "investiu,",
+          "ini": 103.502,
+          "fim": 104.28
+        },
+        {
+          "texto": "quantas",
+          "ini": 104.385,
+          "fim": 104.722
+        },
+        {
+          "texto": "conversas",
+          "ini": 104.78,
+          "fim": 105.395
+        },
+        {
+          "texto": "chegaram",
+          "ini": 105.418,
+          "fim": 106.033
+        },
+        {
+          "texto": "e",
+          "ini": 106.103,
+          "fim": 106.126
+        },
+        {
+          "texto": "quanto",
+          "ini": 106.208,
+          "fim": 106.486
+        },
+        {
+          "texto": "custou",
+          "ini": 106.521,
+          "fim": 106.951
+        },
+        {
+          "texto": "cada",
+          "ini": 106.985,
+          "fim": 107.206
+        },
+        {
+          "texto": "uma.",
+          "ini": 107.276,
+          "fim": 107.682
+        },
+        {
+          "texto": "Se",
+          "ini": 107.938,
+          "fim": 108.042
+        },
+        {
+          "texto": "uma",
+          "ini": 108.077,
+          "fim": 108.181
+        },
+        {
+          "texto": "conversa",
+          "ini": 108.228,
+          "fim": 108.669
+        },
+        {
+          "texto": "virou",
+          "ini": 108.704,
+          "fim": 108.924
+        },
+        {
+          "texto": "venda,",
+          "ini": 108.994,
+          "fim": 109.342
+        },
+        {
+          "texto": "você",
+          "ini": 109.366,
+          "fim": 109.609
+        },
+        {
+          "texto": "registra",
+          "ini": 109.679,
+          "fim": 110.271
+        },
+        {
+          "texto": "ali",
+          "ini": 110.352,
+          "fim": 110.585
+        },
+        {
+          "texto": "mesmo.",
+          "ini": 110.643,
+          "fim": 111.223
+        },
+        {
+          "texto": "E",
+          "ini": 111.479,
+          "fim": 111.56
+        },
+        {
+          "texto": "pode",
+          "ini": 111.618,
+          "fim": 111.815
+        },
+        {
+          "texto": "pausar",
+          "ini": 111.862,
+          "fim": 112.198
+        },
+        {
+          "texto": "quando",
+          "ini": 112.256,
+          "fim": 112.465
+        },
+        {
+          "texto": "quiser.",
+          "ini": 112.5,
+          "fim": 113.104
+        }
+      ]
+    },
+    {
+      "id": "resumo",
+      "ini": 113.51,
+      "fim": 124.667,
+      "palavras": [
+        {
+          "texto": "Resumindo:",
+          "ini": 113.51,
+          "fim": 114.3
+        },
+        {
+          "texto": "você",
+          "ini": 114.66,
+          "fim": 114.845
+        },
+        {
+          "texto": "manda",
+          "ini": 114.927,
+          "fim": 115.136
+        },
+        {
+          "texto": "a",
+          "ini": 115.182,
+          "fim": 115.205
+        },
+        {
+          "texto": "foto,",
+          "ini": 115.287,
+          "fim": 115.879
+        },
+        {
+          "texto": "define",
+          "ini": 116.181,
+          "fim": 116.54
+        },
+        {
+          "texto": "o",
+          "ini": 116.575,
+          "fim": 116.599
+        },
+        {
+          "texto": "preço,",
+          "ini": 116.657,
+          "fim": 117.249
+        },
+        {
+          "texto": "a",
+          "ini": 117.516,
+          "fim": 117.574
+        },
+        {
+          "texto": "região",
+          "ini": 117.643,
+          "fim": 118.177
+        },
+        {
+          "texto": "e",
+          "ini": 118.224,
+          "fim": 118.259
+        },
+        {
+          "texto": "o",
+          "ini": 118.317,
+          "fim": 118.352
+        },
+        {
+          "texto": "valor,",
+          "ini": 118.398,
+          "fim": 119.06
+        },
+        {
+          "texto": "e",
+          "ini": 119.315,
+          "fim": 119.431
+        },
+        {
+          "texto": "aprova.",
+          "ini": 119.489,
+          "fim": 120.198
+        },
+        {
+          "texto": "O",
+          "ini": 120.546,
+          "fim": 120.65
+        },
+        {
+          "texto": "resto,",
+          "ini": 120.766,
+          "fim": 121.405
+        },
+        {
+          "texto": "o",
+          "ini": 121.707,
+          "fim": 121.788
+        },
+        {
+          "texto": "GereVendas",
+          "ini": 121.846,
+          "fim": 122.473
+        },
+        {
+          "texto": "Ads",
+          "ini": 122.635,
+          "fim": 122.995
+        },
+        {
+          "texto": "faz",
+          "ini": 123.111,
+          "fim": 123.378
+        },
+        {
+          "texto": "por",
+          "ini": 123.46,
+          "fim": 123.576
+        },
+        {
+          "texto": "você.",
+          "ini": 123.622,
+          "fim": 124.226
+        }
+      ]
+    },
+    {
+      "id": "preco",
+      "ini": 124.667,
+      "fim": 133.433,
+      "palavras": [
+        {
+          "texto": "No",
+          "ini": 124.667,
+          "fim": 124.783
+        },
+        {
+          "texto": "piloto,",
+          "ini": 124.83,
+          "fim": 125.317
+        },
+        {
+          "texto": "o",
+          "ini": 125.375,
+          "fim": 125.457
+        },
+        {
+          "texto": "plano",
+          "ini": 125.515,
+          "fim": 125.828
+        },
+        {
+          "texto": "custa",
+          "ini": 125.886,
+          "fim": 126.234
+        },
+        {
+          "texto": "cento",
+          "ini": 126.304,
+          "fim": 126.734
+        },
+        {
+          "texto": "e",
+          "ini": 126.78,
+          "fim": 126.815
+        },
+        {
+          "texto": "noventa",
+          "ini": 126.873,
+          "fim": 127.419
+        },
+        {
+          "texto": "e",
+          "ini": 127.465,
+          "fim": 127.488
+        },
+        {
+          "texto": "nove",
+          "ini": 127.546,
+          "fim": 127.813
+        },
+        {
+          "texto": "reais",
+          "ini": 127.86,
+          "fim": 128.196
+        },
+        {
+          "texto": "por",
+          "ini": 128.243,
+          "fim": 128.382
+        },
+        {
+          "texto": "mês.",
+          "ini": 128.44,
+          "fim": 128.998
+        },
+        {
+          "texto": "A",
+          "ini": 129.323,
+          "fim": 129.404
+        },
+        {
+          "texto": "verba",
+          "ini": 129.485,
+          "fim": 129.822
+        },
+        {
+          "texto": "dos",
+          "ini": 129.857,
+          "fim": 129.984
+        },
+        {
+          "texto": "anúncios",
+          "ini": 130.054,
+          "fim": 130.553
+        },
+        {
+          "texto": "é",
+          "ini": 130.623,
+          "fim": 130.681
+        },
+        {
+          "texto": "à",
+          "ini": 130.751,
+          "fim": 130.774
+        },
+        {
+          "texto": "parte,",
+          "ini": 130.855,
+          "fim": 131.412
+        },
+        {
+          "texto": "no",
+          "ini": 131.494,
+          "fim": 131.598
+        },
+        {
+          "texto": "valor",
+          "ini": 131.645,
+          "fim": 131.958
+        },
+        {
+          "texto": "que",
+          "ini": 132.005,
+          "fim": 132.074
+        },
+        {
+          "texto": "você",
+          "ini": 132.121,
+          "fim": 132.341
+        },
+        {
+          "texto": "escolher.",
+          "ini": 132.411,
+          "fim": 133.108
+        }
+      ]
+    },
+    {
+      "id": "fim",
+      "ini": 133.433,
+      "fim": 140.16500000000002,
+      "palavras": [
+        {
+          "texto": "Para",
+          "ini": 133.433,
+          "fim": 133.653
+        },
+        {
+          "texto": "começar,",
+          "ini": 133.7,
+          "fim": 134.524
+        },
+        {
+          "texto": "é",
+          "ini": 134.849,
+          "fim": 134.919
+        },
+        {
+          "texto": "só",
+          "ini": 135,
+          "fim": 135.174
+        },
+        {
+          "texto": "entrar",
+          "ini": 135.244,
+          "fim": 135.65
+        },
+        {
+          "texto": "no",
+          "ini": 135.708,
+          "fim": 135.789
+        },
+        {
+          "texto": "GereVendas",
+          "ini": 135.847,
+          "fim": 136.463
+        },
+        {
+          "texto": "Ads",
+          "ini": 136.637,
+          "fim": 136.985
+        },
+        {
+          "texto": "e",
+          "ini": 137.194,
+          "fim": 137.322
+        },
+        {
+          "texto": "criar",
+          "ini": 137.38,
+          "fim": 137.74
+        },
+        {
+          "texto": "o",
+          "ini": 137.786,
+          "fim": 137.81
+        },
+        {
+          "texto": "seu",
+          "ini": 137.868,
+          "fim": 138.019
+        },
+        {
+          "texto": "primeiro",
+          "ini": 138.065,
+          "fim": 138.541
+        },
+        {
+          "texto": "anúncio.",
+          "ini": 138.587,
+          "fim": 139.365
+        }
+      ]
+    }
+  ]
+}
