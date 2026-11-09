@@ -11,16 +11,7 @@ import {
   useVideoConfig,
 } from "remotion";
 import { BrandMark } from "@/components/marketing/brand-mark";
-import {
-  ScreenBudget,
-  ScreenHome,
-  ScreenOffer,
-  ScreenPreview,
-  ScreenProduct,
-  ScreenPublish,
-  ScreenRegion,
-  ScreenResults,
-} from "@/components/marketing/storyboard";
+import { Inicio, Investimento, Oferta, Previa, Produto, Publicacao, Regiao, Resultados, type Tela } from "./uso/telas";
 import type { Cena } from "./kit";
 import { Ad, BigPhone, PHOTOS, ROUND, usePreload } from "./shared";
 import timeline from "./timeline-apresentacao.json";
@@ -43,48 +34,48 @@ function useVertical() {
   return height > width;
 }
 
-const PASSOS: Record<string, { n: number; nome: string; itens: string[]; tela: ReactNode }> = {
+const PASSOS: Record<string, { n: number; nome: string; itens: string[]; tela: (t: Tela) => ReactNode }> = {
   inicio: {
     n: 1,
     nome: "Início",
     itens: ["Um botão principal: criar meu anúncio", "Os anúncios que estão rodando aparecem abaixo"],
-    tela: <ScreenHome />,
+    tela: (t) => <Inicio t={t} />,
   },
   produto: {
     n: 2,
     nome: "Produto",
     itens: ["Tire uma foto ou escolha da galeria", "Escreva o nome do produto"],
-    tela: <ScreenProduct />,
+    tela: (t) => <Produto t={t} />,
   },
   oferta: {
     n: 3,
     nome: "Oferta",
     itens: ["Informe o preço", "Destaque parcelamento, desconto ou entrega", "A IA só usa o que você escreveu"],
-    tela: <ScreenOffer />,
+    tela: (t) => <Oferta t={t} />,
   },
   previa: {
     n: 4,
     nome: "Prévia",
     itens: ["Cinco versões do anúncio com a sua foto", "Mude o texto se quiser, depois aprove"],
-    tela: <ScreenPreview />,
+    tela: (t) => <Previa t={t} />,
   },
   regiao: {
     n: 5,
     nome: "Região",
     itens: ["Só na sua cidade", "Ou na cidade e região"],
-    tela: <ScreenRegion />,
+    tela: (t) => <Regiao t={t} />,
   },
   investimento: {
     n: 6,
     nome: "Investimento",
     itens: ["Quanto por dia: R$ 10, R$ 20 ou R$ 30", "Por quantos dias", "O total aparece antes de seguir"],
-    tela: <ScreenBudget />,
+    tela: (t) => <Investimento t={t} />,
   },
   publicacao: {
     n: 7,
     nome: "Publicação",
     itens: ["Confira região, duração, valor e destino", "O anúncio nasce pausado", "Só roda depois da sua confirmação"],
-    tela: <ScreenPublish />,
+    tela: (t) => <Publicacao t={t} />,
   },
   resultados: {
     n: 8,
@@ -94,7 +85,7 @@ const PASSOS: Record<string, { n: number; nome: string; itens: string[]; tela: R
       "Registre as vendas que vieram das conversas",
       "Pause quando quiser",
     ],
-    tela: <ScreenResults />,
+    tela: (t) => <Resultados t={t} />,
   },
 };
 
@@ -122,11 +113,14 @@ export function Apresentacao() {
 /* ---------------------------------------------------------------- moldura */
 
 function Background() {
+  const frame = useCurrentFrame();
+  const a = 85 + Math.sin(frame / 140) * 8;
+  const b = 15 + Math.cos(frame / 170) * 10;
+  const c = 5 + Math.cos(frame / 160) * 10;
   return (
     <AbsoluteFill
       style={{
-        background:
-          "radial-gradient(900px 600px at 85% 15%, rgba(34,197,94,0.12), transparent 70%), radial-gradient(800px 600px at 5% 100%, rgba(26,138,60,0.08), transparent 70%), #f6faf7",
+        background: `radial-gradient(900px 600px at ${a}% ${b}%, rgba(34,197,94,0.14), transparent 70%), radial-gradient(800px 600px at ${c}% 95%, rgba(26,138,60,0.1), transparent 70%), #f6faf7`,
       }}
     />
   );
@@ -140,6 +134,10 @@ function TopBar() {
   const atual = CENAS.find((c) => t >= c.ini && t < c.fim) ?? CENAS.at(-1)!;
   const passo = PASSOS[atual.id]?.n ?? 0;
   const v = useVertical();
+  const enche = interpolate(t, [atual.ini, atual.ini + 0.6], [0, 1], {
+    extrapolateLeft: "clamp",
+    extrapolateRight: "clamp",
+  });
   return (
     <>
       <div
@@ -187,7 +185,12 @@ function TopBar() {
               width: v ? 84 : 56,
               height: v ? 10 : 8,
               borderRadius: 4,
-              background: i < passo ? GREEN : "#d5e2d9",
+              background:
+                i < passo - 1
+                  ? GREEN
+                  : i === passo - 1
+                    ? `linear-gradient(90deg, ${GREEN} ${enche * 100}%, #d5e2d9 ${enche * 100}%)`
+                    : "#d5e2d9",
             }}
           />
         ))}
@@ -232,7 +235,11 @@ function Scene({ cena }: { cena: Cena }) {
 
 function StepScene({ passo, id }: { passo: (typeof PASSOS)[string]; id: string }) {
   const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
   const { p, o } = useShow(4);
+  // A tela "acontece" durante a fala do passo: toques, digitação e números subindo.
+  const t: Tela = { f: frame, d: durationInFrames };
+  const zoom = interpolate(frame, [0, durationInFrames], [1, 1.05], { extrapolateRight: "clamp" });
   const vertical = useVertical();
   if (vertical) {
     return (
@@ -262,11 +269,11 @@ function StepScene({ passo, id }: { passo: (typeof PASSOS)[string]; id: string }
           style={{
             marginTop: 50,
             opacity: o,
-            transform: `translateY(${(1 - p) * 40 + Math.sin(frame / 45) * 4}px)`,
+            transform: `translateY(${(1 - p) * 40}px) scale(${zoom})`,
             filter: "drop-shadow(0 40px 50px rgba(19,32,26,0.22))",
           }}
         >
-          <BigPhone width={470}>{passo.tela}</BigPhone>
+          <BigPhone width={470}>{passo.tela(t)}</BigPhone>
         </div>
       </AbsoluteFill>
     );
@@ -345,11 +352,12 @@ function StepScene({ passo, id }: { passo: (typeof PASSOS)[string]; id: string }
           left: 1180,
           top: 130 + Math.sin(frame / 45) * 4,
           opacity: o,
-          transform: `translateY(${(1 - p) * 40}px)`,
+          transform: `translateY(${(1 - p) * 40}px) scale(${zoom})`,
+          transformOrigin: "50% 40%",
           filter: "drop-shadow(0 40px 50px rgba(19,32,26,0.22))",
         }}
       >
-        <BigPhone width={390}>{passo.tela}</BigPhone>
+        <BigPhone width={390}>{passo.tela(t)}</BigPhone>
       </div>
     </AbsoluteFill>
   );
@@ -437,6 +445,11 @@ function Intro() {
 
 function Overview() {
   const v = useVertical();
+  const frame = useCurrentFrame();
+  const { durationInFrames } = useVideoConfig();
+  const aceso = Math.floor(
+    interpolate(frame, [20, durationInFrames - 10], [0, 8], { extrapolateLeft: "clamp", extrapolateRight: "clamp" }),
+  );
   return (
     <AbsoluteFill style={{ alignItems: "center", paddingTop: v ? 330 : 190 }}>
       <Reveal>
@@ -465,9 +478,10 @@ function Overview() {
           <Reveal key={s.nome} delay={10 + i * 8}>
             <div
               style={{
-                background: "#fff",
+                background: i < aceso ? SOFT : "#fff",
                 borderRadius: 24,
                 padding: "26px 28px",
+                transition: "none",
                 border: "1px solid #e1ebe4",
                 boxShadow: "0 12px 30px rgba(19,32,26,0.08)",
                 display: "flex",

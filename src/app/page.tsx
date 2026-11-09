@@ -678,8 +678,8 @@ function CostExample() {
     <div className="mt-6 rounded-[28px] border border-gv-line bg-gv-paper p-6 sm:p-8">
       <h3 className="text-[22px] font-bold tracking-[-0.02em]">Quanto custa de verdade</h3>
       <p className="mt-2 max-w-2xl text-[16px] leading-relaxed text-gv-mute">
-        São duas partes: a mensalidade da ferramenta (R$ 199) e a verba dos anúncios, que você escolhe a cada anúncio e
-        paga à parte. Exemplos de verba:
+        São duas partes: a mensalidade da ferramenta (R$ 199) e a verba dos anúncios. A verba dos anúncios não está
+        incluída na mensalidade: você escolhe o valor a cada anúncio e paga à parte. Exemplos de verba:
       </p>
       <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
         {examples.map((e) => (
