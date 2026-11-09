@@ -29,6 +29,7 @@ const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
  */
 
 const included = [
+  "Sem fidelidade: você usa enquanto fizer sentido",
   "Cinco versões do anúncio a cada produto, para feed e stories",
   "A foto do seu produto em todas as versões",
   "Campanha montada no Instagram e no Facebook",
@@ -38,6 +39,14 @@ const included = [
 ];
 
 const faq = [
+  {
+    q: "Tem fidelidade ou multa para sair?",
+    a: "Não. São R$ 199 por mês no piloto, sem fidelidade. Você usa enquanto fizer sentido para o seu negócio.",
+  },
+  {
+    q: "Funciona para o meu tipo de negócio?",
+    a: "Funciona melhor para quem vende no bairro e atende pelo WhatsApp: comércio, alimentação, beleza, pet, oficina e serviços. Se o cliente pode te chamar para comprar ou agendar, faz sentido.",
+  },
   {
     q: "Preciso entender de tráfego pago?",
     a: "Não. Você manda a foto do produto, diz o preço e escolhe a região e o valor por dia. Os textos, as versões do anúncio e a campanha saem dessas respostas.",
@@ -71,11 +80,15 @@ export default function Home() {
       <main>
         <Hero />
         <Pains />
+        <Benefits />
         <HowItWorks />
+        <ForWho />
         <Storyboard />
         <Showcase />
+        <Comparison />
         <Control />
         <Pricing />
+        <GetStarted />
         <Faq />
         <FinalCta />
       </main>
@@ -131,12 +144,12 @@ function Hero() {
             Seu produto é bom. <span className="text-gv-green">Falta gente ver.</span>
           </h1>
           <p className="mt-6 max-w-[30rem] text-[18px] leading-relaxed text-gv-mute sm:text-[20px]">
-            Mande a foto do produto. A gente cria o anúncio no Instagram e no Facebook, e quem se interessa chama você
-            direto no WhatsApp.
+            Mande a foto do produto e o GereVendas Ads coloca o seu anúncio no Instagram e no Facebook para quem está
+            perto. Quem se interessa chama você direto no WhatsApp.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
             <CtaLink size="lg" className="w-full sm:w-auto">
-              Criar meu anúncio
+              Criar meu anúncio agora
             </CtaLink>
             <a
               href="#passos"
@@ -151,7 +164,7 @@ function Hero() {
             </a>
           </div>
           <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-2.5 text-[15px] font-medium text-gv-ink/80">
-            {["R$ 199/mês no piloto", "Sem contrato", "Só roda com o seu ok"].map((t) => (
+            {["R$ 199/mês no piloto", "Sem fidelidade", "Só roda com o seu ok"].map((t) => (
               <li key={t} className="flex items-center gap-2">
                 <span className="text-gv-green">
                   <CheckIcon />
@@ -265,8 +278,8 @@ function Pains() {
           ))}
         </ul>
         <p className="mt-8 max-w-2xl text-[19px] leading-relaxed font-semibold sm:text-xl">
-          O GereVendas Ads mostra o seu produto para quem está perto e quer comprar, e leva essa pessoa direto para o
-          seu WhatsApp.
+          Não é falta de produto bom. É falta da pessoa certa ver. O GereVendas Ads mostra o seu produto para quem está
+          perto e quer comprar, e leva essa pessoa direto para o seu WhatsApp.
         </p>
       </div>
     </section>
@@ -282,7 +295,7 @@ function HowItWorks() {
     { title: "Receba clientes no WhatsApp", text: "Quem se interessa toca no anúncio e chama você." },
   ];
   return (
-    <section id="passos" aria-labelledby="passos-titulo" className="scroll-mt-20 bg-gv-paper">
+    <section id="passos" aria-labelledby="passos-titulo" className="scroll-mt-20 bg-white">
       <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-10 px-5 py-16 sm:px-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-14 lg:py-24">
         <div>
           <p className="text-[15px] font-semibold text-gv-green">Simples assim</p>
@@ -439,13 +452,295 @@ function Control() {
   );
 }
 
+/* ---------------------------------------------------------------- benefícios */
+
+function Benefits() {
+  const items = [
+    {
+      title: "Mais gente vendo o seu produto",
+      text: "O anúncio aparece para quem está perto do seu negócio, não só para quem já te segue.",
+      icon: <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12zm10 3a3 3 0 100-6 3 3 0 000 6z" />,
+    },
+    {
+      title: "Clientes direto no WhatsApp",
+      text: "Um toque no anúncio e a conversa começa com você, no número do seu negócio.",
+      icon: <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />,
+    },
+    {
+      title: "Pronto em poucos minutos",
+      text: "Foto, preço e valor por dia. Sem fazer arte, sem escrever texto, sem configurar campanha.",
+      icon: <path d="M12 7v5l3 2m7-2a10 10 0 11-20 0 10 10 0 0120 0z" />,
+    },
+    {
+      title: "Você manda no dinheiro",
+      text: "A partir de R$ 10 por dia, com teto fechado. Nada roda sem o seu ok e você pausa quando quiser.",
+      icon: <path d="M12 2l8 4v6c0 5-3.4 8.7-8 10-4.6-1.3-8-5-8-10V6l8-4z" />,
+    },
+    {
+      title: "Tudo pelo celular",
+      text: "Do cadastro aos resultados, no mesmo app. Não precisa de computador.",
+      icon: <path d="M8 2h8a2 2 0 012 2v16a2 2 0 01-2 2H8a2 2 0 01-2-2V4a2 2 0 012-2zm3 17h2" />,
+    },
+    {
+      title: "Você vê o que deu certo",
+      text: "Quanto investiu, quantas conversas chegaram e quanto custou cada uma. E registra as vendas.",
+      icon: <path d="M4 20h16M7 16V9m5 7V4m5 12v-5" />,
+    },
+  ];
+  return (
+    <section aria-labelledby="beneficios-titulo" className="bg-gv-paper">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
+        <p className="text-[15px] font-semibold text-gv-green">O que muda no seu negócio</p>
+        <h2
+          id="beneficios-titulo"
+          className="mt-3 max-w-2xl text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]"
+        >
+          Anunciar fica simples, barato e no seu controle
+        </h2>
+        <ul className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:gap-5">
+          {items.map((b) => (
+            <li key={b.title} className="rounded-3xl border border-gv-line bg-white p-6">
+              <span className="grid size-12 place-items-center rounded-2xl bg-[#e4f6e9] text-gv-green">
+                <svg
+                  aria-hidden
+                  viewBox="0 0 24 24"
+                  className="size-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  {b.icon}
+                </svg>
+              </span>
+              <h3 className="mt-4 text-[19px] leading-snug font-bold">{b.title}</h3>
+              <p className="mt-2 text-[16px] leading-relaxed text-gv-mute">{b.text}</p>
+            </li>
+          ))}
+        </ul>
+        <CtaBand />
+      </div>
+    </section>
+  );
+}
+
+/** Chamada no meio da página: botão e as garantias, sempre iguais. */
+function CtaBand({ dark = false }: { dark?: boolean }) {
+  return (
+    <div className="mt-10 flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-6">
+      <CtaLink size="lg" className="w-full sm:w-auto">
+        Criar meu anúncio
+      </CtaLink>
+      <p className={cn("text-[15px]", dark ? "text-[#9fb3a6]" : "text-gv-mute")}>
+        R$ 199/mês no piloto · sem fidelidade · a verba você escolhe
+      </p>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- para quem é */
+
+function ForWho() {
+  const segments = [
+    "Padaria e confeitaria",
+    "Salão e barbearia",
+    "Estética",
+    "Pet shop",
+    "Oficina e autopeças",
+    "Lanchonete e delivery",
+    "Loja de roupas",
+    "Ótica",
+    "Academia",
+    "Assistência técnica",
+    "Hortifrúti e mercado",
+    "Prestador de serviço",
+  ];
+  return (
+    <section aria-labelledby="quem-titulo" className="bg-gv-paper">
+      <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-8 px-5 py-16 sm:px-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-14 lg:py-24">
+        <div>
+          <p className="text-[15px] font-semibold text-gv-green">Para quem é</p>
+          <h2
+            id="quem-titulo"
+            className="mt-3 text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]"
+          >
+            Feito para quem vende no bairro
+          </h2>
+          <p className="mt-4 text-[17px] leading-relaxed text-gv-mute">
+            Funciona melhor para quem atende pelo WhatsApp e tem um produto ou serviço com preço: o cliente vê o
+            anúncio, chama e você fecha a venda na conversa.
+          </p>
+        </div>
+        <ul className="flex flex-wrap content-start gap-2.5">
+          {segments.map((s) => (
+            <li
+              key={s}
+              className="rounded-full border border-gv-line bg-white px-4 py-2 text-[15px] font-medium text-gv-ink"
+            >
+              {s}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------------- comparação */
+
+function Comparison() {
+  const rows = [
+    "Quem faz o anúncio",
+    "Tempo até ficar pronto",
+    "Custo fixo",
+    "Precisa entender de tráfego",
+    "Controle do gasto",
+  ];
+  const cols = [
+    {
+      name: "Contratar agência",
+      values: ["A agência", "Dias de briefing e aprovação", "Contrato mensal de agência", "Não", "Depende da agência"],
+      best: false,
+    },
+    {
+      name: "Fazer sozinho",
+      values: ["Você", "Horas aprendendo", "Sem mensalidade, mas o seu tempo", "Sim", "Fácil errar no orçamento"],
+      best: false,
+    },
+    {
+      name: "GereVendas Ads",
+      values: [
+        "A IA, com a sua foto",
+        "Poucos minutos",
+        "R$ 199/mês, sem fidelidade",
+        "Não",
+        "Teto fechado e pausa em um toque",
+      ],
+      best: true,
+    },
+  ];
+  return (
+    <section aria-labelledby="comparar-titulo" className="bg-white">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
+        <p className="text-[15px] font-semibold text-gv-green">Compare</p>
+        <h2
+          id="comparar-titulo"
+          className="mt-3 max-w-2xl text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]"
+        >
+          Sem agência e sem curso de tráfego
+        </h2>
+        <ul className="mt-10 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-5">
+          {cols.map((c) => (
+            <li
+              key={c.name}
+              className={cn(
+                "rounded-3xl p-6",
+                c.best
+                  ? "lp-dark order-first text-white shadow-[0_30px_60px_-30px_rgb(6_40_20/0.7)] lg:order-none"
+                  : "border border-gv-line bg-gv-paper",
+              )}
+            >
+              <p className="flex items-center justify-between gap-3 text-[19px] font-bold">
+                {c.name}
+                {c.best && (
+                  <span className="rounded-full bg-gv-green px-2.5 py-1 text-[12px] font-bold text-white">
+                    Mais simples
+                  </span>
+                )}
+              </p>
+              <dl className={cn("mt-4 divide-y", c.best ? "divide-white/10" : "divide-gv-line")}>
+                {rows.map((r, i) => (
+                  <div key={r} className="py-3">
+                    <dt className={cn("text-[13px] font-semibold", c.best ? "text-gv-mint" : "text-gv-mute")}>{r}</dt>
+                    <dd className="mt-0.5 text-[16px] font-medium">{c.values[i]}</dd>
+                  </div>
+                ))}
+              </dl>
+            </li>
+          ))}
+        </ul>
+        <CtaBand />
+      </div>
+    </section>
+  );
+}
+
+/* ---------------------------------------------------------------- quanto custa */
+
+function CostExample() {
+  const examples = [
+    { label: "Teste de 1 semana", calc: "R$ 10 por dia × 7 dias", total: "R$ 70" },
+    { label: "Uma semana forte", calc: "R$ 20 por dia × 7 dias", total: "R$ 140" },
+    { label: "O mês inteiro", calc: "R$ 10 por dia × 30 dias", total: "R$ 300" },
+  ];
+  return (
+    <div className="mt-6 rounded-[28px] border border-gv-line bg-gv-paper p-6 sm:p-8">
+      <h3 className="text-[22px] font-bold tracking-[-0.02em]">Quanto custa de verdade</h3>
+      <p className="mt-2 max-w-2xl text-[16px] leading-relaxed text-gv-mute">
+        São duas partes: a mensalidade da ferramenta (R$ 199) e a verba dos anúncios, que você escolhe a cada anúncio e
+        paga à parte. Exemplos de verba:
+      </p>
+      <ul className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+        {examples.map((e) => (
+          <li key={e.label} className="rounded-2xl bg-white p-5">
+            <p className="text-[14px] font-semibold text-gv-green">{e.label}</p>
+            <p className="mt-1 text-[15px] text-gv-mute">{e.calc}</p>
+            <p className="mt-2 text-[28px] leading-none font-bold">{e.total}</p>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-4 text-[14px] text-gv-mute">O gasto nunca passa do total que você confirmou.</p>
+    </div>
+  );
+}
+
+/* ---------------------------------------------------------------- como começar */
+
+function GetStarted() {
+  const steps = [
+    { title: "Crie sua conta", text: "Cadastre o negócio: nome, cidade e o WhatsApp onde você atende." },
+    { title: "Conecte a sua Página", text: "Ligue a Página do Facebook e o Instagram. O app mostra cada passo." },
+    { title: "Mande a primeira foto", text: "Escolha o produto, o preço, a região e o valor. Confira e confirme." },
+  ];
+  return (
+    <section aria-labelledby="comecar-titulo" className="bg-gv-paper">
+      <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
+        <p className="text-[15px] font-semibold text-gv-green">Depois do clique</p>
+        <h2
+          id="comecar-titulo"
+          className="mt-3 max-w-2xl text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]"
+        >
+          Comece hoje em 3 etapas
+        </h2>
+        <ol className="mt-10 grid grid-cols-1 gap-4 md:grid-cols-3 md:gap-5">
+          {steps.map((s, i) => (
+            <li key={s.title} className="rounded-3xl border border-gv-line bg-white p-6">
+              <span className="grid size-11 place-items-center rounded-full bg-gv-green text-[18px] font-bold text-white">
+                {i + 1}
+              </span>
+              <h3 className="mt-4 text-[19px] font-bold">{s.title}</h3>
+              <p className="mt-2 text-[16px] leading-relaxed text-gv-mute">{s.text}</p>
+            </li>
+          ))}
+        </ol>
+        <CtaBand />
+      </div>
+    </section>
+  );
+}
+
 /* ---------------------------------------------------------------- preço */
 
 function Pricing() {
   return (
     <section id="preco" className="scroll-mt-20 bg-white">
       <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
-        <div className="grid grid-cols-1 overflow-hidden rounded-[28px] border border-gv-line lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <p className="text-[15px] font-semibold text-gv-green">Preço</p>
+        <h2 className="mt-3 max-w-2xl text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]">
+          Um preço só, sem fidelidade e sem surpresa
+        </h2>
+        <div className="mt-10 grid grid-cols-1 overflow-hidden rounded-[28px] border border-gv-line lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
           <div className="lp-dark p-7 sm:p-10">
             <p className="font-semibold text-gv-mint">Plano do piloto</p>
             <p className="mt-3 flex items-baseline gap-2">
@@ -453,14 +748,14 @@ function Pricing() {
               <span className="text-lg font-semibold text-[#b6c8bc]">por mês</span>
             </p>
             <p className="mt-4 max-w-sm text-[16px] leading-relaxed text-[#b6c8bc]">
-              Sem contrato de agência e sem precisar de designer.
+              Sem fidelidade, sem agência e sem designer. Você usa enquanto fizer sentido para o seu negócio.
             </p>
             <CtaLink size="lg" className="mt-8 w-full sm:w-auto">
-              Criar meu anúncio
+              Quero começar agora
             </CtaLink>
           </div>
           <div className="bg-white p-7 sm:p-10">
-            <h2 className="text-2xl font-bold tracking-[-0.02em]">O que entra na mensalidade</h2>
+            <h3 className="text-2xl font-bold tracking-[-0.02em]">O que entra na mensalidade</h3>
             <ul className="mt-6 grid gap-3.5 text-[16px]">
               {included.map((item) => (
                 <li key={item} className="flex items-start gap-3">
@@ -471,11 +766,9 @@ function Pricing() {
                 </li>
               ))}
             </ul>
-            <p className="mt-6 rounded-2xl bg-gv-paper p-4 text-[15px] leading-relaxed text-gv-mute">
-              A verba dos anúncios não está incluída: você escolhe o valor por dia e paga à parte.
-            </p>
           </div>
         </div>
+        <CostExample />
       </div>
     </section>
   );
@@ -485,7 +778,7 @@ function Pricing() {
 
 function Faq() {
   return (
-    <section id="duvidas" className="scroll-mt-20 bg-gv-paper">
+    <section id="duvidas" className="scroll-mt-20 bg-white">
       <div className="mx-auto grid max-w-[1200px] grid-cols-1 gap-8 px-5 py-16 sm:px-8 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-12 lg:py-24">
         <h2 className="text-[clamp(1.9rem,6vw,3rem)] leading-[1.08] font-bold tracking-[-0.035em]">Dúvidas comuns</h2>
         <div className="divide-y divide-gv-line border-y border-gv-line">
@@ -516,10 +809,11 @@ function FinalCta() {
     <section className="lp-dark">
       <div className="mx-auto max-w-[1200px] px-5 py-20 text-center sm:px-8 lg:py-28">
         <h2 className="mx-auto max-w-3xl text-[clamp(2rem,7vw,3.8rem)] leading-[1.05] font-bold tracking-[-0.04em]">
-          Mande a foto. O anúncio fica com a gente.
+          O seu cliente já está no Instagram. Falta ele ver você.
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-[17px] leading-relaxed text-[#b6c8bc]">
-          R$ 199 por mês no piloto. O anúncio só vai ao ar com a sua confirmação.
+          Mande a foto do primeiro produto hoje. R$ 199 por mês no piloto, sem fidelidade, e o anúncio só vai ao ar com
+          a sua confirmação.
         </p>
         <CtaLink size="lg" className="mt-8 w-full sm:w-auto">
           Criar meu anúncio
