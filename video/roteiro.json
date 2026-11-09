@@ -10,39 +10,39 @@
     "cenas": [
       {
         "id": "intro",
-        "texto": "Olha como funciona o GereVendas Ads, do começo ao fim."
+        "texto": "Do produto ao cliente no WhatsApp, em poucos toques."
       },
       {
         "id": "inicio",
-        "texto": "Na tela inicial, você toca em criar meu anúncio."
+        "texto": "Toque em criar meu anúncio."
       },
       {
         "id": "produto",
-        "texto": "Tira a foto do produto e escreve o nome."
+        "texto": "Foto e nome do produto."
       },
       {
         "id": "oferta",
-        "texto": "Coloca o preço e escolhe o que destacar. A inteligência artificial usa só o que você escreveu."
+        "texto": "Preço e o que destacar."
       },
       {
         "id": "previa",
-        "texto": "Em poucos minutos, chegam cinco versões do anúncio com a sua foto. Você passa, confere e aprova."
+        "texto": "Cinco versões prontas com a sua foto. Confere e aprova."
       },
       {
         "id": "regiao",
-        "texto": "Escolhe onde mostrar: na sua cidade, ou na cidade e região."
+        "texto": "Escolha onde aparecer."
       },
       {
         "id": "investimento",
-        "texto": "Define quanto quer investir por dia, e por quantos dias."
+        "texto": "Quanto investir por dia."
       },
       {
         "id": "publicacao",
-        "texto": "Confere o resumo e publica. O anúncio nasce pausado, e só roda com a sua confirmação."
+        "texto": "Confere e publica. Só roda com o seu ok."
       },
       {
         "id": "resultados",
-        "texto": "Depois, é só acompanhar: quanto investiu, quantas conversas chegaram no WhatsApp e quanto custou cada uma."
+        "texto": "E acompanha as conversas chegando no WhatsApp."
       },
       {
         "id": "fim",
@@ -61,55 +61,110 @@
     "cenas": [
       {
         "id": "intro",
-        "texto": "Olá! Este é o GereVendas Ads. Neste vídeo, você vai ver como transformar a foto de um produto em um anúncio no Instagram e no Facebook, que leva clientes direto para o seu WhatsApp."
+        "texto": "Veja como o GereVendas Ads transforma a foto do seu produto em clientes no seu WhatsApp."
       },
       {
         "id": "visao",
-        "texto": "São oito passos, todos no celular. Para mostrar, vamos usar uma padaria de exemplo."
+        "texto": "São oito passos rápidos, tudo pelo celular."
       },
       {
         "id": "inicio",
-        "texto": "Ao entrar no app, você vê a tela inicial. Ela tem um botão principal: criar meu anúncio. Os anúncios que já estão rodando aparecem logo abaixo."
+        "texto": "Na tela inicial, toque em criar meu anúncio."
       },
       {
         "id": "produto",
-        "texto": "O primeiro passo é o produto. Você tira uma foto, ou escolhe uma da galeria, e escreve o nome. Aqui, o café da manhã completo."
+        "texto": "Tire a foto do produto e escreva o nome."
       },
       {
         "id": "oferta",
-        "texto": "Depois, a oferta. Você informa o preço e escolhe o que quer destacar: parcelamento, desconto ou entrega. A inteligência artificial usa só o que você escreveu. Ela não inventa preço nem promoção."
+        "texto": "Coloque o preço e escolha o que destacar. A IA só usa o que você escreveu."
       },
       {
         "id": "previa",
-        "texto": "Em seguida, a prévia. O app cria cinco versões do anúncio com a sua foto, cada uma chamando o cliente de um jeito diferente. Se quiser, você muda o texto antes de aprovar."
+        "texto": "Em minutos, chegam cinco versões do anúncio com a sua foto. É só conferir e aprovar."
       },
       {
         "id": "regiao",
-        "texto": "Na região, você escolhe onde o anúncio vai aparecer: só na sua cidade, ou na cidade e região."
+        "texto": "Escolha onde aparecer: na sua cidade ou na região."
       },
       {
         "id": "investimento",
-        "texto": "No investimento, você escolhe quanto quer gastar por dia, e por quantos dias. O total aparece na tela antes de seguir."
+        "texto": "Defina quanto investir por dia e por quantos dias. O total aparece na hora."
       },
       {
         "id": "publicacao",
-        "texto": "Na publicação, você confere o resumo: a região, a duração, o valor e o destino, que é o seu WhatsApp. O anúncio é criado pausado, e só começa a rodar depois da sua confirmação."
+        "texto": "Confira o resumo e publique. O anúncio nasce pausado e só roda com o seu ok."
       },
       {
         "id": "resultados",
-        "texto": "Com o anúncio rodando, a tela de resultados mostra quanto você investiu, quantas conversas chegaram e quanto custou cada uma. Se uma conversa virou venda, você registra ali mesmo. E pode pausar quando quiser."
+        "texto": "Depois, acompanhe quanto investiu, quantas conversas chegaram e quanto custou cada uma."
       },
       {
         "id": "resumo",
-        "texto": "Resumindo: você manda a foto, define o preço, a região e o valor, e aprova. O resto, o GereVendas Ads faz por você."
+        "texto": "Foto, preço, região e valor. O resto é com a gente."
       },
       {
         "id": "preco",
-        "texto": "No piloto, o plano custa cento e noventa e nove reais por mês. A verba dos anúncios é à parte, no valor que você escolher."
+        "texto": "Cento e noventa e nove reais por mês, sem fidelidade. A verba dos anúncios, você escolhe."
       },
       {
         "id": "fim",
-        "texto": "Para começar, é só entrar no GereVendas Ads e criar o seu primeiro anúncio."
+        "texto": "Crie o seu primeiro anúncio hoje."
+      }
+    ]
+  },
+  "dinamico": {
+    "velocidade": 1.12,
+    "pausaFrase": 0.08,
+    "pausaCena": 0.12,
+    "cenas": [
+      {
+        "id": "gancho",
+        "texto": "Seu produto é bom."
+      },
+      {
+        "id": "gancho2",
+        "texto": "Mas falta gente ver."
+      },
+      {
+        "id": "dor",
+        "texto": "Postou e ninguém viu? Impulsionou e nada?"
+      },
+      {
+        "id": "solucao",
+        "texto": "Conhece o GereVendas Ads."
+      },
+      {
+        "id": "foto",
+        "texto": "Tira a foto do produto."
+      },
+      {
+        "id": "preco",
+        "texto": "Coloca o preço."
+      },
+      {
+        "id": "versoes",
+        "texto": "A IA cria cinco anúncios com a sua foto."
+      },
+      {
+        "id": "regiao",
+        "texto": "Escolhe a região e quanto investir."
+      },
+      {
+        "id": "publica",
+        "texto": "Publica, e só roda com o seu ok."
+      },
+      {
+        "id": "whatsapp",
+        "texto": "Aí é só atender os clientes no WhatsApp."
+      },
+      {
+        "id": "oferta",
+        "texto": "Cento e noventa e nove por mês, sem fidelidade."
+      },
+      {
+        "id": "cta",
+        "texto": "Link na bio."
       }
     ]
   }

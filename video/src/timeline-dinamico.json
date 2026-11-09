@@ -1,0 +1,155 @@
+{
+  "voz": "eleven:oArP4WehPe3qjqvCwHNo:eleven_multilingual_v2",
+  "duracao": 24.726758,
+  "cenas": [
+    {
+      "id": "gancho",
+      "ini": 0.3,
+      "fim": 1.6274380000000002,
+      "palavras": [
+        {
+          "texto": "Seu produto é bom.",
+          "ini": 0.3,
+          "fim": 1.507438
+        }
+      ]
+    },
+    {
+      "id": "gancho2",
+      "ini": 1.6274380000000002,
+      "fim": 3.001316,
+      "palavras": [
+        {
+          "texto": "Mas falta gente ver.",
+          "ini": 1.6274380000000002,
+          "fim": 2.881316
+        }
+      ]
+    },
+    {
+      "id": "dor",
+      "ini": 3.001316,
+      "fim": 5.848391,
+      "palavras": [
+        {
+          "texto": "Postou e ninguém viu?",
+          "ini": 3.001316,
+          "fim": 4.162314
+        },
+        {
+          "texto": "Impulsionou e nada?",
+          "ini": 4.242314,
+          "fim": 5.728391
+        }
+      ]
+    },
+    {
+      "id": "solucao",
+      "ini": 5.848391,
+      "fim": 7.454468,
+      "palavras": [
+        {
+          "texto": "Conhece o GereVendas Ads.",
+          "ini": 5.848391,
+          "fim": 7.334468
+        }
+      ]
+    },
+    {
+      "id": "foto",
+      "ini": 7.454468,
+      "fim": 8.921225,
+      "palavras": [
+        {
+          "texto": "Tira a foto do produto.",
+          "ini": 7.454468,
+          "fim": 8.801225
+        }
+      ]
+    },
+    {
+      "id": "preco",
+      "ini": 8.921225,
+      "fim": 10.062902999999999,
+      "palavras": [
+        {
+          "texto": "Coloca o preço.",
+          "ini": 8.921225,
+          "fim": 9.942903
+        }
+      ]
+    },
+    {
+      "id": "versoes",
+      "ini": 10.062902999999999,
+      "fim": 12.319138999999998,
+      "palavras": [
+        {
+          "texto": "A IA cria cinco anúncios com a sua foto.",
+          "ini": 10.062902999999999,
+          "fim": 12.199138999999999
+        }
+      ]
+    },
+    {
+      "id": "regiao",
+      "ini": 12.319138999999998,
+      "fim": 14.575374999999998,
+      "palavras": [
+        {
+          "texto": "Escolhe a região e quanto investir.",
+          "ini": 12.319138999999998,
+          "fim": 14.455374999999998
+        }
+      ]
+    },
+    {
+      "id": "publica",
+      "ini": 14.575374999999998,
+      "fim": 17.110249999999997,
+      "palavras": [
+        {
+          "texto": "Publica, e só roda com o seu ok.",
+          "ini": 14.575374999999998,
+          "fim": 16.990249999999996
+        }
+      ]
+    },
+    {
+      "id": "whatsapp",
+      "ini": 17.110249999999997,
+      "fim": 19.320045999999998,
+      "palavras": [
+        {
+          "texto": "Aí é só atender os clientes no WhatsApp.",
+          "ini": 17.110249999999997,
+          "fim": 19.200045999999997
+        }
+      ]
+    },
+    {
+      "id": "oferta",
+      "ini": 19.320045999999998,
+      "fim": 22.55152,
+      "palavras": [
+        {
+          "texto": "Cento e noventa e nove por mês, sem fidelidade.",
+          "ini": 19.320045999999998,
+          "fim": 22.43152
+        }
+      ]
+    },
+    {
+      "id": "cta",
+      "ini": 22.55152,
+      "fim": 24.326758,
+      "palavras": [
+        {
+          "texto": "Link na bio.",
+          "ini": 22.55152,
+          "fim": 23.526758
+        }
+      ]
+    }
+  ]
+}

@@ -4,7 +4,7 @@
   "description": "Reels e VSL do GereVendas Ads (Remotion). Usa os componentes da LP do app em ../src.",
   "scripts": {
     "studio": "remotion studio src/index.ts",
-    "voz": "node scripts/voz.mjs",
+    "voz": "node scripts/voz-frases.mjs",
     "render:reels": "remotion render src/index.ts ReelsUso out/reels-uso.mp4",
     "render:apresentacao": "remotion render src/index.ts Apresentacao out/apresentacao.mp4"
   },

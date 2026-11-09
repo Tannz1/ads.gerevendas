@@ -379,9 +379,9 @@ export function ScreenResults() {
       <Top title="Seu anúncio em números" />
       <div className="mt-3 grid grid-cols-3 gap-1.5 text-center">
         {[
-          ["R$ 120", "Investido"],
-          ["18", "Conversas"],
-          ["R$ 6,67", "Por conversa"],
+          ["R$ 86,40", "Investido"],
+          ["27", "Conversas"],
+          ["R$ 3,20", "Por conversa"],
         ].map(([v, k]) => (
           <div key={k} className="rounded-xl border border-gv-line px-1 py-2.5">
             <p className="text-[14px] leading-tight font-bold">{v}</p>

@@ -12,7 +12,9 @@ import {
 } from "remotion";
 import { BrandMark } from "@/components/marketing/brand-mark";
 import { Inicio, Investimento, Oferta, Previa, Produto, Publicacao, Regiao, Resultados, type Tela } from "./uso/telas";
+import { EstiloProvider, useEstilo } from "./estilo";
 import type { Cena } from "./kit";
+import { LegendaDinamica } from "./legenda";
 import { Ad, BigPhone, PHOTOS, ROUND, usePreload } from "./shared";
 import timeline from "./timeline-apresentacao.json";
 
@@ -89,7 +91,16 @@ const PASSOS: Record<string, { n: number; nome: string; itens: string[]; tela: (
   },
 };
 
-export function Apresentacao() {
+/** `novo`: cursor do mouse e legenda dinâmica. Sem ele, o visual clássico. */
+export function Apresentacao({ novo = false }: { novo?: boolean }) {
+  return (
+    <EstiloProvider novo={novo}>
+      <ApresentacaoConteudo />
+    </EstiloProvider>
+  );
+}
+
+function ApresentacaoConteudo() {
   usePreload();
   const { fps } = useVideoConfig();
   return (
@@ -623,6 +634,22 @@ function Subtitle({ cena, lado }: { cena: Cena; lado: "esquerda" | "centro" }) {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const t = cena.ini + frame / fps;
+  const { novo } = useEstilo();
+  if (novo) {
+    return (
+      <LegendaDinamica
+        cena={cena}
+        t={t}
+        left={lado === "esquerda" ? 160 : v ? 70 : 0}
+        right={lado === "esquerda" ? 860 : v ? 70 : 0}
+        bottom={v ? 150 : 70}
+        align={lado === "esquerda" ? "left" : "center"}
+        fontSize={v ? 46 : 34}
+        padding={v ? "20px 32px" : "14px 26px"}
+        radius={v ? 24 : 16}
+      />
+    );
+  }
   // Frases: quebra nas pontuações fortes; mostra a frase que está sendo dita.
   const frases: { texto: string; ini: number; fim: number }[] = [];
   let atual: typeof cena.palavras = [];

@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { Easing, interpolate } from "remotion";
 import { BAKERY, BAKERY_ROUND } from "@/components/marketing/demo-ads";
 import { cn } from "@/lib/cn";
+import { useEstilo } from "../estilo";
 import { Ad } from "../shared";
 
 /**
@@ -21,29 +22,76 @@ const at = (t: Tela, a: number, b: number) => interpolate(t.f, [t.d * a, t.d * b
 const typed = (t: Tela, text: string, a: number, b: number) => text.slice(0, Math.round(at(t, a, b) * text.length));
 const caret = (t: Tela, a: number, b: number) => t.f >= t.d * a && t.f <= t.d * b + 8 && Math.floor(t.f / 8) % 2 === 0;
 
-/** Toque do dedo: círculo que aparece e se expande sobre o alvo, no quadro `quando` (proporção). */
+/**
+ * Clique como numa gravação de tela: o cursor desliza até o alvo, clica (onda + botão afundando) e some.
+ * `quando` = proporção da cena em que acontece o clique.
+ */
 export function Tap({
   t,
   quando,
   children,
   className,
+  soNovo = false,
 }: {
   t: Tela;
   quando: number;
   children: ReactNode;
   className?: string;
+  /** Clique que só existe no visual novo (ex.: clicar no campo antes de digitar). */
+  soNovo?: boolean;
 }) {
+  const { novo } = useEstilo();
   const q = t.d * quando;
-  const p = interpolate(t.f, [q - 6, q, q + 10], [0, 1, 1.6], clamp);
-  const o = interpolate(t.f, [q - 6, q, q + 12], [0, 0.55, 0], clamp);
+  if (!novo) {
+    if (soNovo) return <div className={className}>{children}</div>;
+    // Visual clássico: só o círculo do toque.
+    const pc = interpolate(t.f, [q - 6, q, q + 10], [0, 1, 1.6], clamp);
+    const oc = interpolate(t.f, [q - 6, q, q + 12], [0, 0.55, 0], clamp);
+    const pressc = interpolate(t.f, [q - 2, q, q + 5], [1, 0.95, 1], clamp);
+    return (
+      <div className={cn("relative", className)} style={{ transform: `scale(${pressc})` }}>
+        {children}
+        <span
+          className="pointer-events-none absolute top-1/2 left-1/2 size-9 rounded-full bg-gv-ink"
+          style={{ opacity: oc, transform: `translate(-50%, -50%) scale(${pc})` }}
+        />
+      </div>
+    );
+  }
+  // Onda do clique
+  const p = interpolate(t.f, [q - 2, q, q + 12], [0, 1, 1.8], clamp);
+  const o = interpolate(t.f, [q - 2, q, q + 14], [0, 0.35, 0], clamp);
   const press = interpolate(t.f, [q - 2, q, q + 5], [1, 0.95, 1], clamp);
+  // Cursor: chega de baixo à direita, para no alvo, aperta e some
+  // Janela curta (cerca de 0,8 s): dois cliques próximos nunca mostram dois cursores juntos.
+  const chega = interpolate(t.f, [q - 16, q - 3], [0, 1], { ...clamp, easing: Easing.out(Easing.cubic) });
+  const visivel = interpolate(t.f, [q - 18, q - 14, q + 3, q + 7], [0, 1, 1, 0], clamp);
+  const aperta = interpolate(t.f, [q - 2, q, q + 4], [1, 0.82, 1], clamp);
   return (
     <div className={cn("relative", className)} style={{ transform: `scale(${press})` }}>
       {children}
       <span
-        className="pointer-events-none absolute top-1/2 left-1/2 size-9 -translate-1/2 rounded-full bg-gv-ink"
+        className="pointer-events-none absolute top-1/2 left-1/2 size-9 rounded-full bg-gv-green"
         style={{ opacity: o, transform: `translate(-50%, -50%) scale(${p})` }}
       />
+      <svg
+        aria-hidden
+        viewBox="0 0 24 24"
+        className="pointer-events-none absolute top-1/2 left-1/2 z-10 size-[18px] drop-shadow-[0_2px_3px_rgba(0,0,0,0.35)]"
+        style={{
+          opacity: visivel,
+          transform: `translate(${(1 - chega) * 70 - 3}px, ${(1 - chega) * 90 - 2}px) scale(${aperta})`,
+          transformOrigin: "3px 2px",
+        }}
+      >
+        <path
+          d="M3 2l16 9.5-7 1.6 4 7.4-3 1.5-4-7.4L4 19z"
+          fill="#13201a"
+          stroke="#fff"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+        />
+      </svg>
     </div>
   );
 }
@@ -163,10 +211,12 @@ export function Produto({ t }: { t: Tela }) {
         </div>
       </Tap>
       <p className="mt-3 text-[11px] font-semibold text-gv-mute">Nome do produto</p>
-      <Input ativo={t.f > t.d * 0.34 && t.f < t.d * 0.8}>
-        {nome}
-        <Caret on={caret(t, 0.36, 0.72)} />
-      </Input>
+      <Tap t={t} quando={0.33} soNovo>
+        <Input ativo={t.f > t.d * 0.34 && t.f < t.d * 0.8}>
+          {nome}
+          <Caret on={caret(t, 0.36, 0.72)} />
+        </Input>
+      </Tap>
       <div className="mt-auto">
         <Tap t={t} quando={0.9}>
           <Button>Continuar</Button>
@@ -188,10 +238,12 @@ export function Oferta({ t }: { t: Tela }) {
         <p className="text-[12px] font-bold">Café da manhã completo</p>
       </div>
       <p className="mt-3 text-[11px] font-semibold text-gv-mute">Preço</p>
-      <Input ativo={t.f < t.d * 0.28} grande>
-        R$ {preco}
-        <Caret on={caret(t, 0.08, 0.22)} />
-      </Input>
+      <Tap t={t} quando={0.06} soNovo>
+        <Input ativo={t.f < t.d * 0.28} grande>
+          R$ {preco}
+          <Caret on={caret(t, 0.08, 0.22)} />
+        </Input>
+      </Tap>
       <p className="mt-3 text-[11px] font-semibold text-gv-mute">O que você quer destacar?</p>
       <div className="mt-1 flex flex-wrap gap-1">
         {["Parcelamento", "Desconto", "Entrega"].map((d, i) => {
@@ -324,7 +376,8 @@ export function Regiao({ t }: { t: Tela }) {
 
 export function Investimento({ t }: { t: Tela }) {
   const vinte = t.f >= t.d * 0.25;
-  const total = Math.round(interpolate(t.f, [t.d * 0.3, t.d * 0.6], [70, 140], clamp));
+  // O total muda logo depois do clique em R$ 20 (R$ 10 × 7 = R$ 70 → R$ 20 × 7 = R$ 140).
+  const total = Math.round(interpolate(t.f, [t.d * 0.25, t.d * 0.32], [70, 140], clamp));
   return (
     <>
       <Top step={5} title="Quanto quer investir?" />
@@ -426,9 +479,9 @@ export function Resultados({ t }: { t: Tela }) {
       <Top title="Seu anúncio em números" />
       <div className="mt-3 grid grid-cols-3 gap-1.5 text-center">
         {[
-          [`R$ ${Math.round(120 * p)}`, "Investido"],
-          [`${Math.round(18 * p)}`, "Conversas"],
-          [p < 0.05 ? "—" : `R$ ${reais(6.67)}`, "Por conversa"],
+          [`R$ ${reais(86.4 * p)}`, "Investido"],
+          [`${Math.round(27 * p)}`, "Conversas"],
+          [p < 0.05 ? "—" : `R$ ${reais(3.2)}`, "Por conversa"],
         ].map(([v, k]) => (
           <div key={k} className="rounded-xl border border-gv-line px-1 py-2.5">
             <p className="text-[14px] leading-tight font-bold">{v}</p>
