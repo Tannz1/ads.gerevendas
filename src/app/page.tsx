@@ -151,40 +151,37 @@ function Hero() {
 /** Um post patrocinado e a conversa que ele gerou: o resultado que o dono quer, sem animação pesada. */
 function HeroVisual() {
   return (
-    <figure className="relative mx-auto w-full max-w-[400px] pb-24 lg:max-w-[420px]">
-      <div className="overflow-hidden rounded-[26px] bg-white text-gv-ink shadow-[0_40px_80px_-30px_rgb(0_0_0/0.85)]">
-        <div className="flex items-center gap-3 px-4 py-3">
-          <span className="grid size-9 place-items-center rounded-full bg-[#c2410c] text-xs font-bold text-white">
-            {BAKERY.initials}
-          </span>
-          <div className="min-w-0 leading-tight">
-            <p className="truncate text-sm font-semibold">{BAKERY.businessName}</p>
-            <p className="text-xs text-gv-mute">Patrocinado</p>
+    <figure className="mx-auto w-full max-w-[420px] lg:mr-0 lg:ml-auto">
+      {/* O post ocupa a esquerda; a conversa encosta na borda direita da coluna, sem vazar. */}
+      <div className="relative pb-20">
+        <div className="w-[88%] overflow-hidden rounded-[26px] bg-white text-gv-ink shadow-[0_40px_80px_-30px_rgb(0_0_0/0.85)]">
+          <div className="flex items-center gap-3 px-4 py-3">
+            <span className="grid size-9 place-items-center rounded-full bg-[#c2410c] text-xs font-bold text-white">
+              {BAKERY.initials}
+            </span>
+            <div className="min-w-0 leading-tight">
+              <p className="truncate text-sm font-semibold">{BAKERY.businessName}</p>
+              <p className="text-xs text-gv-mute">Patrocinado</p>
+            </div>
           </div>
+          <FluidAd
+            format="feed"
+            content={BAKERY.ad}
+            businessName={BAKERY.businessName}
+            priceLabel={BAKERY.priceLabel}
+            imageSrc={BAKERY.photo ?? null}
+            label={`Anúncio de exemplo: ${BAKERY.ad.headline}`}
+          />
         </div>
-        <FluidAd
-          format="feed"
-          content={BAKERY.ad}
-          businessName={BAKERY.businessName}
-          priceLabel={BAKERY.priceLabel}
-          imageSrc={BAKERY.photo ?? null}
-          label={`Anúncio de exemplo: ${BAKERY.ad.headline}`}
-        />
-        <div className="flex items-center justify-between gap-3 border-t border-gv-line px-4 py-3 text-sm font-semibold">
-          <span>Pedir no WhatsApp</span>
-          <WhatsIcon className="size-5 text-[#128c4a]" />
+        <div className="absolute right-0 bottom-0 w-[70%] rounded-2xl bg-[#d9fdd3] p-3.5 text-[14.5px] leading-snug text-[#111b21] shadow-[0_20px_40px_-16px_rgb(0_0_0/0.7)]">
+          <p className="flex items-center gap-1.5 text-xs font-bold text-[#128c4a]">
+            <WhatsIcon className="size-3.5" />
+            Nova conversa
+          </p>
+          <p className="mt-1">Oi! Vi o anúncio. Ainda dá pra pedir o café da manhã pra amanhã?</p>
         </div>
       </div>
-      <div className="absolute right-[-6px] bottom-0 w-[78%] max-w-[300px] rounded-2xl bg-[#d9fdd3] p-3.5 text-[14.5px] leading-snug text-[#111b21] shadow-[0_20px_40px_-16px_rgb(0_0_0/0.7)] sm:right-[-24px]">
-        <p className="flex items-center gap-1.5 text-xs font-bold text-[#128c4a]">
-          <WhatsIcon className="size-3.5" />
-          Nova conversa
-        </p>
-        <p className="mt-1">Oi! Vi o anúncio. Ainda dá pra pedir o café da manhã pra amanhã?</p>
-      </div>
-      <figcaption className="absolute -bottom-7 left-0 text-[13px] text-white/55">
-        Exemplo ilustrativo, com negócio fictício
-      </figcaption>
+      <figcaption className="mt-4 text-[13px] text-white/55">Exemplo ilustrativo, com negócio fictício</figcaption>
     </figure>
   );
 }
@@ -291,7 +288,7 @@ function HowItWorks() {
 
 function Showcase() {
   return (
-    <section aria-labelledby="exemplos-titulo" className="bg-white">
+    <section aria-labelledby="exemplos-titulo" className="bg-gv-paper">
       <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
         <p className="text-[15px] font-semibold text-gv-green">Cinco versões para cada produto</p>
         <h2

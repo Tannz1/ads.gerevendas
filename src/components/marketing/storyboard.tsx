@@ -57,7 +57,7 @@ const steps: Array<{ title: string; text: string; screen: ReactNode }> = [
 
 export function Storyboard() {
   return (
-    <section id="como-funciona" aria-labelledby="como-funciona-titulo" className="scroll-mt-20 bg-gv-paper">
+    <section id="como-funciona" aria-labelledby="como-funciona-titulo" className="scroll-mt-20 bg-white">
       <div className="mx-auto max-w-[1200px] px-5 py-16 sm:px-8 lg:py-24">
         <div className="max-w-2xl">
           <p className="font-semibold text-gv-green">Anúncios simples para negócios locais</p>
