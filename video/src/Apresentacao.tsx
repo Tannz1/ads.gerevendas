@@ -37,6 +37,12 @@ const GREEN = "#1a8a3c";
 const SOFT = "#e4f6e9";
 const ease = Easing.out(Easing.cubic);
 
+/** true na versão vertical (celular): título em cima, celular grande no meio, legenda maior. */
+function useVertical() {
+  const { width, height } = useVideoConfig();
+  return height > width;
+}
+
 const PASSOS: Record<string, { n: number; nome: string; itens: string[]; tela: ReactNode }> = {
   inicio: {
     n: 1,
@@ -133,9 +139,21 @@ function TopBar() {
   const t = frame / fps;
   const atual = CENAS.find((c) => t >= c.ini && t < c.fim) ?? CENAS.at(-1)!;
   const passo = PASSOS[atual.id]?.n ?? 0;
+  const v = useVertical();
   return (
     <>
-      <div style={{ position: "absolute", left: 80, top: 56, display: "flex", alignItems: "center", gap: 14 }}>
+      <div
+        style={{
+          position: "absolute",
+          left: v ? 0 : 80,
+          right: v ? 0 : undefined,
+          top: v ? 80 : 56,
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          gap: 14,
+        }}
+      >
         <BrandMark className="h-12 w-auto" />
         <span
           style={{
@@ -150,13 +168,24 @@ function TopBar() {
           Ads
         </span>
       </div>
-      <div style={{ position: "absolute", right: 80, top: 74, display: "flex", gap: 8, opacity: passo ? 1 : 0.35 }}>
+      <div
+        style={{
+          position: "absolute",
+          right: v ? 0 : 80,
+          left: v ? 0 : undefined,
+          top: v ? 178 : 74,
+          display: "flex",
+          justifyContent: "center",
+          gap: 8,
+          opacity: passo ? 1 : v ? 0 : 0.35,
+        }}
+      >
         {Array.from({ length: 8 }, (_, i) => (
           <span
             key={i}
             style={{
-              width: 56,
-              height: 8,
+              width: v ? 84 : 56,
+              height: v ? 10 : 8,
               borderRadius: 4,
               background: i < passo ? GREEN : "#d5e2d9",
             }}
@@ -192,10 +221,11 @@ function Reveal({ delay = 0, children, style }: { delay?: number; children: Reac
 
 function Scene({ cena }: { cena: Cena }) {
   const passo = PASSOS[cena.id];
+  const vertical = useVertical();
   return (
     <AbsoluteFill>
       {passo ? <StepScene passo={passo} id={cena.id} /> : OUTRAS[cena.id]?.()}
-      <Subtitle cena={cena} lado={passo ? "esquerda" : "centro"} />
+      <Subtitle cena={cena} lado={passo && !vertical ? "esquerda" : "centro"} />
     </AbsoluteFill>
   );
 }
@@ -203,6 +233,44 @@ function Scene({ cena }: { cena: Cena }) {
 function StepScene({ passo, id }: { passo: (typeof PASSOS)[string]; id: string }) {
   const frame = useCurrentFrame();
   const { p, o } = useShow(4);
+  const vertical = useVertical();
+  if (vertical) {
+    return (
+      <AbsoluteFill style={{ alignItems: "center" }}>
+        <div style={{ marginTop: 270, textAlign: "center" }}>
+          <Reveal>
+            <span
+              style={{
+                background: SOFT,
+                color: GREEN,
+                borderRadius: 999,
+                padding: "12px 26px",
+                fontSize: 34,
+                fontWeight: 700,
+              }}
+            >
+              Passo {passo.n} de 8
+            </span>
+          </Reveal>
+          <Reveal delay={6}>
+            <p style={{ margin: "30px 0 0", fontSize: 104, fontWeight: 800, letterSpacing: "-0.045em", lineHeight: 1 }}>
+              {passo.nome}
+            </p>
+          </Reveal>
+        </div>
+        <div
+          style={{
+            marginTop: 50,
+            opacity: o,
+            transform: `translateY(${(1 - p) * 40 + Math.sin(frame / 45) * 4}px)`,
+            filter: "drop-shadow(0 40px 50px rgba(19,32,26,0.22))",
+          }}
+        >
+          <BigPhone width={470}>{passo.tela}</BigPhone>
+        </div>
+      </AbsoluteFill>
+    );
+  }
   return (
     <AbsoluteFill>
       <div style={{ position: "absolute", left: 160, top: 250, width: 780 }}>
@@ -297,6 +365,45 @@ const OUTRAS: Record<string, () => ReactNode> = {
 
 function Intro() {
   const { p, o } = useShow(0);
+  const vertical = useVertical();
+  if (vertical) {
+    return (
+      <AbsoluteFill style={{ alignItems: "center", paddingTop: 330, paddingLeft: 80, paddingRight: 80 }}>
+        <Reveal>
+          <p style={{ margin: 0, color: GREEN, fontSize: 40, fontWeight: 700, textAlign: "center" }}>
+            Como funciona o GereVendas Ads
+          </p>
+        </Reveal>
+        <Reveal delay={8}>
+          <p
+            style={{
+              margin: "24px 0 0",
+              fontSize: 110,
+              fontWeight: 800,
+              letterSpacing: "-0.045em",
+              lineHeight: 1.02,
+              textAlign: "center",
+            }}
+          >
+            Da foto ao cliente no WhatsApp
+          </p>
+        </Reveal>
+        <div
+          style={{
+            marginTop: 70,
+            width: 900,
+            opacity: o,
+            transform: `scale(${0.96 + 0.04 * p})`,
+            borderRadius: 36,
+            overflow: "hidden",
+            boxShadow: "0 40px 70px rgba(19,32,26,0.25)",
+          }}
+        >
+          <Img src={PHOTOS[1]} style={{ width: "100%", aspectRatio: "3 / 2", objectFit: "cover", display: "block" }} />
+        </div>
+      </AbsoluteFill>
+    );
+  }
   return (
     <AbsoluteFill>
       <div style={{ position: "absolute", left: 160, top: 300, width: 760 }}>
@@ -329,14 +436,31 @@ function Intro() {
 }
 
 function Overview() {
+  const v = useVertical();
   return (
-    <AbsoluteFill style={{ alignItems: "center", paddingTop: 190 }}>
+    <AbsoluteFill style={{ alignItems: "center", paddingTop: v ? 330 : 190 }}>
       <Reveal>
-        <p style={{ margin: 0, fontSize: 64, fontWeight: 800, letterSpacing: "-0.04em" }}>
+        <p
+          style={{
+            margin: 0,
+            fontSize: v ? 76 : 64,
+            fontWeight: 800,
+            letterSpacing: "-0.04em",
+            textAlign: "center",
+            maxWidth: v ? 820 : undefined,
+          }}
+        >
           Oito passos, todos no celular
         </p>
       </Reveal>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 340px)", gap: 24, marginTop: 56 }}>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: v ? "repeat(2, 440px)" : "repeat(4, 340px)",
+          gap: 24,
+          marginTop: 56,
+        }}
+      >
         {Object.values(PASSOS).map((s, i) => (
           <Reveal key={s.nome} delay={10 + i * 8}>
             <div
@@ -377,18 +501,25 @@ function Overview() {
 
 function Summary() {
   const itens = ["Você manda a foto", "Define preço, região e valor", "Aprova o anúncio", "O app faz o resto"];
+  const v = useVertical();
   return (
-    <AbsoluteFill style={{ alignItems: "center", paddingTop: 260 }}>
+    <AbsoluteFill style={{ alignItems: "center", paddingTop: v ? 300 : 260 }}>
       <Reveal>
         <p style={{ margin: 0, fontSize: 64, fontWeight: 800, letterSpacing: "-0.04em" }}>Resumindo</p>
       </Reveal>
-      <div style={{ display: "flex", alignItems: "center", gap: 20, marginTop: 60 }}>
+      <div
+        style={{ display: "flex", flexDirection: v ? "column" : "row", alignItems: "center", gap: 20, marginTop: 60 }}
+      >
         {itens.map((t, i) => (
-          <Reveal key={t} delay={12 + i * 14} style={{ display: "flex", alignItems: "center", gap: 20 }}>
+          <Reveal
+            key={t}
+            delay={12 + i * 14}
+            style={{ display: "flex", flexDirection: v ? "column" : "row", alignItems: "center", gap: 20 }}
+          >
             <div
               style={{
-                width: 330,
-                height: 170,
+                width: v ? 640 : 330,
+                height: v ? 150 : 170,
                 background: i === 3 ? GREEN : "#fff",
                 color: i === 3 ? "#fff" : INK,
                 borderRadius: 26,
@@ -404,7 +535,7 @@ function Summary() {
             >
               {t}
             </div>
-            {i < 3 && <span style={{ fontSize: 48, color: "#b8c9be" }}>→</span>}
+            {i < 3 && <span style={{ fontSize: 48, color: "#b8c9be" }}>{v ? "↓" : "→"}</span>}
           </Reveal>
         ))}
       </div>
@@ -413,12 +544,13 @@ function Summary() {
 }
 
 function Price() {
+  const v = useVertical();
   return (
-    <AbsoluteFill style={{ alignItems: "center", paddingTop: 230 }}>
+    <AbsoluteFill style={{ alignItems: "center", paddingTop: v ? 520 : 230 }}>
       <Reveal>
         <div
           style={{
-            width: 860,
+            width: v ? 900 : 860,
             background: "#fff",
             borderRadius: 36,
             border: "1px solid #e1ebe4",
@@ -473,6 +605,7 @@ function End() {
 /* ---------------------------------------------------------------- legenda por frase */
 
 function Subtitle({ cena, lado }: { cena: Cena; lado: "esquerda" | "centro" }) {
+  const v = useVertical();
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const t = cena.ini + frame / fps;
@@ -498,9 +631,9 @@ function Subtitle({ cena, lado }: { cena: Cena; lado: "esquerda" | "centro" }) {
     <div
       style={{
         position: "absolute",
-        left: lado === "esquerda" ? 160 : 0,
-        right: lado === "esquerda" ? 860 : 0,
-        bottom: 70,
+        left: lado === "esquerda" ? 160 : v ? 70 : 0,
+        right: lado === "esquerda" ? 860 : v ? 70 : 0,
+        bottom: v ? 150 : 70,
         display: "flex",
         justifyContent: lado === "esquerda" ? "flex-start" : "center",
         opacity: o,
@@ -512,10 +645,10 @@ function Subtitle({ cena, lado }: { cena: Cena; lado: "esquerda" | "centro" }) {
           maxWidth: 1400,
           background: "rgba(19,32,26,0.86)",
           color: "#fff",
-          borderRadius: 16,
-          padding: "14px 26px",
+          borderRadius: v ? 24 : 16,
+          padding: v ? "20px 32px" : "14px 26px",
           fontFamily: "Inter",
-          fontSize: 32,
+          fontSize: v ? 44 : 32,
           fontWeight: 500,
           lineHeight: 1.35,
           textAlign: lado === "esquerda" ? "left" : "center",

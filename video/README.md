@@ -5,7 +5,8 @@ da LP (`../src/components/marketing`), então o vídeo acompanha o produto.
 
 | Composição | Formato | Para quê |
 | --- | --- | --- |
-| `Apresentacao` | 1920×1080 | Vídeo da LP: explica o app passo a passo |
+| `Apresentacao` | 1920×1080 | Vídeo da LP no computador: explica o app passo a passo |
+| `ApresentacaoVertical` | 1080×1920 | O mesmo vídeo para quem assiste no celular (texto maior) |
 | `ReelsUso` | 1080×1920 | Reels: o app em uso, como gravação de tela |
 
 Negócio, preços e números são **de exemplo** e aparecem rotulados no vídeo.

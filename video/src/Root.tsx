@@ -19,6 +19,15 @@ export function Root() {
         fps={FPS}
         durationInFrames={Math.ceil(uso.duracao * FPS)}
       />
+      {/* Mesma apresentação na vertical, para quem assiste no celular. */}
+      <Composition
+        id="ApresentacaoVertical"
+        component={Apresentacao}
+        width={1080}
+        height={1920}
+        fps={FPS}
+        durationInFrames={Math.ceil(apresentacao.duracao * FPS)}
+      />
       {/* Vídeo de apresentação da LP (horizontal), explicando passo a passo. */}
       <Composition
         id="Apresentacao"

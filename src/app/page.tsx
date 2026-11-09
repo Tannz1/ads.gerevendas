@@ -307,16 +307,26 @@ function HowItWorks() {
           </ol>
         </div>
         <figure>
+          {/* No celular, a versão vertical (texto maior); no computador, a horizontal. Só carrega no play. */}
+          <video
+            controls
+            preload="none"
+            playsInline
+            poster={`${base}/lp/apresentacao-vertical-capa.jpg`}
+            className="mx-auto aspect-[9/16] w-full max-w-[400px] rounded-3xl bg-gv-night shadow-[0_30px_60px_-30px_rgb(6_40_20/0.6)] lg:hidden"
+          >
+            <source src={`${base}/lp/apresentacao-vertical.mp4`} type="video/mp4" />
+          </video>
           <video
             controls
             preload="none"
             playsInline
             poster={`${base}/lp/apresentacao-capa.jpg`}
-            className="aspect-video w-full rounded-3xl bg-gv-night shadow-[0_30px_60px_-30px_rgb(6_40_20/0.6)]"
+            className="hidden aspect-video w-full rounded-3xl bg-gv-night shadow-[0_30px_60px_-30px_rgb(6_40_20/0.6)] lg:block"
           >
             <source src={`${base}/lp/apresentacao.mp4`} type="video/mp4" />
           </video>
-          <figcaption className="mt-3 text-[14px] text-gv-mute">
+          <figcaption className="mt-3 text-center text-[14px] text-gv-mute lg:text-left">
             Veja o app funcionando em 2 minutos. Negócio e números de exemplo.
           </figcaption>
         </figure>
