@@ -10,5 +10,5 @@ export function detectImage(bytes: Uint8Array): ImageKind | null {
   return null;
 }
 
-/** Limite de foto enviada pelo cliente (o bodySizeLimit das server actions tem folga acima disso). */
-export const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+/** Limite do arquivo recebido (o navegador já reduz antes; o servidor normaliza para no máx. 2048 px). O bodySizeLimit das server actions tem folga acima disso. */
+export const MAX_PHOTO_BYTES = 10 * 1024 * 1024;

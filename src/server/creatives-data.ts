@@ -6,6 +6,7 @@ import {
   type StoredStrategyPlan,
 } from "@/contracts/creatives";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { orientedDataUri } from "./photo";
 
 /** Leituras das telas de criativos. Isolamento garantido pelo RLS (sessão do usuário). */
 
@@ -53,7 +54,7 @@ export async function loadImageDataUri(image: { path: string; mime: string }): P
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase.storage.from(ASSETS_BUCKET).download(image.path);
   if (!data) return null;
-  return `data:${image.mime};base64,${Buffer.from(await data.arrayBuffer()).toString("base64")}`;
+  return orientedDataUri(new Uint8Array(await data.arrayBuffer()), image.mime);
 }
 
 export async function loadCreative(id: string): Promise<CreativeView | null> {

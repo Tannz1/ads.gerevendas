@@ -14,6 +14,7 @@ import type { ConsentKind } from "@/contracts/account";
 import type { BusinessLogoView, InviteView, MemberView } from "@/server/account-data";
 import type { MemberRole } from "@/server/context";
 import { Alert } from "@/components/ui/alert";
+import { PHOTO_SEND_FAILED, preparePhotoField } from "@/lib/prepare-photo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -106,7 +107,11 @@ export function AccountManagement({
     setLogoMessage(null);
     const formData = new FormData(e.currentTarget);
     startLogoUpload(async () => {
-      const res = await uploadBusinessLogo(formData);
+      const res = await uploadBusinessLogo(await preparePhotoField(formData)).catch(() => null);
+      if (!res) {
+        setLogoMessage({ tone: "error", text: PHOTO_SEND_FAILED });
+        return;
+      }
       if (!res.ok) {
         setLogoMessage({ tone: "error", text: res.error.message });
         return;

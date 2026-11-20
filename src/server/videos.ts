@@ -6,7 +6,8 @@ import { after } from "next/server";
 import { z } from "zod";
 import { apiError, type ApiResult } from "@/contracts/api";
 import { serverEnv } from "@/lib/env";
-import { detectImage, MAX_PHOTO_BYTES, type ImageKind } from "@/lib/image-bytes";
+import { MAX_PHOTO_BYTES, type ImageKind } from "@/lib/image-bytes";
+import { normalizePhoto } from "./photo";
 import { log } from "@/lib/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { MAX_SCRIPT_CHARS, type VoiceVideoProvider } from "./ai/elevenlabs";
@@ -124,15 +125,17 @@ export async function startAvatarVideo(formData: FormData): Promise<ApiResult<{ 
     fields.likeness = ["Confirme que o rosto é seu ou que a pessoa autorizou o uso."];
   }
   if (!(file instanceof File) || file.size === 0) fields.file = ["Escolha uma foto do rosto."];
-  else if (file.size > MAX_PHOTO_BYTES) fields.file = ["Use uma foto de até 5 MB."];
+  else if (file.size > MAX_PHOTO_BYTES) fields.file = ["Use uma foto de até 10 MB."];
   if (Object.keys(fields).length > 0) {
     return apiError("validation_failed", "Revise os campos destacados.", correlationId, fields);
   }
-  const bytes = new Uint8Array(await (file as File).arrayBuffer());
-  const kind = detectImage(bytes);
-  if (!kind) {
-    return apiError("validation_failed", "Formato não aceito.", correlationId, { file: ["Use uma foto JPG ou PNG."] });
+  const photo = await normalizePhoto(new Uint8Array(await (file as File).arrayBuffer()));
+  if (!photo) {
+    return apiError("validation_failed", "Não conseguimos ler esta foto.", correlationId, {
+      file: ["Use uma foto JPG ou PNG."],
+    });
   }
+  const { bytes, kind } = photo;
 
   const ctx = await getAppContext();
   if (ctx.mode !== "supabase" || !ctx.organization) {

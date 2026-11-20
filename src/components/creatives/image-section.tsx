@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { PHOTO_SEND_FAILED, preparePhotoField } from "@/lib/prepare-photo";
 import { generateImage, removeImage, uploadPhoto } from "@/server/creatives";
-import { JOB_ERRORS, JobProgress } from "./generation-controls";
+import { JOB_ERRORS } from "@/lib/job-errors";
+import { JobProgress } from "./generation-controls";
 
 type Props = {
   creativeId: string;
@@ -27,7 +29,8 @@ export function ImageSection({ creativeId, hasImage, aiEnabled, job }: Props) {
   ) =>
     start(async () => {
       setError(null);
-      const res = await fn();
+      const res = await fn().catch(() => null);
+      if (!res) return setError(PHOTO_SEND_FAILED);
       if (!res.ok && res.error) {
         const field = Object.values(res.error.field_errors ?? {})[0]?.[0];
         setError(field ?? res.error.message);
@@ -52,14 +55,18 @@ export function ImageSection({ creativeId, hasImage, aiEnabled, job }: Props) {
         )
       )}
 
-      <form className="flex flex-col gap-3" action={(fd) => run(() => uploadPhoto(fd))} aria-describedby="photo-hint">
+      <form
+        className="flex flex-col gap-3"
+        action={(fd) => run(async () => uploadPhoto(await preparePhotoField(fd)))}
+        aria-describedby="photo-hint"
+      >
         <input type="hidden" name="creative_id" value={creativeId} />
         <label className="flex flex-col gap-1.5 text-sm font-medium">
-          Foto do seu negócio (JPG ou PNG, até 5 MB)
+          Foto do seu negócio (da câmera ou da galeria)
           <input
             type="file"
             name="file"
-            accept="image/jpeg,image/png"
+            accept="image/*"
             required
             className="text-sm file:mr-3 file:rounded-lg file:border file:border-line-strong file:bg-surface file:px-3 file:py-2 file:text-sm file:font-medium"
           />

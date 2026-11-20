@@ -13,7 +13,8 @@ import {
 } from "@/contracts/account";
 import { apiError, type ApiResult } from "@/contracts/api";
 import { fieldErrors } from "@/contracts/onboarding";
-import { detectImage, MAX_PHOTO_BYTES } from "@/lib/image-bytes";
+import { MAX_PHOTO_BYTES } from "@/lib/image-bytes";
+import { normalizePhoto } from "./photo";
 import { log } from "@/lib/logger";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -136,17 +137,17 @@ export async function uploadBusinessLogo(formData: FormData): Promise<ApiResult<
     });
   }
   if (file.size > MAX_PHOTO_BYTES) {
-    return apiError("validation_failed", "Arquivo acima de 5 MB.", correlationId, {
-      file: ["Use um arquivo de até 5 MB."],
+    return apiError("validation_failed", "Arquivo acima de 10 MB.", correlationId, {
+      file: ["Use um arquivo de até 10 MB."],
     });
   }
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const kind = detectImage(bytes);
-  if (!kind) {
-    return apiError("validation_failed", "Formato não aceito.", correlationId, {
+  const photo = await normalizePhoto(new Uint8Array(await file.arrayBuffer()));
+  if (!photo) {
+    return apiError("validation_failed", "Não conseguimos ler esta foto.", correlationId, {
       file: ["Use um arquivo PNG ou JPG."],
     });
   }
+  const { bytes, kind } = photo;
 
   const ctx = await getAppContext();
   if (ctx.mode !== "supabase" || !ctx.organization) {

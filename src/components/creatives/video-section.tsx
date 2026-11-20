@@ -5,8 +5,9 @@ import { useEffect, useState, useTransition } from "react";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { PHOTO_SEND_FAILED, preparePhotoField } from "@/lib/prepare-photo";
 import { checkVideoJob, removeVideo, startAvatarVideo } from "@/server/videos";
-import { JOB_ERRORS } from "./generation-controls";
+import { JOB_ERRORS } from "@/lib/job-errors";
 
 const VIDEO_ERRORS: Record<string, string> = {
   ...JOB_ERRORS,
@@ -70,7 +71,8 @@ export function VideoSection({ creativeId, defaultScript, maxScript, voices, ena
     start(async () => {
       setError(null);
       setErrors({});
-      const res = await fn();
+      const res = await fn().catch(() => null);
+      if (!res) return setError(PHOTO_SEND_FAILED);
       if (!res.ok && res.error) {
         setErrors(res.error.field_errors ?? {});
         setError(res.error.message);
@@ -113,7 +115,10 @@ export function VideoSection({ creativeId, defaultScript, maxScript, voices, ena
         {!enabled ? (
           <p className="text-sm text-ink-faint">O vídeo com avatar ainda não está ativado nesta conta.</p>
         ) : (
-          <form className="flex flex-col gap-3" action={(fd) => run(() => startAvatarVideo(fd))}>
+          <form
+            className="flex flex-col gap-3"
+            action={(fd) => run(async () => startAvatarVideo(await preparePhotoField(fd)))}
+          >
             <input type="hidden" name="creative_id" value={creativeId} />
             <label className="flex flex-col gap-1.5 text-sm font-semibold">
               Roteiro (o que o avatar vai falar)
@@ -151,11 +156,11 @@ export function VideoSection({ creativeId, defaultScript, maxScript, voices, ena
             {fieldError("voice_id")}
 
             <label className="flex flex-col gap-1.5 text-sm font-semibold">
-              Foto do rosto (JPG ou PNG, até 5 MB)
+              Foto do rosto (da câmera ou da galeria)
               <input
                 type="file"
                 name="file"
-                accept="image/jpeg,image/png"
+                accept="image/*"
                 required
                 className="text-sm font-normal file:mr-3 file:rounded-lg file:border file:border-line-strong file:bg-surface file:px-3 file:py-2 file:text-sm file:font-medium"
               />

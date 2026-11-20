@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
 import { AdPreview, imageUrl } from "@/components/creatives/ad-preview";
-import {
-  GenerateButton,
-  GenerateImagesButton,
-  JOB_ERRORS,
-  JobProgress,
-} from "@/components/creatives/generation-controls";
+import { GenerateButton, GenerateImagesButton, JobProgress } from "@/components/creatives/generation-controls";
 import { ResearchSection } from "@/components/creatives/research-section";
 import { Alert } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +8,7 @@ import { ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TEMPLATE_LABELS, type AngleKey } from "@/contracts/creatives";
 import { serverEnv } from "@/lib/env";
+import { JOB_ERRORS } from "@/lib/job-errors";
 import { formatCents } from "@/lib/money";
 import { selectImageProvider } from "@/server/ai/provider";
 import { getAppContext } from "@/server/context";

@@ -6,17 +6,6 @@ import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { generateMissingImages, generateStrategy, getJobStatus } from "@/server/creatives";
 
-export const JOB_ERRORS: Record<string, string> = {
-  facts_violation:
-    "A IA sugeriu algo que você não confirmou no cadastro (preço, desconto ou promessa). Nada foi salvo.",
-  invalid_output: "A resposta da IA veio incompleta. Nada foi salvo.",
-  external_unavailable: "O serviço de IA não respondeu.",
-  timeout: "A geração demorou demais e foi interrompida.",
-  internal: "Não conseguimos salvar o resultado.",
-  storage_failed: "Não conseguimos guardar a imagem.",
-  feature_disabled: "A geração com IA não está ativada.",
-};
-
 /** Pede a geração e atualiza a página (que passa a mostrar o progresso). */
 export function GenerateButton({ briefId, label }: { briefId: string; label: string }) {
   const router = useRouter();

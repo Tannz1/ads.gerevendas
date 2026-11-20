@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { HIGHLIGHT_KINDS, HIGHLIGHT_LABELS, type HighlightKind } from "@/contracts/products";
 import { cn } from "@/lib/cn";
 import { parseBRLToCents } from "@/lib/money";
+import { PHOTO_SEND_FAILED, preparePhoto } from "@/lib/prepare-photo";
 import { createProduct, uploadProductPhoto } from "@/server/products";
 import { ProductThumb } from "./product-card";
 import { bigButton, ScreenHeader } from "./shell";
@@ -52,10 +53,10 @@ export function ProductForm() {
     setMessage(null);
     start(async () => {
       const fd = new FormData();
-      fd.set("file", file!);
+      fd.set("file", await preparePhoto(file!));
       fd.set("rights", "on");
       const res = await uploadProductPhoto(fd).catch(() => null);
-      if (!res) return setMessage("Não foi possível enviar a foto. Confira sua internet e tente de novo.");
+      if (!res) return setMessage(PHOTO_SEND_FAILED);
       if (!res.ok) {
         const fe = res.error.field_errors;
         return setErrors({ file: fe?.file?.[0] ?? res.error.message, rights: fe?.rights?.[0] ?? "" });
@@ -101,7 +102,7 @@ export function ProductForm() {
         <input
           ref={fileRef}
           type="file"
-          accept="image/jpeg,image/png"
+          accept="image/*"
           className="sr-only"
           aria-label="Foto do produto"
           onChange={(e) => pick(e.target.files?.[0])}
@@ -122,7 +123,7 @@ export function ProductForm() {
             <span className="flex size-full flex-col items-center justify-center gap-2 text-ink-soft">
               <CameraIcon className="size-10" />
               <span className="text-[15px] font-semibold">Tirar ou escolher uma foto</span>
-              <span className="text-sm text-ink-faint">JPG ou PNG, até 5 MB</span>
+              <span className="text-sm text-ink-faint">Da câmera ou da galeria</span>
             </span>
           )}
           {preview && (
