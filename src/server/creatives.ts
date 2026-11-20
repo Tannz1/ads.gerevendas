@@ -17,7 +17,8 @@ import {
 } from "@/contracts/creatives";
 import { fieldErrors } from "@/contracts/onboarding";
 import { initialContents } from "@/lib/creatives";
-import { detectImage, MAX_PHOTO_BYTES } from "@/lib/image-bytes";
+import { MAX_PHOTO_BYTES } from "@/lib/image-bytes";
+import { normalizePhoto } from "./photo";
 import { serverEnv } from "@/lib/env";
 import { log } from "@/lib/logger";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -600,7 +601,7 @@ export async function generateImage(creativeId: unknown): Promise<ApiResult<{ jo
   return { ok: true, data: { job_id }, correlation_id: correlationId };
 }
 
-/** Foto do cliente: JPEG/PNG até 5 MB, conferida pelos bytes, com declaração de direito de uso. */
+/** Foto do cliente: JPEG/PNG até 10 MB, conferida pelos bytes, com declaração de direito de uso. */
 export async function uploadPhoto(formData: FormData): Promise<ApiResult<{ asset_id: string }>> {
   const correlationId = await getCorrelationId();
   const id = uuid.safeParse(formData.get("creative_id"));
@@ -615,15 +616,17 @@ export async function uploadPhoto(formData: FormData): Promise<ApiResult<{ asset
     return apiError("validation_failed", "Escolha uma imagem.", correlationId, { file: ["Escolha uma imagem."] });
   }
   if (file.size > MAX_PHOTO_BYTES) {
-    return apiError("validation_failed", "Imagem acima de 5 MB.", correlationId, {
-      file: ["Use uma imagem de até 5 MB."],
+    return apiError("validation_failed", "Imagem acima de 10 MB.", correlationId, {
+      file: ["Use uma imagem de até 10 MB."],
     });
   }
-  const bytes = new Uint8Array(await file.arrayBuffer());
-  const kind = detectImage(bytes);
-  if (!kind) {
-    return apiError("validation_failed", "Formato não aceito.", correlationId, { file: ["Use uma foto JPG ou PNG."] });
+  const photo = await normalizePhoto(new Uint8Array(await file.arrayBuffer()));
+  if (!photo) {
+    return apiError("validation_failed", "Não conseguimos ler esta foto.", correlationId, {
+      file: ["Use uma foto JPG ou PNG."],
+    });
   }
+  const { bytes, kind } = photo;
 
   const ctx = await getAppContext();
   if (ctx.mode !== "supabase" || !ctx.organization) {

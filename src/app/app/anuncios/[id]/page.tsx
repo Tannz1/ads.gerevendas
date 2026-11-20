@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { z } from "zod";
-import { GenerateButton, JOB_ERRORS, JobProgress } from "@/components/creatives/generation-controls";
+import { GenerateButton, JobProgress } from "@/components/creatives/generation-controls";
+import { JOB_ERRORS } from "@/lib/job-errors";
 import { LaunchFlow, type LaunchStep } from "@/components/simple/launch-flow";
 import { ProductThumb } from "@/components/simple/product-card";
 import { ScreenHeader, SimpleShell } from "@/components/simple/shell";
